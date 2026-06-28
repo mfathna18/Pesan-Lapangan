@@ -13,6 +13,9 @@ export function createPrismaBookingReader(prisma: PrismaClient): BookingReader {
         where: {
           courtId,
           bookingDate: startOfDay(date),
+          status: {
+            in: ["PENDING", "CONFIRMED"],
+          },
         },
         select: {
           startMinute: true,

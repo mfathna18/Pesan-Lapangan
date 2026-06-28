@@ -4,6 +4,14 @@ export type MatchingPriceRule = {
   price: number;
 };
 
+export type ActivePriceRule = {
+  dayOfWeek: number;
+  startMinute: number;
+  endMinute: number;
+  price: number;
+  isActive: boolean;
+};
+
 export type FindMatchingPriceRuleInput = {
   courtId: string;
   dayOfWeek: number;
@@ -38,6 +46,29 @@ export class PriceRuleRepository {
     });
 
     return rule;
+  }
+
+  async findActiveByCourtAndDay(
+    courtId: string,
+    dayOfWeek: number,
+  ): Promise<ActivePriceRule[]> {
+    return this.prisma.priceRule.findMany({
+      where: {
+        courtId,
+        dayOfWeek,
+        isActive: true,
+      },
+      select: {
+        dayOfWeek: true,
+        startMinute: true,
+        endMinute: true,
+        price: true,
+        isActive: true,
+      },
+      orderBy: {
+        startMinute: "asc",
+      },
+    });
   }
 }
 

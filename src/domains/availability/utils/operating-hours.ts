@@ -12,6 +12,29 @@ type PriceRuleLike = {
   isActive: boolean;
 };
 
+type OperatingHoursLike = {
+  dayOfWeek: number;
+  startMinute: number;
+  endMinute: number;
+  isActive: boolean;
+};
+
+export function mapOperatingHoursForDay(
+  operatingHours: OperatingHoursLike[],
+  dayOfWeek: number,
+): OperatingHoursWindow[] {
+  const activeDayWindows = operatingHours.filter(
+    (window) => window.isActive && window.dayOfWeek === dayOfWeek,
+  );
+
+  return mergeIntervals(
+    activeDayWindows.map((window) => ({
+      startMinute: window.startMinute,
+      endMinute: window.endMinute,
+    })),
+  );
+}
+
 export function deriveOperatingHoursFromPriceRules(
   priceRules: PriceRuleLike[],
   dayOfWeek: number,

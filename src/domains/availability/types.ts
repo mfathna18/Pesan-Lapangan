@@ -3,9 +3,14 @@ export type TimeInterval = {
   endMinute: number;
 };
 
-export type AvailableSlot = TimeInterval & {
+export type AvailabilitySlot = {
+  startMinute: number;
+  endMinute: number;
   price: number;
+  available: boolean;
 };
+
+export type AvailableSlot = AvailabilitySlot;
 
 export type GetAvailabilityParams = {
   courtId: string;
@@ -17,3 +22,8 @@ export type PriceRuleWindow = TimeInterval & {
 };
 
 export type OperatingHoursWindow = TimeInterval;
+
+export type OperatingHoursRecord = TimeInterval & {
+  dayOfWeek: number;
+  isActive: boolean;
+};

@@ -1,127 +1,105 @@
 import { BOOKING_INTERVAL_MINUTES } from "@/domains/availability/constants";
+import { createOperatingHoursRepository } from "@/domains/availability/repositories/operating-hours-repository";
 import {
   createPrismaBookingReader,
   type BookingReader,
 } from "@/domains/availability/readers/booking-reader";
 import type {
-  AvailableSlot,
+  AvailabilitySlot,
   GetAvailabilityParams,
-  OperatingHoursWindow,
-  PriceRuleWindow,
 } from "@/domains/availability/types";
 import {
-  deriveOperatingHoursFromPriceRules,
   mapActivePriceRulesForDay,
-  resolveSlotPrice,
+  mapOperatingHoursForDay,
 } from "@/domains/availability/utils/operating-hours";
+import { buildAvailabilitySlots } from "@/domains/availability/utils/slots";
+import { getDayOfWeek } from "@/domains/availability/utils/time-interval";
 import {
-  dedupeSlotsByStartMinute,
-  excludeOverlappingSlots,
-  generateFixedIntervalSlots,
-  getDayOfWeek,
-} from "@/domains/availability/utils/time-interval";
+  CourtRepository,
+  createCourtRepository,
+} from "@/domains/booking/repositories/court-repository";
+import {
+  createPriceRuleRepository,
+  PriceRuleRepository,
+} from "@/domains/booking/repositories/price-rule-repository";
+import type { OperatingHoursRepository } from "@/domains/availability/repositories/operating-hours-repository";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type AvailabilityServiceDependencies = {
-  prisma: PrismaClient;
-  bookingReader?: BookingReader;
+  courtRepository: CourtRepository;
+  operatingHoursRepository: OperatingHoursRepository;
+  priceRuleRepository: PriceRuleRepository;
+  bookingReader: BookingReader;
 };
 
 export class AvailabilityService {
-  private readonly prisma: PrismaClient;
+  private readonly courtRepository: CourtRepository;
+  private readonly operatingHoursRepository: OperatingHoursRepository;
+  private readonly priceRuleRepository: PriceRuleRepository;
   private readonly bookingReader: BookingReader;
 
-  constructor({ prisma, bookingReader }: AvailabilityServiceDependencies) {
-    this.prisma = prisma;
-    this.bookingReader = bookingReader ?? createPrismaBookingReader(prisma);
+  constructor({
+    courtRepository,
+    operatingHoursRepository,
+    priceRuleRepository,
+    bookingReader,
+  }: AvailabilityServiceDependencies) {
+    this.courtRepository = courtRepository;
+    this.operatingHoursRepository = operatingHoursRepository;
+    this.priceRuleRepository = priceRuleRepository;
+    this.bookingReader = bookingReader;
   }
 
   async getAvailableSlots(
     params: GetAvailabilityParams,
-  ): Promise<AvailableSlot[]> {
-    const court = await this.prisma.court.findFirst({
-      where: {
-        id: params.courtId,
-        isActive: true,
-      },
-      select: { id: true },
-    });
+  ): Promise<AvailabilitySlot[]> {
+    const court = await this.courtRepository.findActiveCourtWithGor(
+      params.courtId,
+    );
 
     if (!court) {
       return [];
     }
 
     const dayOfWeek = getDayOfWeek(params.date);
-    const priceRules = await this.readPriceRules(params.courtId, dayOfWeek);
-    const operatingHours = this.readOperatingHours(priceRules, dayOfWeek);
-    const pricedWindows = mapActivePriceRulesForDay(priceRules, dayOfWeek);
-    const existingBookings = await this.bookingReader.findByCourtAndDate(
-      params.courtId,
-      params.date,
-    );
-
-    const candidateSlots = this.generateCandidateSlots(
-      operatingHours,
-      pricedWindows,
-    );
-
-    return excludeOverlappingSlots(candidateSlots, existingBookings);
-  }
-
-  private async readPriceRules(courtId: string, dayOfWeek: number) {
-    return this.prisma.priceRule.findMany({
-      where: {
-        courtId,
+    const [operatingHours, priceRules, existingBookings] = await Promise.all([
+      this.operatingHoursRepository.findActiveByCourtAndDay(
+        params.courtId,
         dayOfWeek,
-        isActive: true,
-      },
-      select: {
-        dayOfWeek: true,
-        startMinute: true,
-        endMinute: true,
-        price: true,
-        isActive: true,
-      },
-      orderBy: {
-        startMinute: "asc",
-      },
-    });
-  }
+      ),
+      this.priceRuleRepository.findActiveByCourtAndDay(
+        params.courtId,
+        dayOfWeek,
+      ),
+      this.bookingReader.findByCourtAndDate(params.courtId, params.date),
+    ]);
 
-  private readOperatingHours(
-    priceRules: Awaited<ReturnType<AvailabilityService["readPriceRules"]>>,
-    dayOfWeek: number,
-  ): OperatingHoursWindow[] {
-    return deriveOperatingHoursFromPriceRules(priceRules, dayOfWeek);
-  }
+    const operatingWindows = mapOperatingHoursForDay(operatingHours, dayOfWeek);
+    const pricedWindows = mapActivePriceRulesForDay(priceRules, dayOfWeek);
 
-  private generateCandidateSlots(
-    operatingHours: OperatingHoursWindow[],
-    priceRules: PriceRuleWindow[],
-  ): AvailableSlot[] {
-    const hourlySlots = operatingHours.flatMap((window) =>
-      generateFixedIntervalSlots(window, BOOKING_INTERVAL_MINUTES),
+    return buildAvailabilitySlots(
+      operatingWindows,
+      pricedWindows,
+      existingBookings,
     );
-
-    const pricedSlots = dedupeSlotsByStartMinute(hourlySlots).flatMap(
-      (slot) => {
-        const price = resolveSlotPrice(slot, priceRules);
-
-        if (price === null) {
-          return [];
-        }
-
-        return [{ ...slot, price }];
-      },
-    );
-
-    return pricedSlots;
   }
 }
 
 export function createAvailabilityService(
   prisma: PrismaClient,
-  bookingReader?: BookingReader,
+  dependencies?: Partial<AvailabilityServiceDependencies>,
 ): AvailabilityService {
-  return new AvailabilityService({ prisma, bookingReader });
+  return new AvailabilityService({
+    courtRepository:
+      dependencies?.courtRepository ?? createCourtRepository(prisma),
+    operatingHoursRepository:
+      dependencies?.operatingHoursRepository ??
+      createOperatingHoursRepository(prisma),
+    priceRuleRepository:
+      dependencies?.priceRuleRepository ?? createPriceRuleRepository(prisma),
+    bookingReader:
+      dependencies?.bookingReader ?? createPrismaBookingReader(prisma),
+  });
 }
+
+export { BOOKING_INTERVAL_MINUTES };
