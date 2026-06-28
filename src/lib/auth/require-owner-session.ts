@@ -1,0 +1,21 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+import { OWNER_ROLE } from "@/domains/owner/constants";
+import { auth } from "@/lib/auth";
+
+export async function requireOwnerSession() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/");
+  }
+
+  if (session.user.role !== OWNER_ROLE) {
+    redirect("/");
+  }
+
+  return session;
+}
