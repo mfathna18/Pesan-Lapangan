@@ -84,8 +84,33 @@ model Owner {
   id        String   @id @default(cuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gor       Gor?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("owner")
+}
+
+// GOR (sports venue) — one per owner/user, many courts.
+
+model Gor {
+  id        String   @id @default(cuid())
+  ownerId   String   @unique
+  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  courts    Court[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("gor")
+}
+
+model Court {
+  id        String   @id @default(cuid())
+  gorId     String
+  gor       Gor      @relation(fields: [gorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gorId])
+  @@map("court")
 }
