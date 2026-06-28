@@ -174,18 +174,48 @@ model OperatingHours {
   @@map("operating_hours")
 }
 
-// Existing reservations — read-only foundation for availability checks.
+// Booking foundation — court reservation with denormalized snapshots.
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
 
 model Booking {
-  id          String   @id @default(cuid())
-  courtId     String
-  court       Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
-  bookingDate DateTime @db.Date
-  startMinute Int
-  endMinute   Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                  String        @id @default(cuid())
+  courtId             String
+  court               Court         @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  bookingNumber       String        @unique
+  bookingDate         DateTime      @db.Date
+  startMinute         Int
+  endMinute           Int
+  durationMinute      Int
+  totalPrice          Int
+  status              BookingStatus @default(PENDING)
+  gorNameSnapshot     String
+  courtNameSnapshot   String
+  sportTypeSnapshot   String
+  pricePerHourSnapshot Int
+  contact             BookingContact?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
   @@index([courtId, bookingDate])
+  @@index([courtId, bookingDate, status])
+  @@index([bookingDate, startMinute])
   @@map("booking")
+}
+
+model BookingContact {
+  id            String  @id @default(cuid())
+  bookingId     String  @unique
+  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerName  String
+  customerPhone String
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("booking_contact")
 }
