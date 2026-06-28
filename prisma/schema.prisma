@@ -122,6 +122,7 @@ model Court {
   isActive     Boolean   @default(true)
   displayOrder Int       @default(0)
   priceRules   PriceRule[]
+  bookings     Booking[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -150,4 +151,20 @@ model PriceRule {
   @@index([courtId, dayOfWeek, isActive])
   @@index([courtId, dayOfWeek, startMinute])
   @@map("price_rule")
+}
+
+// Existing reservations — read-only foundation for availability checks.
+
+model Booking {
+  id          String   @id @default(cuid())
+  courtId     String
+  court       Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  bookingDate DateTime @db.Date
+  startMinute Int
+  endMinute   Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courtId, bookingDate])
+  @@map("booking")
 }
