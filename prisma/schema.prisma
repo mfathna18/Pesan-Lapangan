@@ -104,13 +104,28 @@ model Gor {
   @@map("gor")
 }
 
+enum SportType {
+  BADMINTON
+  FUTSAL
+  BASKETBALL
+  VOLLEYBALL
+  TENNIS
+  OTHER
+}
+
 model Court {
-  id        String   @id @default(cuid())
-  gorId     String
-  gor       Gor      @relation(fields: [gorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String    @id @default(cuid())
+  gorId        String
+  gor          Gor       @relation(fields: [gorId], references: [id], onDelete: Cascade)
+  name         String
+  sportType    SportType
+  isActive     Boolean   @default(true)
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([gorId])
+  @@index([gorId, displayOrder])
+  @@index([gorId, isActive])
   @@map("court")
 }
