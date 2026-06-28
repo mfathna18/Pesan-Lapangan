@@ -121,6 +121,7 @@ model Court {
   sportType    SportType
   isActive     Boolean   @default(true)
   displayOrder Int       @default(0)
+  priceRules   PriceRule[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -128,4 +129,25 @@ model Court {
   @@index([gorId, displayOrder])
   @@index([gorId, isActive])
   @@map("court")
+}
+
+// Pricing windows per court — time stored as minute of day (0–1439).
+
+model PriceRule {
+  id          String   @id @default(cuid())
+  courtId     String
+  court       Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  price       Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courtId])
+  @@index([courtId, dayOfWeek])
+  @@index([courtId, dayOfWeek, isActive])
+  @@index([courtId, dayOfWeek, startMinute])
+  @@map("price_rule")
 }
