@@ -1,14 +1,21 @@
 import { PAYMENT_STATUS } from "@/domains/payment/constants";
 import {
+  BookingNotFoundForPaymentError,
   PaymentNotFoundError,
   PaymentValidationError,
 } from "@/domains/payment/errors";
+import type { PaymentGateway } from "@/domains/payment/gateway/payment-gateway";
+import { createMidtransGateway } from "@/domains/payment/gateway/midtrans-gateway";
+import type { BookingReader } from "@/domains/payment/readers/booking-reader";
+import { createPaymentBookingReader } from "@/domains/payment/readers/booking-reader";
 import {
   PaymentRepository,
   type Payment,
 } from "@/domains/payment/repositories/payment-repository";
 import type {
   CreatePaymentInput,
+  CreatePaymentRequest,
+  CreatePaymentResult,
   FindPaymentsByBookingIdInput,
   MarkPaymentAsPaidInput,
   MarkPaymentStatusInput,
@@ -17,13 +24,81 @@ import type { PrismaClient } from "@/generated/prisma/client";
 
 type PaymentServiceDependencies = {
   paymentRepository: PaymentRepository;
+  bookingReader: BookingReader;
+  paymentGateway: PaymentGateway;
 };
 
 export class PaymentService {
   private readonly paymentRepository: PaymentRepository;
+  private readonly bookingReader: BookingReader;
+  private readonly paymentGateway: PaymentGateway;
 
-  constructor({ paymentRepository }: PaymentServiceDependencies) {
+  constructor({
+    paymentRepository,
+    bookingReader,
+    paymentGateway,
+  }: PaymentServiceDependencies) {
     this.paymentRepository = paymentRepository;
+    this.bookingReader = bookingReader;
+    this.paymentGateway = paymentGateway;
+  }
+
+  async createPayment(
+    input: CreatePaymentRequest,
+  ): Promise<CreatePaymentResult> {
+    const booking = await this.bookingReader.findById(input.bookingId);
+
+    if (!booking) {
+      throw new BookingNotFoundForPaymentError(
+        `Booking not found: ${input.bookingId}`,
+      );
+    }
+
+    const existingPaid = await this.paymentRepository.findPaidByBookingId(
+      input.bookingId,
+    );
+
+    if (existingPaid) {
+      throw new PaymentValidationError("Booking already has a paid payment");
+    }
+
+    if (!booking.contact) {
+      throw new PaymentValidationError(
+        "Booking contact is required to create payment",
+      );
+    }
+
+    const payment = await this.paymentRepository.create({
+      bookingId: input.bookingId,
+      amount: booking.totalPrice,
+    });
+
+    try {
+      const gatewayResult = await this.paymentGateway.createTransaction({
+        orderId: payment.id,
+        amount: booking.totalPrice,
+        customerName: booking.contact.customerName,
+        customerPhone: booking.contact.customerPhone,
+      });
+
+      await this.paymentRepository.update({
+        id: payment.id,
+        externalReference: gatewayResult.transactionId,
+      });
+
+      return {
+        paymentUrl: gatewayResult.paymentUrl,
+        token: gatewayResult.token,
+        transactionId: gatewayResult.transactionId,
+      };
+    } catch (error) {
+      await this.paymentRepository.update({
+        id: payment.id,
+        status: PAYMENT_STATUS.FAILED,
+      });
+
+      throw error;
+    }
   }
 
   async createPaymentAttempt(input: CreatePaymentInput): Promise<Payment> {
@@ -134,5 +209,7 @@ export class PaymentService {
 export function createPaymentService(prisma: PrismaClient): PaymentService {
   return new PaymentService({
     paymentRepository: new PaymentRepository(prisma),
+    bookingReader: createPaymentBookingReader(prisma),
+    paymentGateway: createMidtransGateway(),
   });
 }

@@ -29,3 +29,13 @@ export type MarkPaymentAsPaidInput = {
 export type MarkPaymentStatusInput = {
   id: string;
 };
+
+export type CreatePaymentRequest = {
+  bookingId: string;
+};
+
+export type CreatePaymentResult = {
+  paymentUrl: string;
+  token: string;
+  transactionId: string;
+};
