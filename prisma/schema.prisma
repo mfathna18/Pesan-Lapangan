@@ -198,6 +198,7 @@ model Booking {
   sportTypeSnapshot   String
   pricePerHourSnapshot Int
   contact             BookingContact?
+  payments            Payment[]
   createdAt           DateTime      @default(now())
   updatedAt           DateTime      @updatedAt
 
@@ -218,4 +219,37 @@ model BookingContact {
   updatedAt     DateTime @updatedAt
 
   @@map("booking_contact")
+}
+
+// Payment foundation — gateway payment attempts per booking.
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MIDTRANS
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  bookingId         String
+  booking           Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  amount            Int
+  status            PaymentStatus @default(PENDING)
+  method            PaymentMethod @default(MIDTRANS)
+  externalReference String?
+  paidAt            DateTime?
+  expiredAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([bookingId])
+  @@index([bookingId, status])
+  @@index([externalReference])
+  @@map("payment")
 }

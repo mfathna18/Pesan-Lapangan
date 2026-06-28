@@ -1,0 +1,13 @@
+export const PAYMENT_STATUS = {
+  PENDING: "PENDING",
+  PAID: "PAID",
+  FAILED: "FAILED",
+  EXPIRED: "EXPIRED",
+  REFUNDED: "REFUNDED",
+} as const;
+
+export const PAYMENT_METHOD = {
+  MIDTRANS: "MIDTRANS",
+} as const;
+
+export const DEFAULT_PAYMENT_METHOD = PAYMENT_METHOD.MIDTRANS;
