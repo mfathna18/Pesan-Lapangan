@@ -247,9 +247,41 @@ model Payment {
   expiredAt         DateTime?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  invoice           Invoice?
 
   @@index([bookingId])
   @@index([bookingId, status])
   @@index([externalReference])
   @@map("payment")
+}
+
+// Invoice foundation — immutable e-nota generated after successful payment.
+
+enum InvoiceStatus {
+  GENERATED
+  VOID
+}
+
+model Invoice {
+  id                    String        @id @default(cuid())
+  paymentId             String        @unique
+  payment               Payment       @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  invoiceNumber         String        @unique
+  bookingNumberSnapshot String
+  customerNameSnapshot  String
+  customerPhoneSnapshot String
+  gorNameSnapshot       String
+  courtNameSnapshot     String
+  bookingDateSnapshot   DateTime      @db.Date
+  startMinuteSnapshot   Int
+  endMinuteSnapshot     Int
+  totalAmountSnapshot   Int
+  status                InvoiceStatus @default(GENERATED)
+  generatedAt           DateTime      @default(now())
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([status])
+  @@index([generatedAt])
+  @@map("invoice")
 }
