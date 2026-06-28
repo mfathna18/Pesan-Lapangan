@@ -30,3 +30,10 @@ export class PaymentGatewayError extends Error {
     this.response = response;
   }
 }
+
+export class PaymentInvalidSignatureError extends Error {
+  constructor(message = "Invalid Midtrans callback signature") {
+    super(message);
+    this.name = "PaymentInvalidSignatureError";
+  }
+}

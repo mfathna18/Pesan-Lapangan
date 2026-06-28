@@ -5,10 +5,12 @@ import { PaymentGatewayError } from "@/domains/payment/errors";
 import type {
   CreateGatewayTransactionInput,
   CreateGatewayTransactionResult,
+  MidtransCallbackSignaturePayload,
   PaymentGateway,
 } from "@/domains/payment/gateway/payment-gateway";
 
 import { createMidtransSnapClient } from "./midtrans-client";
+import { verifyMidtransSignature } from "./midtrans-signature";
 
 export class MidtransGateway implements PaymentGateway {
   constructor(private readonly snap: Snap = createMidtransSnapClient()) {}
@@ -39,6 +41,10 @@ export class MidtransGateway implements PaymentGateway {
     } catch (error) {
       throw this.toGatewayError(error);
     }
+  }
+
+  verifyCallbackSignature(payload: MidtransCallbackSignaturePayload): boolean {
+    return verifyMidtransSignature(payload);
   }
 
   private toGatewayError(error: unknown): PaymentGatewayError {

@@ -1,6 +1,7 @@
 import { PAYMENT_STATUS } from "@/domains/payment/constants";
 import {
   BookingNotFoundForPaymentError,
+  PaymentInvalidSignatureError,
   PaymentNotFoundError,
   PaymentValidationError,
 } from "@/domains/payment/errors";
@@ -19,27 +20,38 @@ import type {
   FindPaymentsByBookingIdInput,
   MarkPaymentAsPaidInput,
   MarkPaymentStatusInput,
+  MidtransCallbackPayload,
 } from "@/domains/payment/types";
+import {
+  parseMidtransTransactionTime,
+  resolveMidtransCallbackStatus,
+} from "@/domains/payment/utils/midtrans-callback-status";
+import type { BookingWriter } from "@/domains/payment/writers/booking-writer";
+import { createPaymentBookingWriter } from "@/domains/payment/writers/booking-writer";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type PaymentServiceDependencies = {
   paymentRepository: PaymentRepository;
   bookingReader: BookingReader;
+  bookingWriter: BookingWriter;
   paymentGateway: PaymentGateway;
 };
 
 export class PaymentService {
   private readonly paymentRepository: PaymentRepository;
   private readonly bookingReader: BookingReader;
+  private readonly bookingWriter: BookingWriter;
   private readonly paymentGateway: PaymentGateway;
 
   constructor({
     paymentRepository,
     bookingReader,
+    bookingWriter,
     paymentGateway,
   }: PaymentServiceDependencies) {
     this.paymentRepository = paymentRepository;
     this.bookingReader = bookingReader;
+    this.bookingWriter = bookingWriter;
     this.paymentGateway = paymentGateway;
   }
 
@@ -98,6 +110,61 @@ export class PaymentService {
       });
 
       throw error;
+    }
+  }
+
+  async handleMidtransCallback(
+    payload: MidtransCallbackPayload,
+  ): Promise<Payment | null> {
+    if (!this.paymentGateway.verifyCallbackSignature(payload)) {
+      throw new PaymentInvalidSignatureError();
+    }
+
+    const payment = await this.paymentRepository.findByExternalReference(
+      payload.order_id,
+    );
+
+    if (!payment) {
+      throw new PaymentNotFoundError(
+        `Payment not found for order: ${payload.order_id}`,
+      );
+    }
+
+    const grossAmount = Number(payload.gross_amount);
+
+    if (!Number.isFinite(grossAmount) || grossAmount !== payment.amount) {
+      throw new PaymentValidationError(
+        "Callback gross amount does not match payment amount",
+      );
+    }
+
+    const resolution = resolveMidtransCallbackStatus(payload);
+
+    switch (resolution) {
+      case "paid": {
+        const updatedPayment = await this.markAsPaid({
+          id: payment.id,
+          externalReference: payload.order_id,
+          paidAt: parseMidtransTransactionTime(payload.transaction_time),
+        });
+
+        await this.bookingWriter.confirmIfPending(payment.bookingId);
+
+        return updatedPayment;
+      }
+      case "expired": {
+        const updatedPayment = await this.markAsExpired({ id: payment.id });
+
+        await this.bookingWriter.cancelIfPending(payment.bookingId);
+
+        return updatedPayment;
+      }
+      case "failed":
+        return this.markAsFailed({ id: payment.id });
+      case "pending":
+      case "ignored":
+      default:
+        return payment;
     }
   }
 
@@ -210,6 +277,7 @@ export function createPaymentService(prisma: PrismaClient): PaymentService {
   return new PaymentService({
     paymentRepository: new PaymentRepository(prisma),
     bookingReader: createPaymentBookingReader(prisma),
+    bookingWriter: createPaymentBookingWriter(prisma),
     paymentGateway: createMidtransGateway(),
   });
 }

@@ -39,3 +39,13 @@ export type CreatePaymentResult = {
   token: string;
   transactionId: string;
 };
+
+export type MidtransCallbackPayload = {
+  order_id: string;
+  status_code: string;
+  gross_amount: string;
+  signature_key: string;
+  transaction_status: string;
+  fraud_status?: string;
+  transaction_time?: string;
+};

@@ -51,6 +51,14 @@ export class PaymentRepository {
     });
   }
 
+  async findByExternalReference(
+    externalReference: string,
+  ): Promise<Payment | null> {
+    return this.prisma.payment.findFirst({
+      where: { externalReference },
+    });
+  }
+
   async update(input: UpdatePaymentInput): Promise<Payment> {
     return this.prisma.payment.update({
       where: { id: input.id },
