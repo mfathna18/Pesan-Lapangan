@@ -10,8 +10,28 @@ export type CourtForBooking = {
   };
 };
 
+export type CourtOption = {
+  id: string;
+  name: string;
+  sportType: string;
+};
+
 export class CourtRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  async findActiveCourts(): Promise<CourtOption[]> {
+    return this.prisma.court.findMany({
+      where: {
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        sportType: true,
+      },
+      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+    });
+  }
 
   async findActiveCourtWithGor(
     courtId: string,
