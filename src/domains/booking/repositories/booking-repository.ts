@@ -2,6 +2,7 @@ import type {
   CreateBookingInput,
   DeleteBookingInput,
   FindBookingByCourtAndDateInput,
+  ListBookingsInput,
   UpdateBookingStatusInput,
 } from "@/domains/booking/types";
 import type {
@@ -18,6 +19,39 @@ const bookingWithContactArgs = {
 
 export type BookingWithContact = Prisma.BookingGetPayload<
   typeof bookingWithContactArgs
+>;
+
+const bookingListArgs = {
+  include: {
+    contact: true,
+    payments: {
+      orderBy: {
+        createdAt: "desc" as const,
+      },
+    },
+  },
+} satisfies Prisma.BookingDefaultArgs;
+
+export type BookingWithContactAndPayments = Prisma.BookingGetPayload<
+  typeof bookingListArgs
+>;
+
+const bookingDetailArgs = {
+  include: {
+    contact: true,
+    payments: {
+      orderBy: {
+        createdAt: "desc" as const,
+      },
+      include: {
+        invoice: true,
+      },
+    },
+  },
+} satisfies Prisma.BookingDefaultArgs;
+
+export type BookingDetailRecord = Prisma.BookingGetPayload<
+  typeof bookingDetailArgs
 >;
 
 function startOfDay(date: Date): Date {
@@ -82,6 +116,49 @@ export class BookingRepository {
         startMinute: "asc",
       },
       ...bookingWithContactArgs,
+    });
+  }
+
+  async findManyWithFilters(input: ListBookingsInput): Promise<{
+    items: BookingWithContactAndPayments[];
+    total: number;
+  }> {
+    const where: Prisma.BookingWhereInput = {
+      ...(input.courtId ? { courtId: input.courtId } : {}),
+      ...(input.status ? { status: input.status } : {}),
+      ...(input.bookingDate
+        ? { bookingDate: startOfDay(input.bookingDate) }
+        : {}),
+      ...(input.bookingNumberSearch
+        ? {
+            bookingNumber: {
+              contains: input.bookingNumberSearch,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.booking.findMany({
+        where,
+        orderBy: {
+          createdAt: input.sort === "newest" ? "desc" : "asc",
+        },
+        skip: (input.page - 1) * input.pageSize,
+        take: input.pageSize,
+        ...bookingListArgs,
+      }),
+      this.prisma.booking.count({ where }),
+    ]);
+
+    return { items, total };
+  }
+
+  async findDetailById(id: string): Promise<BookingDetailRecord | null> {
+    return this.prisma.booking.findUnique({
+      where: { id },
+      ...bookingDetailArgs,
     });
   }
 
