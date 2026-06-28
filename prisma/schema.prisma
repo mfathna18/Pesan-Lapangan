@@ -121,8 +121,9 @@ model Court {
   sportType    SportType
   isActive     Boolean   @default(true)
   displayOrder Int       @default(0)
-  priceRules   PriceRule[]
-  bookings     Booking[]
+  priceRules       PriceRule[]
+  operatingHours   OperatingHours[]
+  bookings         Booking[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -151,6 +152,26 @@ model PriceRule {
   @@index([courtId, dayOfWeek, isActive])
   @@index([courtId, dayOfWeek, startMinute])
   @@map("price_rule")
+}
+
+// Court operating windows — time stored as minute of day (0–1439).
+
+model OperatingHours {
+  id          String   @id @default(cuid())
+  courtId     String
+  court       Court    @relation(fields: [courtId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courtId])
+  @@index([courtId, dayOfWeek])
+  @@index([courtId, dayOfWeek, isActive])
+  @@index([courtId, dayOfWeek, startMinute])
+  @@map("operating_hours")
 }
 
 // Existing reservations — read-only foundation for availability checks.
