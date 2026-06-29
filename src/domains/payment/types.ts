@@ -76,6 +76,7 @@ export type MidtransCallbackPayload = {
 };
 
 export type RevenueDashboardInput = {
+  ownerId: string;
   preset: RevenueDateRangePreset;
   customFrom?: Date;
   customTo?: Date;
@@ -114,6 +115,7 @@ export type RevenueDashboardData = {
 };
 
 export type RevenueDashboardQueryInput = {
+  ownerId: string;
   todayStart: Date;
   todayEnd: Date;
   monthStart: Date;

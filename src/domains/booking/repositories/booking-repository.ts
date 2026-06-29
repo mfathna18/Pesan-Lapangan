@@ -193,6 +193,11 @@ export class BookingRepository {
     total: number;
   }> {
     const where: Prisma.BookingWhereInput = {
+      court: {
+        gor: {
+          ownerId: input.ownerId,
+        },
+      },
       ...(input.courtId ? { courtId: input.courtId } : {}),
       ...(input.status ? { status: input.status } : {}),
       ...(input.bookingDate
@@ -224,9 +229,19 @@ export class BookingRepository {
     return { items, total };
   }
 
-  async findDetailById(id: string): Promise<BookingDetailRecord | null> {
-    return this.prisma.booking.findUnique({
-      where: { id },
+  async findDetailById(
+    id: string,
+    ownerId: string,
+  ): Promise<BookingDetailRecord | null> {
+    return this.prisma.booking.findFirst({
+      where: {
+        id,
+        court: {
+          gor: {
+            ownerId,
+          },
+        },
+      },
       ...bookingDetailArgs,
     });
   }
@@ -234,6 +249,12 @@ export class BookingRepository {
   async fetchAnalyticsSnapshot(
     input: AnalyticsDashboardQueryInput,
   ): Promise<AnalyticsSnapshotRecord> {
+    const ownerCourtFilter = {
+      gor: {
+        ownerId: input.ownerId,
+      },
+    };
+
     const [bookings, courts, operatingHours] = await Promise.all([
       this.prisma.booking.findMany({
         where: {
@@ -241,6 +262,7 @@ export class BookingRepository {
             gte: startOfDay(input.periodStart),
             lte: startOfDay(input.periodEnd),
           },
+          court: ownerCourtFilter,
         },
         select: {
           id: true,
@@ -263,6 +285,7 @@ export class BookingRepository {
       this.prisma.court.findMany({
         where: {
           isActive: true,
+          ...ownerCourtFilter,
         },
         select: {
           id: true,
@@ -273,6 +296,7 @@ export class BookingRepository {
       this.prisma.operatingHours.findMany({
         where: {
           isActive: true,
+          court: ownerCourtFilter,
         },
         select: {
           courtId: true,

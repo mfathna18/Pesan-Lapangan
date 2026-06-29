@@ -3,6 +3,7 @@ import {
   RevenueDashboard,
 } from "@/components/revenue/revenue-dashboard";
 import { getPaymentService } from "@/domains/payment/actions/get-payment-service";
+import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export const metadata = {
@@ -20,12 +21,14 @@ type DashboardPageProps = {
 export default async function DashboardPage({
   searchParams,
 }: DashboardPageProps) {
-  await requireOwnerSession();
+  const session = await requireOwnerSession();
+  const ownerId = await requireOwnerId(session.user.id);
 
   const resolvedSearchParams = await searchParams;
-  const revenueData = await getPaymentService().getRevenueDashboard(
-    buildRevenueDashboardInput(resolvedSearchParams),
-  );
+  const revenueData = await getPaymentService().getRevenueDashboard({
+    ownerId,
+    ...buildRevenueDashboardInput(resolvedSearchParams),
+  });
 
   return (
     <RevenueDashboard data={revenueData} searchParams={resolvedSearchParams} />

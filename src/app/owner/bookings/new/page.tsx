@@ -1,20 +1,28 @@
 import { BookingForm } from "@/components/booking/booking-form";
 import { SubscriptionExpiredBlock } from "@/components/subscription/subscription-expired-block";
 import { getCourtRepository } from "@/domains/booking/actions/get-court-repository";
-import { getOwnerSubscriptionAccess } from "@/domains/subscription/guards/subscription-guard";
+import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
+import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "New Booking",
+};
+
 export default async function OwnerNewBookingPage() {
-  await requireOwnerSession();
-  const { access } = await getOwnerSubscriptionAccess();
+  const session = await requireOwnerSession();
+  const access = await getSubscriptionService().getSubscriptionAccess(
+    session.user.id,
+  );
 
   if (!access.canUseOwnerFeatures) {
     return <SubscriptionExpiredBlock />;
   }
 
-  const courts = await getCourtRepository().findActiveCourts();
+  const ownerId = await requireOwnerId(session.user.id);
+  const courts = await getCourtRepository().findActiveCourtsByOwnerId(ownerId);
 
   return (
     <main className="min-h-screen px-4 py-8 sm:px-6 lg:px-8">

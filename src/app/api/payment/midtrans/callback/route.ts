@@ -13,6 +13,7 @@ import {
   SubscriptionPaymentNotFoundError,
 } from "@/domains/subscription/errors";
 import { prisma } from "@/lib/db/prisma";
+import { logServerError } from "@/lib/server/logger";
 
 function isMidtransCallbackPayload(
   value: unknown,
@@ -83,8 +84,8 @@ export async function POST(request: Request) {
           );
         }
 
-        console.error(
-          "Subscription Midtrans callback failed:",
+        logServerError(
+          "Subscription Midtrans callback failed",
           subscriptionError,
         );
 
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 422 });
     }
 
-    console.error("Midtrans callback failed:", error);
+    logServerError("Midtrans callback failed", error);
 
     return NextResponse.json(
       { error: "Failed to process Midtrans callback" },

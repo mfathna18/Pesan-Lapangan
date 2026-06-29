@@ -12,12 +12,13 @@ import {
 } from "@/domains/booking/actions/types";
 import { BookingNotFoundError } from "@/domains/booking/errors";
 import type { BookingDetail } from "@/domains/booking/types";
+import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export async function getBookingDetailAction(
   input: unknown,
 ): Promise<ActionResponse<BookingDetail>> {
-  await requireOwnerSession();
+  const session = await requireOwnerSession();
 
   const parsed = getBookingDetailSchema.safeParse(input);
 
@@ -26,7 +27,11 @@ export async function getBookingDetailAction(
   }
 
   try {
-    const detail = await getBookingService().getBookingDetail(parsed.data.id);
+    const ownerId = await requireOwnerId(session.user.id);
+    const detail = await getBookingService().getBookingDetail(
+      parsed.data.id,
+      ownerId,
+    );
 
     return actionSuccess(detail);
   } catch (error) {

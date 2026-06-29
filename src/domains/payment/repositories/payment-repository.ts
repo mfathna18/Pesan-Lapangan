@@ -83,6 +83,15 @@ export class PaymentRepository {
   ): Promise<RevenueSnapshotRecord> {
     const paidStatusFilter = { status: PAYMENT_STATUS.PAID } as const;
     const pendingStatusFilter = { status: PAYMENT_STATUS.PENDING } as const;
+    const ownerPaymentFilter = {
+      booking: {
+        court: {
+          gor: {
+            ownerId: input.ownerId,
+          },
+        },
+      },
+    };
 
     const [
       todayAggregate,
@@ -95,6 +104,7 @@ export class PaymentRepository {
       this.prisma.payment.aggregate({
         where: {
           ...paidStatusFilter,
+          ...ownerPaymentFilter,
           paidAt: {
             gte: input.todayStart,
             lte: input.todayEnd,
@@ -107,6 +117,7 @@ export class PaymentRepository {
       this.prisma.payment.aggregate({
         where: {
           ...paidStatusFilter,
+          ...ownerPaymentFilter,
           paidAt: {
             gte: input.monthStart,
             lte: input.monthEnd,
@@ -117,14 +128,21 @@ export class PaymentRepository {
         },
       }),
       this.prisma.payment.count({
-        where: paidStatusFilter,
+        where: {
+          ...paidStatusFilter,
+          ...ownerPaymentFilter,
+        },
       }),
       this.prisma.payment.count({
-        where: pendingStatusFilter,
+        where: {
+          ...pendingStatusFilter,
+          ...ownerPaymentFilter,
+        },
       }),
       this.prisma.payment.findMany({
         where: {
           ...paidStatusFilter,
+          ...ownerPaymentFilter,
           paidAt: {
             gte: input.monthStart,
             lte: input.monthEnd,
@@ -137,6 +155,7 @@ export class PaymentRepository {
       }),
       this.prisma.payment.findMany({
         where: {
+          ...ownerPaymentFilter,
           createdAt: {
             gte: input.rangeFrom,
             lte: input.rangeTo,

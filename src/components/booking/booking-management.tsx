@@ -63,6 +63,9 @@ export function BookingManagement() {
   const [filters, setFilters] = useState<BookingFiltersState>(initialFilters);
   const [filterOptions, setFilterOptions] =
     useState<BookingFilterOptions | null>(null);
+  const [filterOptionsError, setFilterOptionsError] = useState<string | null>(
+    null,
+  );
   const [listResult, setListResult] = useState<ListBookingsResult | null>(null);
   const [listError, setListError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -79,7 +82,11 @@ export function BookingManagement() {
     void getBookingFilterOptionsAction().then((response) => {
       if (response.success) {
         setFilterOptions(response.data);
+        setFilterOptionsError(null);
+        return;
       }
+
+      setFilterOptionsError(response.error);
     });
   }, []);
 
@@ -160,6 +167,11 @@ export function BookingManagement() {
             <CardTitle>Filters</CardTitle>
           </CardHeader>
           <CardContent>
+            {filterOptionsError ? (
+              <p className="text-destructive mb-4 text-sm" role="alert">
+                {filterOptionsError}
+              </p>
+            ) : null}
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <div className="space-y-2">
                 <Label htmlFor="booking-date">Date</Label>

@@ -130,9 +130,9 @@ export class PaymentService {
       throw new PaymentInvalidSignatureError();
     }
 
-    const payment = await this.paymentRepository.findByExternalReference(
-      payload.order_id,
-    );
+    const payment =
+      (await this.paymentRepository.findById(payload.order_id)) ??
+      (await this.paymentRepository.findByExternalReference(payload.order_id));
 
     if (!payment) {
       throw new PaymentNotFoundError(
@@ -207,6 +207,7 @@ export class PaymentService {
     );
 
     const snapshot = await this.paymentRepository.fetchRevenueSnapshot({
+      ownerId: input.ownerId,
       todayStart,
       todayEnd,
       monthStart,

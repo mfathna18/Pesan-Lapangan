@@ -37,6 +37,7 @@ export type FindBookingByCourtAndDateInput = {
 };
 
 export type ListBookingsInput = {
+  ownerId: string;
   page: number;
   pageSize: number;
   sort: "newest" | "oldest";
@@ -122,6 +123,7 @@ export type BookingFilterOptions = {
 };
 
 export type AnalyticsDashboardQueryInput = {
+  ownerId: string;
   periodStart: Date;
   periodEnd: Date;
 };

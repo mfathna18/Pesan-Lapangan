@@ -14,12 +14,13 @@ import type {
   BookingFilterOptions,
   ListBookingsResult,
 } from "@/domains/booking/types";
+import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export async function listBookingsAction(
   input: unknown,
 ): Promise<ActionResponse<ListBookingsResult>> {
-  await requireOwnerSession();
+  const session = await requireOwnerSession();
 
   const parsed = listBookingsSchema.safeParse(input);
 
@@ -28,7 +29,9 @@ export async function listBookingsAction(
   }
 
   try {
+    const ownerId = await requireOwnerId(session.user.id);
     const result = await getBookingService().listBookings({
+      ownerId,
       page: parsed.data.page,
       pageSize: parsed.data.pageSize,
       sort: parsed.data.sort,
@@ -49,10 +52,11 @@ export async function listBookingsAction(
 export async function getBookingFilterOptionsAction(): Promise<
   ActionResponse<BookingFilterOptions>
 > {
-  await requireOwnerSession();
+  const session = await requireOwnerSession();
 
   try {
-    const options = await getBookingService().getFilterOptions();
+    const ownerId = await requireOwnerId(session.user.id);
+    const options = await getBookingService().getFilterOptions(ownerId);
 
     return actionSuccess(options);
   } catch {

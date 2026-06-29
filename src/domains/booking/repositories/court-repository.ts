@@ -48,6 +48,40 @@ export class CourtRepository {
     });
   }
 
+  async findActiveCourtsByOwnerId(ownerId: string): Promise<CourtOption[]> {
+    return this.prisma.court.findMany({
+      where: {
+        isActive: true,
+        gor: {
+          ownerId,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        sportType: true,
+      },
+      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+    });
+  }
+
+  async isCourtOwnedByOwner(
+    courtId: string,
+    ownerId: string,
+  ): Promise<boolean> {
+    const court = await this.prisma.court.findFirst({
+      where: {
+        id: courtId,
+        gor: {
+          ownerId,
+        },
+      },
+      select: { id: true },
+    });
+
+    return court !== null;
+  }
+
   async findPublicCourtsByGorId(gorId: string): Promise<PublicCourtRecord[]> {
     return this.prisma.court.findMany({
       where: { gorId },

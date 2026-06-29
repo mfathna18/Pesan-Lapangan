@@ -132,8 +132,8 @@ export class BookingService {
     };
   }
 
-  async getBookingDetail(id: string): Promise<BookingDetail> {
-    const booking = await this.bookingRepository.findDetailById(id);
+  async getBookingDetail(id: string, ownerId: string): Promise<BookingDetail> {
+    const booking = await this.bookingRepository.findDetailById(id, ownerId);
 
     if (!booking) {
       throw new BookingNotFoundError(`Booking not found: ${id}`);
@@ -142,19 +142,22 @@ export class BookingService {
     return this.toBookingDetail(booking);
   }
 
-  async getFilterOptions(): Promise<BookingFilterOptions> {
-    const courts = await this.courtRepository.findActiveCourts();
+  async getFilterOptions(ownerId: string): Promise<BookingFilterOptions> {
+    const courts =
+      await this.courtRepository.findActiveCourtsByOwnerId(ownerId);
 
     return { courts };
   }
 
   async getAnalyticsDashboard(
+    ownerId: string,
     referenceDate: Date = new Date(),
   ): Promise<AnalyticsDashboardData> {
     const periodStart = startOfMonth(referenceDate);
     const periodEnd = endOfMonth(referenceDate);
 
     const snapshot = await this.bookingRepository.fetchAnalyticsSnapshot({
+      ownerId,
       periodStart,
       periodEnd,
     });
