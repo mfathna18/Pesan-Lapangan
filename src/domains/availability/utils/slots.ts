@@ -12,7 +12,7 @@ import {
   intervalsOverlap,
 } from "@/domains/availability/utils/time-interval";
 
-export function buildAvailabilitySlots(
+export function buildAvailabilitySlotGrid(
   operatingHours: OperatingHoursWindow[],
   priceRules: PriceRuleWindow[],
   existingBookings: TimeInterval[],
@@ -32,17 +32,25 @@ export function buildAvailabilitySlots(
       intervalsOverlap(slot, booking),
     );
 
-    if (isBooked) {
-      return [];
-    }
-
     return [
       {
         startMinute: slot.startMinute,
         endMinute: slot.endMinute,
         price,
-        available: true,
+        available: !isBooked,
       },
     ];
   });
+}
+
+export function buildAvailabilitySlots(
+  operatingHours: OperatingHoursWindow[],
+  priceRules: PriceRuleWindow[],
+  existingBookings: TimeInterval[],
+): AvailabilitySlot[] {
+  return buildAvailabilitySlotGrid(
+    operatingHours,
+    priceRules,
+    existingBookings,
+  ).filter((slot) => slot.available);
 }

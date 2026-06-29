@@ -10,6 +10,22 @@ export {
   AvailabilityService,
   createAvailabilityService,
 } from "./services/availability-service";
+export { getAvailabilityService } from "./actions/get-availability-service";
+export { getCourtAvailabilityAction } from "./actions/get-court-availability.action";
+export {
+  getCourtAvailabilitySchema,
+  formatZodError as formatAvailabilityZodError,
+} from "./actions/schemas";
+export type { GetCourtAvailabilityActionInput } from "./actions/schemas";
+export {
+  actionFailure as availabilityActionFailure,
+  actionSuccess as availabilityActionSuccess,
+} from "./actions/types";
+export type {
+  ActionFailure as AvailabilityActionFailure,
+  ActionResponse as AvailabilityActionResponse,
+  ActionSuccess as AvailabilityActionSuccess,
+} from "./actions/types";
 export type {
   AvailabilitySlot,
   AvailableSlot,
@@ -25,7 +41,10 @@ export {
   mapOperatingHoursForDay,
   resolveSlotPrice,
 } from "./utils/operating-hours";
-export { buildAvailabilitySlots } from "./utils/slots";
+export {
+  buildAvailabilitySlotGrid,
+  buildAvailabilitySlots,
+} from "./utils/slots";
 export {
   dedupeSlotsByStartMinute,
   excludeOverlappingSlots,

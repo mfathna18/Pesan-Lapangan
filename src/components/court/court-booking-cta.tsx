@@ -1,8 +1,14 @@
+import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function CourtBookingCta() {
+type CourtBookingCtaProps = {
+  bookingHref: string;
+};
+
+export function CourtBookingCta({ bookingHref }: CourtBookingCtaProps) {
   return (
     <section className="px-4 pb-16 sm:px-6">
       <div className="mx-auto max-w-6xl">
@@ -12,13 +18,17 @@ export function CourtBookingCta() {
               Siap Memesan Lapangan?
             </h2>
             <p className="text-primary-foreground/85 text-sm sm:text-base">
-              Pilih waktu booking yang sesuai. Fitur pemesanan akan segera
-              hadir.
+              Pilih tanggal dan waktu booking yang sesuai untuk melanjutkan.
             </p>
-            <Button type="button" size="lg" variant="secondary" disabled>
+            <Link
+              href={bookingHref}
+              className={cn(
+                buttonVariants({ size: "lg", variant: "secondary" }),
+              )}
+            >
               <CalendarClock className="size-4" />
               Pilih Waktu Booking
-            </Button>
+            </Link>
           </div>
         </div>
       </div>

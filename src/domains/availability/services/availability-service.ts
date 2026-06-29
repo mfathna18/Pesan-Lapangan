@@ -12,7 +12,7 @@ import {
   mapActivePriceRulesForDay,
   mapOperatingHoursForDay,
 } from "@/domains/availability/utils/operating-hours";
-import { buildAvailabilitySlots } from "@/domains/availability/utils/slots";
+import { buildAvailabilitySlotGrid } from "@/domains/availability/utils/slots";
 import { getDayOfWeek } from "@/domains/availability/utils/time-interval";
 import {
   CourtRepository,
@@ -50,7 +50,7 @@ export class AvailabilityService {
     this.bookingReader = bookingReader;
   }
 
-  async getAvailableSlots(
+  async getSlotGrid(
     params: GetAvailabilityParams,
   ): Promise<AvailabilitySlot[]> {
     const court = await this.courtRepository.findActiveCourtWithGor(
@@ -77,11 +77,19 @@ export class AvailabilityService {
     const operatingWindows = mapOperatingHoursForDay(operatingHours, dayOfWeek);
     const pricedWindows = mapActivePriceRulesForDay(priceRules, dayOfWeek);
 
-    return buildAvailabilitySlots(
+    return buildAvailabilitySlotGrid(
       operatingWindows,
       pricedWindows,
       existingBookings,
     );
+  }
+
+  async getAvailableSlots(
+    params: GetAvailabilityParams,
+  ): Promise<AvailabilitySlot[]> {
+    const slots = await this.getSlotGrid(params);
+
+    return slots.filter((slot) => slot.available);
   }
 }
 

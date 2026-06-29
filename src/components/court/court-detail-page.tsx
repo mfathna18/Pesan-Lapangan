@@ -46,7 +46,9 @@ export function CourtDetailPage({ court }: CourtDetailPageProps) {
 
         <CourtOperatingHoursSection openHours={court.openHours} />
         <CourtFacilitiesSection facilities={court.facilities} />
-        <CourtBookingCta />
+        <CourtBookingCta
+          bookingHref={`/gor/${court.gor.slug}/court/${court.id}/booking`}
+        />
       </main>
     </div>
   );
