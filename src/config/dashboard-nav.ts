@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   MapPin,
   Settings,
+  Sparkles,
   Tags,
   type LucideIcon,
 } from "lucide-react";
@@ -57,6 +58,11 @@ export const dashboardNavItems: DashboardNavItem[] = [
     title: "Invoices",
     href: "/dashboard/invoices",
     icon: FileText,
+  },
+  {
+    title: "Subscription",
+    href: "/dashboard/subscription",
+    icon: Sparkles,
   },
   {
     title: "Settings",

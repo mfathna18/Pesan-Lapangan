@@ -81,14 +81,44 @@ model Verification {
 // Owner domain profile linked to Better Auth user (1:1).
 
 model Owner {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gor       Gor?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String        @id @default(cuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gor          Gor?
+  subscription Subscription?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@map("owner")
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  GRACE_PERIOD
+  EXPIRED
+  CANCELLED
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+}
+
+model Subscription {
+  id         String             @id @default(cuid())
+  ownerId    String             @unique
+  owner      Owner              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  plan       SubscriptionPlan   @default(FREE)
+  status     SubscriptionStatus @default(TRIAL)
+  startsAt   DateTime           @default(now())
+  expiresAt  DateTime?
+  graceUntil DateTime?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@map("subscription")
 }
 
 // GOR (sports venue) — one per owner/user, many courts.
