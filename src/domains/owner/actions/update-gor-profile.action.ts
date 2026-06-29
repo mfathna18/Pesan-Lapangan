@@ -17,6 +17,10 @@ import {
 } from "@/domains/owner/errors";
 import type { GorProfileData } from "@/domains/owner/types";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function updateGorProfileAction(
   input: unknown,
@@ -37,18 +41,13 @@ export async function updateGorProfileAction(
 
     return actionSuccess(profile);
   } catch (error) {
-    if (error instanceof OwnerNotFoundError) {
-      return actionFailure(error.message);
-    }
-
-    if (error instanceof GorProfileValidationError) {
-      return actionFailure(error.message);
-    }
-
-    if (error instanceof GorSlugConflictError) {
-      return actionFailure(error.message);
-    }
-
-    return actionFailure("Failed to save GOR profile.");
+    return handleServerActionError("updateGorProfileAction", error, {
+      fallbackMessage: "Failed to save GOR profile.",
+      knownErrors: [
+        createKnownActionError(OwnerNotFoundError),
+        createKnownActionError(GorProfileValidationError),
+        createKnownActionError(GorSlugConflictError),
+      ],
+    });
   }
 }

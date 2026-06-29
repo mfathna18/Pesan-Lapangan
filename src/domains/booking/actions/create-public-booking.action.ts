@@ -2,6 +2,7 @@
 
 import { getAvailabilityService } from "@/domains/availability/actions/get-availability-service";
 import { getBookingService } from "@/domains/booking/actions/get-booking-service";
+import { getCourtService } from "@/domains/booking/actions/get-court-service";
 import {
   createPublicBookingSchema,
   formatZodError,
@@ -12,16 +13,19 @@ import {
   type ActionResponse,
 } from "@/domains/booking/actions/types";
 import {
-  BOOKING_SLOT_UNAVAILABLE_MESSAGE,
   BOOKING_DURATION_INTERVAL_MINUTES,
+  BOOKING_SLOT_UNAVAILABLE_MESSAGE,
 } from "@/domains/booking/constants";
 import {
   BookingValidationError,
   CourtNotFoundError,
 } from "@/domains/booking/errors";
 import type { BookingWithContact } from "@/domains/booking/repositories/booking-repository";
-import { getCourtService } from "@/domains/booking/actions/get-court-service";
 import { SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE } from "@/domains/subscription/constants";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 function isSlotStillAvailable(
   slots: Awaited<
@@ -32,6 +36,18 @@ function isSlotStillAvailable(
   return slots.some(
     (slot) => slot.startMinute === startMinute && slot.available,
   );
+}
+
+function mapBookingValidationError(error: BookingValidationError): string {
+  if (
+    error.message.includes("price rule") ||
+    error.message.includes("unavailable") ||
+    error.message === SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE
+  ) {
+    return BOOKING_SLOT_UNAVAILABLE_MESSAGE;
+  }
+
+  return error.message;
 }
 
 export async function createPublicBookingAction(
@@ -49,11 +65,19 @@ export async function createPublicBookingAction(
       parsed.data.courtId,
     );
   } catch (error) {
-    if (error instanceof CourtNotFoundError) {
-      return actionFailure("Lapangan tidak ditemukan.");
-    }
-
-    return actionFailure("Gagal memuat lapangan.");
+    return handleServerActionError(
+      "createPublicBookingAction.loadCourt",
+      error,
+      {
+        fallbackMessage: "Gagal memuat lapangan.",
+        knownErrors: [
+          createKnownActionError(
+            CourtNotFoundError,
+            "Lapangan tidak ditemukan.",
+          ),
+        ],
+      },
+    );
   }
 
   const bookingDate = new Date(`${parsed.data.bookingDate}T00:00:00`);
@@ -86,18 +110,13 @@ export async function createPublicBookingAction(
 
     return actionSuccess(booking);
   } catch (error) {
-    if (error instanceof BookingValidationError) {
-      if (
-        error.message.includes("price rule") ||
-        error.message.includes("unavailable") ||
-        error.message === SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE
-      ) {
-        return actionFailure(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
-      }
-
-      return actionFailure(error.message);
-    }
-
-    return actionFailure("Gagal membuat booking.");
+    return handleServerActionError("createPublicBookingAction.create", error, {
+      fallbackMessage: "Gagal membuat booking.",
+      knownErrors: [
+        createKnownActionError(BookingValidationError, (validationError) =>
+          mapBookingValidationError(validationError),
+        ),
+      ],
+    });
   }
 }

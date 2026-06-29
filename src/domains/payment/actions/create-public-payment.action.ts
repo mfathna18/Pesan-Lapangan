@@ -19,6 +19,10 @@ import {
   PublicCheckoutNotFoundError,
 } from "@/domains/payment/errors";
 import type { CreatePaymentResult } from "@/domains/payment/types";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function createPublicPaymentAction(
   input: unknown,
@@ -51,24 +55,23 @@ export async function createPublicPaymentAction(
 
     return actionSuccess(payment);
   } catch (error) {
-    if (error instanceof PublicCheckoutNotFoundError) {
-      return actionFailure("Booking checkout tidak ditemukan.");
-    }
-
-    if (error instanceof BookingNotFoundForPaymentError) {
-      return actionFailure("Booking tidak ditemukan.");
-    }
-
-    if (error instanceof PaymentValidationError) {
-      return actionFailure(error.message);
-    }
-
-    if (error instanceof PaymentGatewayError) {
-      return actionFailure(
-        "Gagal membuat pembayaran. Silakan coba lagi dalam beberapa saat.",
-      );
-    }
-
-    return actionFailure("Gagal memproses pembayaran.");
+    return handleServerActionError("createPublicPaymentAction", error, {
+      fallbackMessage: "Gagal memproses pembayaran.",
+      knownErrors: [
+        createKnownActionError(
+          PublicCheckoutNotFoundError,
+          "Booking checkout tidak ditemukan.",
+        ),
+        createKnownActionError(
+          BookingNotFoundForPaymentError,
+          "Booking tidak ditemukan.",
+        ),
+        createKnownActionError(PaymentValidationError),
+        createKnownActionError(
+          PaymentGatewayError,
+          "Gagal membuat pembayaran. Silakan coba lagi dalam beberapa saat.",
+        ),
+      ],
+    });
   }
 }

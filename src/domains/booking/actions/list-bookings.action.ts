@@ -16,6 +16,7 @@ import type {
 } from "@/domains/booking/types";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import { handleServerActionError } from "@/lib/server/actions";
 
 export async function listBookingsAction(
   input: unknown,
@@ -44,8 +45,10 @@ export async function listBookingsAction(
     });
 
     return actionSuccess(result);
-  } catch {
-    return actionFailure("Failed to load bookings.");
+  } catch (error) {
+    return handleServerActionError("listBookingsAction", error, {
+      fallbackMessage: "Failed to load bookings.",
+    });
   }
 }
 
@@ -59,7 +62,9 @@ export async function getBookingFilterOptionsAction(): Promise<
     const options = await getBookingService().getFilterOptions(ownerId);
 
     return actionSuccess(options);
-  } catch {
-    return actionFailure("Failed to load booking filters.");
+  } catch (error) {
+    return handleServerActionError("getBookingFilterOptionsAction", error, {
+      fallbackMessage: "Failed to load booking filters.",
+    });
   }
 }

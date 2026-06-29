@@ -1,5 +1,6 @@
 "use server";
 
+import { PaymentGatewayError } from "@/domains/payment/errors";
 import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
 import {
   createSubscriptionPaymentSchema,
@@ -15,8 +16,11 @@ import {
   SubscriptionBillingValidationError,
 } from "@/domains/subscription/errors";
 import type { CreateSubscriptionPaymentResult } from "@/domains/subscription/types";
-import { PaymentGatewayError } from "@/domains/payment/errors";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function createSubscriptionPaymentAction(
   input: unknown,
@@ -36,20 +40,19 @@ export async function createSubscriptionPaymentAction(
 
     return actionSuccess(payment);
   } catch (error) {
-    if (error instanceof OwnerSubscriptionNotFoundError) {
-      return actionFailure("Akun owner tidak ditemukan.");
-    }
-
-    if (error instanceof SubscriptionBillingValidationError) {
-      return actionFailure(error.message);
-    }
-
-    if (error instanceof PaymentGatewayError) {
-      return actionFailure(
-        "Gagal membuat pembayaran. Silakan coba lagi dalam beberapa saat.",
-      );
-    }
-
-    return actionFailure("Gagal memproses pembayaran langganan.");
+    return handleServerActionError("createSubscriptionPaymentAction", error, {
+      fallbackMessage: "Gagal memproses pembayaran langganan.",
+      knownErrors: [
+        createKnownActionError(
+          OwnerSubscriptionNotFoundError,
+          "Akun owner tidak ditemukan.",
+        ),
+        createKnownActionError(SubscriptionBillingValidationError),
+        createKnownActionError(
+          PaymentGatewayError,
+          "Gagal membuat pembayaran. Silakan coba lagi dalam beberapa saat.",
+        ),
+      ],
+    });
   }
 }

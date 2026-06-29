@@ -13,6 +13,10 @@ import {
 import type { AvailabilitySlot } from "@/domains/availability/types";
 import { getCourtService } from "@/domains/booking/actions/get-court-service";
 import { CourtNotFoundError } from "@/domains/booking/errors";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function getCourtAvailabilityAction(
   input: unknown,
@@ -29,11 +33,16 @@ export async function getCourtAvailabilityAction(
       parsed.data.courtId,
     );
   } catch (error) {
-    if (error instanceof CourtNotFoundError) {
-      return actionFailure("Court not found.");
-    }
-
-    return actionFailure("Failed to load court.");
+    return handleServerActionError(
+      "getCourtAvailabilityAction.loadCourt",
+      error,
+      {
+        fallbackMessage: "Failed to load court.",
+        knownErrors: [
+          createKnownActionError(CourtNotFoundError, "Court not found."),
+        ],
+      },
+    );
   }
 
   const bookingDate = new Date(`${parsed.data.bookingDate}T00:00:00`);
@@ -49,7 +58,13 @@ export async function getCourtAvailabilityAction(
     });
 
     return actionSuccess(slots);
-  } catch {
-    return actionFailure("Failed to load availability.");
+  } catch (error) {
+    return handleServerActionError(
+      "getCourtAvailabilityAction.loadAvailability",
+      error,
+      {
+        fallbackMessage: "Failed to load availability.",
+      },
+    );
   }
 }

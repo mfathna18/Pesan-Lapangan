@@ -14,6 +14,10 @@ import { BookingNotFoundError } from "@/domains/booking/errors";
 import type { BookingDetail } from "@/domains/booking/types";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function getBookingDetailAction(
   input: unknown,
@@ -35,10 +39,9 @@ export async function getBookingDetailAction(
 
     return actionSuccess(detail);
   } catch (error) {
-    if (error instanceof BookingNotFoundError) {
-      return actionFailure(error.message);
-    }
-
-    return actionFailure("Failed to load booking detail.");
+    return handleServerActionError("getBookingDetailAction", error, {
+      fallbackMessage: "Failed to load booking detail.",
+      knownErrors: [createKnownActionError(BookingNotFoundError)],
+    });
   }
 }

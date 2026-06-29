@@ -17,6 +17,10 @@ import { getSubscriptionService } from "@/domains/subscription/actions/get-subsc
 import { SubscriptionAccessDeniedError } from "@/domains/subscription/errors";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  createKnownActionError,
+  handleServerActionError,
+} from "@/lib/server/actions";
 
 export async function createBookingAction(
   input: unknown,
@@ -47,14 +51,12 @@ export async function createBookingAction(
 
     return actionSuccess(booking);
   } catch (error) {
-    if (error instanceof SubscriptionAccessDeniedError) {
-      return actionFailure(error.message);
-    }
-
-    if (error instanceof BookingValidationError) {
-      return actionFailure(error.message);
-    }
-
-    return actionFailure("Failed to create booking.");
+    return handleServerActionError("createBookingAction", error, {
+      fallbackMessage: "Failed to create booking.",
+      knownErrors: [
+        createKnownActionError(SubscriptionAccessDeniedError),
+        createKnownActionError(BookingValidationError),
+      ],
+    });
   }
 }
