@@ -1,3 +1,4 @@
+import { createOperatingHoursRepository } from "@/domains/availability/repositories/operating-hours-repository";
 import { GorNotFoundError } from "@/domains/owner/errors";
 import type { GorService } from "@/domains/owner/services/gor-service";
 import type { CourtService } from "@/domains/booking/services/court-service";
@@ -5,6 +6,7 @@ import { VenueNotFoundError } from "@/domains/venue/errors";
 import type { PublicVenueData } from "@/domains/venue/types";
 import { mapGorAndCourtsToPublicVenue } from "@/domains/venue/utils/venue-mapper";
 import { createCourtRepository } from "@/domains/booking/repositories/court-repository";
+import { createPriceRuleRepository } from "@/domains/booking/repositories/price-rule-repository";
 import { createCourtService } from "@/domains/booking/services/court-service";
 import { createGorRepository } from "@/domains/owner/repositories/gor-repository";
 import { createGorService } from "@/domains/owner/services/gor-service";
@@ -46,6 +48,10 @@ export function createVenueService(prisma: PrismaClient): VenueService {
 
   return new VenueService({
     gorService: createGorService(gorRepository),
-    courtService: createCourtService(courtRepository),
+    courtService: createCourtService({
+      courtRepository,
+      operatingHoursRepository: createOperatingHoursRepository(prisma),
+      priceRuleRepository: createPriceRuleRepository(prisma),
+    }),
   });
 }

@@ -70,6 +70,23 @@ export class PriceRuleRepository {
       },
     });
   }
+
+  async findActiveByCourt(courtId: string): Promise<ActivePriceRule[]> {
+    return this.prisma.priceRule.findMany({
+      where: {
+        courtId,
+        isActive: true,
+      },
+      select: {
+        dayOfWeek: true,
+        startMinute: true,
+        endMinute: true,
+        price: true,
+        isActive: true,
+      },
+      orderBy: [{ dayOfWeek: "asc" }, { startMinute: "asc" }],
+    });
+  }
 }
 
 export function createPriceRuleRepository(

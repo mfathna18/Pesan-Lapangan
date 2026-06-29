@@ -196,3 +196,45 @@ export type AnalyticsDashboardData = {
     to: string;
   };
 };
+
+export type PublicCourtOpenHours = {
+  dayOfWeek: number;
+  dayLabel: string;
+  hours: string;
+};
+
+import type { CourtFacility } from "@/generated/prisma/client";
+
+export type PublicCourtDetailRecord = {
+  id: string;
+  name: string;
+  sportType: string;
+  description: string | null;
+  imageUrls: string[];
+  facilities: CourtFacility[];
+  gor: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+};
+
+export type PublicCourtDetailData = {
+  id: string;
+  name: string;
+  sportType: string;
+  sportLabel: string;
+  description: string | null;
+  imageUrls: string[];
+  facilities: {
+    type: string;
+    label: string;
+  }[];
+  startingPrice: number | null;
+  openHours: PublicCourtOpenHours[];
+  gor: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+};

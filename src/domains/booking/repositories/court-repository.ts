@@ -1,3 +1,4 @@
+import type { PublicCourtDetailRecord } from "@/domains/booking/types";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 export type CourtForBooking = {
@@ -69,6 +70,43 @@ export class CourtRepository {
       },
       orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
     });
+  }
+
+  async findPublicCourtDetailByGorSlug(
+    courtId: string,
+    gorSlug: string,
+  ): Promise<PublicCourtDetailRecord | null> {
+    const court = await this.prisma.court.findFirst({
+      where: {
+        id: courtId,
+        isActive: true,
+        gor: {
+          slug: gorSlug,
+          isActive: true,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        sportType: true,
+        description: true,
+        imageUrls: true,
+        facilities: true,
+        gor: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!court?.gor) {
+      return null;
+    }
+
+    return court;
   }
 
   async findActiveCourtWithGor(

@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { CalendarDays } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,13 +10,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import type { PublicVenueCourt } from "@/domains/venue/types";
 
 type VenueCourtsSectionProps = {
+  gorSlug: string;
   courts: PublicVenueCourt[];
 };
 
-export function VenueCourtsSection({ courts }: VenueCourtsSectionProps) {
+export function VenueCourtsSection({
+  gorSlug,
+  courts,
+}: VenueCourtsSectionProps) {
   return (
     <section className="bg-muted/40 px-4 py-12 sm:px-6">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -48,16 +54,16 @@ export function VenueCourtsSection({ courts }: VenueCourtsSectionProps) {
                   <CardDescription>{court.sportLabel}</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full"
-                    disabled
-                    aria-disabled="true"
+                  <Link
+                    href={`/gor/${gorSlug}/court/${court.id}`}
+                    className={cn(
+                      buttonVariants({ variant: "outline" }),
+                      "w-full",
+                    )}
                   >
                     <CalendarDays className="size-4" />
                     Lihat Jadwal
-                  </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

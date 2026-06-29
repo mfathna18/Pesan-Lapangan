@@ -11,3 +11,10 @@ export class BookingNotFoundError extends Error {
     this.name = "BookingNotFoundError";
   }
 }
+
+export class CourtNotFoundError extends Error {
+  constructor(message = "Court not found.") {
+    super(message);
+    this.name = "CourtNotFoundError";
+  }
+}

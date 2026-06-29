@@ -17,7 +17,7 @@ export function VenuePage({ venue }: VenuePageProps) {
         <VenueHero venue={venue} />
         <VenueOpenHoursSection openHours={venue.openHours} />
         <VenueSportsSection sports={venue.sports} />
-        <VenueCourtsSection courts={venue.courts} />
+        <VenueCourtsSection gorSlug={venue.slug} courts={venue.courts} />
       </main>
     </div>
   );

@@ -15,6 +15,16 @@ export const BOOKING_LIST_SORT = {
 
 export const ANALYTICS_TOP_COURTS_LIMIT = 10 as const;
 
+export const COURT_FACILITY_LABELS = {
+  PARKING: "Parkir",
+  TOILET: "Toilet",
+  SHOWER: "Shower",
+  CHANGING_ROOM: "Ruang Ganti",
+  CAFETERIA: "Kantin",
+  PRAYER_ROOM: "Mushola",
+  OTHER: "Lainnya",
+} as const;
+
 export const DAY_OF_WEEK_LABELS = [
   "Sunday",
   "Monday",

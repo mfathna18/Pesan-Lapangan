@@ -25,6 +25,22 @@ export class OperatingHoursRepository {
       },
     });
   }
+
+  async findActiveByCourt(courtId: string): Promise<OperatingHoursRecord[]> {
+    return this.prisma.operatingHours.findMany({
+      where: {
+        courtId,
+        isActive: true,
+      },
+      select: {
+        dayOfWeek: true,
+        startMinute: true,
+        endMinute: true,
+        isActive: true,
+      },
+      orderBy: [{ dayOfWeek: "asc" }, { startMinute: "asc" }],
+    });
+  }
 }
 
 export function createOperatingHoursRepository(

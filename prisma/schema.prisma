@@ -126,19 +126,32 @@ enum SportType {
   OTHER
 }
 
+enum CourtFacility {
+  PARKING
+  TOILET
+  SHOWER
+  CHANGING_ROOM
+  CAFETERIA
+  PRAYER_ROOM
+  OTHER
+}
+
 model Court {
-  id           String    @id @default(cuid())
+  id           String          @id @default(cuid())
   gorId        String
-  gor          Gor       @relation(fields: [gorId], references: [id], onDelete: Cascade)
+  gor          Gor             @relation(fields: [gorId], references: [id], onDelete: Cascade)
   name         String
   sportType    SportType
-  isActive     Boolean   @default(true)
-  displayOrder Int       @default(0)
+  description  String?
+  imageUrls    String[]        @default([])
+  facilities   CourtFacility[] @default([])
+  isActive     Boolean         @default(true)
+  displayOrder Int             @default(0)
   priceRules       PriceRule[]
   operatingHours   OperatingHours[]
   bookings         Booking[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@index([gorId])
   @@index([gorId, displayOrder])

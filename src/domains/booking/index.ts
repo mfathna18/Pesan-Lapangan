@@ -3,7 +3,11 @@ export {
   BOOKING_NUMBER_PREFIX,
   BOOKING_NUMBER_SEQUENCE_LENGTH,
 } from "./constants";
-export { BookingNotFoundError, BookingValidationError } from "./errors";
+export {
+  BookingNotFoundError,
+  BookingValidationError,
+  CourtNotFoundError,
+} from "./errors";
 export {
   BookingRepository,
   createBookingRepository,
@@ -46,10 +50,18 @@ export type {
   FindBookingByCourtAndDateInput,
   ListBookingsInput,
   ListBookingsResult,
+  PublicCourtDetailData,
+  PublicCourtOpenHours,
   UpdateBookingStatusInput,
 } from "./types";
 export { generateBookingNumber } from "./utils/booking-number";
 export { buildAnalyticsDashboard } from "./utils/analytics";
+export {
+  buildOpenHoursFromWindows,
+  formatSportTypeLabel,
+  mapPublicCourtDetail,
+  resolveStartingPrice,
+} from "./utils/court-display";
 export {
   formatBookingDate,
   formatCurrency,
