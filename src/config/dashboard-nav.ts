@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarDays,
   Clock,
   CreditCard,
@@ -26,6 +27,11 @@ export const dashboardNavItems: DashboardNavItem[] = [
     title: "Bookings",
     href: "/dashboard/bookings",
     icon: CalendarDays,
+  },
+  {
+    title: "Analytics",
+    href: "/dashboard/analytics",
+    icon: BarChart3,
   },
   {
     title: "Courts",

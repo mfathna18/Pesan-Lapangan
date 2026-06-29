@@ -1,4 +1,6 @@
 import type {
+  AnalyticsDashboardQueryInput,
+  AnalyticsSnapshotRecord,
   CreateBookingInput,
   DeleteBookingInput,
   FindBookingByCourtAndDateInput,
@@ -160,6 +162,65 @@ export class BookingRepository {
       where: { id },
       ...bookingDetailArgs,
     });
+  }
+
+  async fetchAnalyticsSnapshot(
+    input: AnalyticsDashboardQueryInput,
+  ): Promise<AnalyticsSnapshotRecord> {
+    const [bookings, courts, operatingHours] = await Promise.all([
+      this.prisma.booking.findMany({
+        where: {
+          bookingDate: {
+            gte: startOfDay(input.periodStart),
+            lte: startOfDay(input.periodEnd),
+          },
+        },
+        select: {
+          id: true,
+          courtId: true,
+          courtNameSnapshot: true,
+          status: true,
+          bookingDate: true,
+          startMinute: true,
+          durationMinute: true,
+          payments: {
+            where: {
+              status: "PAID",
+            },
+            select: {
+              amount: true,
+            },
+          },
+        },
+      }),
+      this.prisma.court.findMany({
+        where: {
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+      }),
+      this.prisma.operatingHours.findMany({
+        where: {
+          isActive: true,
+        },
+        select: {
+          courtId: true,
+          dayOfWeek: true,
+          startMinute: true,
+          endMinute: true,
+        },
+      }),
+    ]);
+
+    return {
+      bookings,
+      courts,
+      operatingHours,
+    };
   }
 
   async updateStatus(

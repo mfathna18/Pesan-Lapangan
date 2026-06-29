@@ -1,3 +1,4 @@
+import { ANALYTICS_TOP_COURTS_LIMIT } from "@/domains/booking/constants";
 import {
   BookingNotFoundError,
   BookingValidationError,
@@ -15,15 +16,21 @@ import {
 import { PriceRuleRepository } from "@/domains/booking/repositories/price-rule-repository";
 import type { CreateBookingRequest } from "@/domains/booking/services/booking-service.types";
 import type {
+  AnalyticsDashboardData,
   BookingDetail,
   BookingFilterOptions,
   BookingListItem,
   ListBookingsInput,
   ListBookingsResult,
 } from "@/domains/booking/types";
+import { buildAnalyticsDashboard } from "@/domains/booking/utils/analytics";
 import { generateBookingNumber } from "@/domains/booking/utils/booking-number";
 import { resolveBookingPaymentDisplayStatus } from "@/domains/booking/utils/booking-display";
 import { validateCreateBookingRequest } from "@/domains/booking/utils/validation";
+import {
+  endOfMonth,
+  startOfMonth,
+} from "@/domains/payment/utils/revenue-date-range";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type BookingServiceDependencies = {
@@ -120,6 +127,25 @@ export class BookingService {
     const courts = await this.courtRepository.findActiveCourts();
 
     return { courts };
+  }
+
+  async getAnalyticsDashboard(
+    referenceDate: Date = new Date(),
+  ): Promise<AnalyticsDashboardData> {
+    const periodStart = startOfMonth(referenceDate);
+    const periodEnd = endOfMonth(referenceDate);
+
+    const snapshot = await this.bookingRepository.fetchAnalyticsSnapshot({
+      periodStart,
+      periodEnd,
+    });
+
+    return buildAnalyticsDashboard(
+      snapshot,
+      periodStart,
+      periodEnd,
+      ANALYTICS_TOP_COURTS_LIMIT,
+    );
   }
 
   private toBookingListItem(

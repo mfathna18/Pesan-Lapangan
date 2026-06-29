@@ -120,3 +120,79 @@ export type BookingFilterOptions = {
     sportType: string;
   }[];
 };
+
+export type AnalyticsDashboardQueryInput = {
+  periodStart: Date;
+  periodEnd: Date;
+};
+
+export type AnalyticsBookingRecord = {
+  id: string;
+  courtId: string;
+  courtNameSnapshot: string;
+  status: BookingStatus;
+  bookingDate: Date;
+  startMinute: number;
+  durationMinute: number;
+  payments: {
+    amount: number;
+  }[];
+};
+
+export type AnalyticsCourtRecord = {
+  id: string;
+  name: string;
+};
+
+export type AnalyticsOperatingHoursRecord = {
+  courtId: string;
+  dayOfWeek: number;
+  startMinute: number;
+  endMinute: number;
+};
+
+export type AnalyticsSnapshotRecord = {
+  bookings: AnalyticsBookingRecord[];
+  courts: AnalyticsCourtRecord[];
+  operatingHours: AnalyticsOperatingHoursRecord[];
+};
+
+export type AnalyticsCountPoint = {
+  label: string;
+  count: number;
+};
+
+export type AnalyticsUtilizationPoint = {
+  courtId: string;
+  courtName: string;
+  occupancyPercent: number;
+};
+
+export type AnalyticsTopCourtRow = {
+  courtId: string;
+  courtName: string;
+  totalBookings: number;
+  revenue: number;
+  occupancyPercent: number;
+};
+
+export type AnalyticsDashboardData = {
+  cards: {
+    mostBookedCourt: string;
+    peakBookingHour: string;
+    peakBookingDay: string;
+    bookingSuccessRate: number;
+    cancellationRate: number;
+    courtUtilization: number;
+  };
+  charts: {
+    bookingsByDay: AnalyticsCountPoint[];
+    bookingsByHour: AnalyticsCountPoint[];
+    courtUtilization: AnalyticsUtilizationPoint[];
+  };
+  topCourts: AnalyticsTopCourtRow[];
+  period: {
+    from: string;
+    to: string;
+  };
+};

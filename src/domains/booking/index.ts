@@ -28,6 +28,10 @@ export {
 } from "./services/booking-service";
 export type { CreateBookingRequest } from "./services/booking-service.types";
 export type {
+  AnalyticsCountPoint,
+  AnalyticsDashboardData,
+  AnalyticsTopCourtRow,
+  AnalyticsUtilizationPoint,
   BookingDetail,
   BookingFilterOptions,
   BookingListItem,
@@ -41,6 +45,7 @@ export type {
   UpdateBookingStatusInput,
 } from "./types";
 export { generateBookingNumber } from "./utils/booking-number";
+export { buildAnalyticsDashboard } from "./utils/analytics";
 export {
   formatBookingDate,
   formatCurrency,
