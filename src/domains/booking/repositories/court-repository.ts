@@ -7,7 +7,7 @@ export type CourtForBooking = {
   sportType: string;
   isActive: boolean;
   gor: {
-    id: string;
+    name: string;
   };
 };
 
@@ -144,7 +144,7 @@ export class CourtRepository {
         isActive: true,
         gor: {
           select: {
-            id: true,
+            name: true,
           },
         },
       },

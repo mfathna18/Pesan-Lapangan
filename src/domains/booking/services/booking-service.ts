@@ -123,7 +123,7 @@ export class BookingService {
       endMinute,
       durationMinute: input.durationMinute,
       totalPrice: hourlyPrice,
-      gorNameSnapshot: court.gor.id,
+      gorNameSnapshot: court.gor.name,
       courtNameSnapshot: court.name,
       sportTypeSnapshot: court.sportType,
       pricePerHourSnapshot: hourlyPrice,
