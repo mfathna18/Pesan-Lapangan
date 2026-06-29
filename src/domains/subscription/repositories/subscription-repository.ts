@@ -27,6 +27,63 @@ export class SubscriptionRepository {
     });
   }
 
+  async findById(id: string): Promise<SubscriptionRecord | null> {
+    return this.prisma.subscription.findUnique({
+      where: { id },
+      select: subscriptionSelect,
+    });
+  }
+
+  async update(
+    id: string,
+    data: {
+      plan?: SubscriptionRecord["plan"];
+      status?: SubscriptionRecord["status"];
+      startsAt?: Date;
+      expiresAt?: Date | null;
+      graceUntil?: Date | null;
+    },
+  ): Promise<SubscriptionRecord> {
+    return this.prisma.subscription.update({
+      where: { id },
+      data,
+      select: subscriptionSelect,
+    });
+  }
+
+  async findBillingProfileByUserId(userId: string): Promise<{
+    ownerId: string;
+    customerName: string;
+    customerPhone: string;
+  } | null> {
+    const owner = await this.prisma.owner.findUnique({
+      where: { userId },
+      select: {
+        id: true,
+        user: {
+          select: {
+            name: true,
+          },
+        },
+        gor: {
+          select: {
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!owner) {
+      return null;
+    }
+
+    return {
+      ownerId: owner.id,
+      customerName: owner.user.name,
+      customerPhone: owner.gor?.phone ?? "081234567890",
+    };
+  }
+
   async findByUserId(userId: string): Promise<SubscriptionRecord | null> {
     return this.prisma.subscription.findFirst({
       where: {

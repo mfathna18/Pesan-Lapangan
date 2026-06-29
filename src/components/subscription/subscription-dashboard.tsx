@@ -1,5 +1,5 @@
+import { SubscriptionBillingActions } from "@/components/subscription/subscription-billing-actions";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -7,10 +7,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SUBSCRIPTION_GRACE_PERIOD_DAYS } from "@/domains/subscription/constants";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  SUBSCRIPTION_GRACE_PERIOD_DAYS,
+  SUBSCRIPTION_PLAN_PRICES,
+} from "@/domains/subscription/constants";
 import type { CurrentSubscriptionData } from "@/domains/subscription/types";
 import {
   formatBookingDate,
+  formatCurrency,
   formatDateTime,
 } from "@/domains/booking/utils/booking-display";
 
@@ -40,6 +52,24 @@ function resolveStatusBadgeVariant(
   return "expired";
 }
 
+function resolvePaymentStatusBadgeVariant(
+  status: CurrentSubscriptionData["billingHistory"][number]["status"],
+): "confirmed" | "pending" | "cancelled" | "expired" {
+  if (status === "PAID") {
+    return "confirmed";
+  }
+
+  if (status === "PENDING") {
+    return "pending";
+  }
+
+  if (status === "REFUNDED") {
+    return "cancelled";
+  }
+
+  return "expired";
+}
+
 export function SubscriptionDashboard({
   subscription,
 }: SubscriptionDashboardProps) {
@@ -60,7 +90,7 @@ export function SubscriptionDashboard({
       <Card>
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
-            <CardTitle>{subscription.planLabel}</CardTitle>
+            <CardTitle>Paket Saat Ini</CardTitle>
             <Badge variant={resolveStatusBadgeVariant(subscription)}>
               {subscription.statusLabel}
             </Badge>
@@ -71,12 +101,14 @@ export function SubscriptionDashboard({
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-muted-foreground text-sm">Paket Saat Ini</p>
+            <p className="text-muted-foreground text-sm">Paket</p>
             <p className="font-medium">{subscription.planLabel}</p>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Status</p>
-            <p className="font-medium">{subscription.statusLabel}</p>
+            <p className="text-muted-foreground text-sm">Harga Bulanan</p>
+            <p className="font-medium">
+              {formatCurrency(SUBSCRIPTION_PLAN_PRICES[subscription.plan])}
+            </p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Mulai Berlaku</p>
@@ -109,18 +141,66 @@ export function SubscriptionDashboard({
         </CardContent>
       </Card>
 
+      {subscription.nextUpgradePlan || subscription.canRenew ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Upgrade & Perpanjang</CardTitle>
+            <CardDescription>
+              Tingkatkan paket atau perpanjang langganan aktif melalui Midtrans.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <SubscriptionBillingActions subscription={subscription} />
+          </CardContent>
+        </Card>
+      ) : null}
+
       <Card>
         <CardHeader>
-          <CardTitle>Upgrade Paket</CardTitle>
+          <CardTitle>Riwayat Billing</CardTitle>
           <CardDescription>
-            Tingkatkan paket untuk fitur lanjutan. Pembayaran belum tersedia di
-            sprint ini.
+            Daftar pembayaran langganan yang pernah dibuat.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button type="button" disabled>
-            Upgrade Paket
-          </Button>
+          {subscription.billingHistory.length === 0 ? (
+            <p className="text-muted-foreground text-sm">
+              Belum ada riwayat pembayaran langganan.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Aksi</TableHead>
+                  <TableHead>Paket</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscription.billingHistory.map((payment) => (
+                  <TableRow key={payment.id}>
+                    <TableCell>
+                      {formatDateTime(payment.paidAt ?? payment.createdAt)}
+                    </TableCell>
+                    <TableCell>{payment.billingActionLabel}</TableCell>
+                    <TableCell>{payment.targetPlanLabel}</TableCell>
+                    <TableCell>{formatCurrency(payment.amount)}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={resolvePaymentStatusBadgeVariant(
+                          payment.status,
+                        )}
+                      >
+                        {payment.statusLabel}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

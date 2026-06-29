@@ -1,5 +1,7 @@
 export const SUBSCRIPTION_GRACE_PERIOD_DAYS = 3 as const;
 
+export const SUBSCRIPTION_BILLING_PERIOD_DAYS = 30 as const;
+
 export const DEFAULT_SUBSCRIPTION_PLAN = "FREE" as const;
 
 export const DEFAULT_SUBSCRIPTION_STATUS = "TRIAL" as const;
@@ -23,3 +25,29 @@ export const SUBSCRIPTION_ACTIVE_STATUSES = [
   "ACTIVE",
   "GRACE_PERIOD",
 ] as const;
+
+export const SUBSCRIPTION_BILLING_ACTION = {
+  UPGRADE: "UPGRADE",
+  RENEW: "RENEW",
+} as const;
+
+export const SUBSCRIPTION_BILLING_ACTION_LABELS = {
+  UPGRADE: "Upgrade",
+  RENEW: "Perpanjang",
+} as const;
+
+export const SUBSCRIPTION_PLAN_PRICES = {
+  FREE: 0,
+  STARTER: 99000,
+  PRO: 199000,
+} as const;
+
+export const SUBSCRIPTION_PLAN_ORDER = ["FREE", "STARTER", "PRO"] as const;
+
+export const SUBSCRIPTION_PAYMENT_STATUS_LABELS = {
+  PENDING: "Pending",
+  PAID: "Paid",
+  FAILED: "Failed",
+  EXPIRED: "Expired",
+  REFUNDED: "Refunded",
+} as const;

@@ -11,3 +11,17 @@ export class OwnerSubscriptionNotFoundError extends Error {
     this.name = "OwnerSubscriptionNotFoundError";
   }
 }
+
+export class SubscriptionBillingValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SubscriptionBillingValidationError";
+  }
+}
+
+export class SubscriptionPaymentNotFoundError extends Error {
+  constructor(message = "Subscription payment not found.") {
+    super(message);
+    this.name = "SubscriptionPaymentNotFoundError";
+  }
+}

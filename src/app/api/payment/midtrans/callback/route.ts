@@ -7,6 +7,11 @@ import {
   PaymentValidationError,
 } from "@/domains/payment";
 import type { MidtransCallbackPayload } from "@/domains/payment/types";
+import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
+import {
+  SubscriptionBillingValidationError,
+  SubscriptionPaymentNotFoundError,
+} from "@/domains/subscription/errors";
 import { prisma } from "@/lib/db/prisma";
 
 function isMidtransCallbackPayload(
@@ -44,12 +49,52 @@ export async function POST(request: Request) {
   }
 
   const paymentService = createPaymentService(prisma);
+  const subscriptionService = getSubscriptionService();
 
   try {
     await paymentService.handleMidtransCallback(body);
 
     return NextResponse.json({ ok: true });
   } catch (error) {
+    if (error instanceof PaymentNotFoundError) {
+      try {
+        await subscriptionService.handleMidtransCallback(body);
+
+        return NextResponse.json({ ok: true });
+      } catch (subscriptionError) {
+        if (subscriptionError instanceof PaymentInvalidSignatureError) {
+          return NextResponse.json(
+            { error: subscriptionError.message },
+            { status: 403 },
+          );
+        }
+
+        if (subscriptionError instanceof SubscriptionPaymentNotFoundError) {
+          return NextResponse.json(
+            { error: subscriptionError.message },
+            { status: 404 },
+          );
+        }
+
+        if (subscriptionError instanceof SubscriptionBillingValidationError) {
+          return NextResponse.json(
+            { error: subscriptionError.message },
+            { status: 422 },
+          );
+        }
+
+        console.error(
+          "Subscription Midtrans callback failed:",
+          subscriptionError,
+        );
+
+        return NextResponse.json(
+          { error: "Failed to process subscription Midtrans callback" },
+          { status: 500 },
+        );
+      }
+    }
+
     if (error instanceof PaymentInvalidSignatureError) {
       return NextResponse.json({ error: error.message }, { status: 403 });
     }

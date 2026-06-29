@@ -107,18 +107,45 @@ enum SubscriptionPlan {
 }
 
 model Subscription {
-  id         String             @id @default(cuid())
-  ownerId    String             @unique
-  owner      Owner              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  plan       SubscriptionPlan   @default(FREE)
-  status     SubscriptionStatus @default(TRIAL)
-  startsAt   DateTime           @default(now())
+  id         String                @id @default(cuid())
+  ownerId    String                @unique
+  owner      Owner                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  plan       SubscriptionPlan      @default(FREE)
+  status     SubscriptionStatus    @default(TRIAL)
+  startsAt   DateTime              @default(now())
   expiresAt  DateTime?
   graceUntil DateTime?
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
+  payments   SubscriptionPayment[]
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
 
   @@map("subscription")
+}
+
+enum SubscriptionBillingAction {
+  UPGRADE
+  RENEW
+}
+
+model SubscriptionPayment {
+  id                String                    @id @default(cuid())
+  subscriptionId    String
+  subscription      Subscription              @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  amount            Int
+  status            PaymentStatus             @default(PENDING)
+  paymentMethod     PaymentMethod             @default(MIDTRANS)
+  targetPlan        SubscriptionPlan
+  billingAction     SubscriptionBillingAction
+  externalReference String?
+  paidAt            DateTime?
+  expiresAt         DateTime?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+
+  @@index([subscriptionId])
+  @@index([subscriptionId, status])
+  @@index([externalReference])
+  @@map("subscription_payment")
 }
 
 // GOR (sports venue) — one per owner/user, many courts.
