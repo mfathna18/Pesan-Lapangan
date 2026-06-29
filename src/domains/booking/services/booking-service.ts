@@ -31,27 +31,34 @@ import {
   endOfMonth,
   startOfMonth,
 } from "@/domains/payment/utils/revenue-date-range";
+import type { SubscriptionAccessReader } from "@/domains/subscription/readers/subscription-access-reader";
+import { createSubscriptionAccessReader } from "@/domains/subscription/readers/subscription-access-reader";
+import { SubscriptionAccessDeniedError } from "@/domains/subscription/errors";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type BookingServiceDependencies = {
   bookingRepository: BookingRepository;
   priceRuleRepository: PriceRuleRepository;
   courtRepository: CourtRepository;
+  subscriptionAccessReader: SubscriptionAccessReader;
 };
 
 export class BookingService {
   private readonly bookingRepository: BookingRepository;
   private readonly priceRuleRepository: PriceRuleRepository;
   private readonly courtRepository: CourtRepository;
+  private readonly subscriptionAccessReader: SubscriptionAccessReader;
 
   constructor({
     bookingRepository,
     priceRuleRepository,
     courtRepository,
+    subscriptionAccessReader,
   }: BookingServiceDependencies) {
     this.bookingRepository = bookingRepository;
     this.priceRuleRepository = priceRuleRepository;
     this.courtRepository = courtRepository;
+    this.subscriptionAccessReader = subscriptionAccessReader;
   }
 
   async create(input: CreateBookingRequest): Promise<BookingWithContact> {
@@ -62,6 +69,18 @@ export class BookingService {
     );
 
     this.ensureCourtAndGorAreActive(court, input.courtId);
+
+    try {
+      await this.subscriptionAccessReader.assertCanReceiveBookings(
+        input.courtId,
+      );
+    } catch (error) {
+      if (error instanceof SubscriptionAccessDeniedError) {
+        throw new BookingValidationError(error.message);
+      }
+
+      throw error;
+    }
 
     const priceRule = await this.priceRuleRepository.findMatchingRule({
       courtId: input.courtId,
@@ -243,10 +262,14 @@ export function createBookingService(
     dependencies?.priceRuleRepository ?? new PriceRuleRepository(prisma);
   const courtRepository =
     dependencies?.courtRepository ?? new CourtRepository(prisma);
+  const subscriptionAccessReader =
+    dependencies?.subscriptionAccessReader ??
+    createSubscriptionAccessReader(prisma);
 
   return new BookingService({
     bookingRepository,
     priceRuleRepository,
     courtRepository,
+    subscriptionAccessReader,
   });
 }

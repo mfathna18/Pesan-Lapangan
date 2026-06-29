@@ -13,12 +13,15 @@ import {
 import {
   SUBSCRIPTION_BILLING_ACTION,
   SUBSCRIPTION_BILLING_ACTION_LABELS,
+  SUBSCRIPTION_ACCESS_DENIED_MESSAGE,
+  SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE,
   SUBSCRIPTION_PLAN_LABELS,
   SUBSCRIPTION_STATUS_LABELS,
   SUBSCRIPTION_PAYMENT_STATUS_LABELS,
 } from "@/domains/subscription/constants";
 import {
   OwnerSubscriptionNotFoundError,
+  SubscriptionAccessDeniedError,
   SubscriptionBillingValidationError,
   SubscriptionNotFoundError,
   SubscriptionPaymentNotFoundError,
@@ -34,11 +37,16 @@ import type {
   CreateSubscriptionPaymentInput,
   CreateSubscriptionPaymentResult,
   CurrentSubscriptionData,
+  SubscriptionAccessSnapshot,
   SubscriptionBillingHistoryItem,
   SubscriptionMidtransCallbackPayload,
   SubscriptionPaymentRecord,
   SubscriptionRecord,
 } from "@/domains/subscription/types";
+import {
+  buildSubscriptionAccessSnapshot,
+  canUseOwnerFeatures,
+} from "@/domains/subscription/utils/subscription-access";
 import {
   canRenewPlan,
   getNextUpgradePlan,
@@ -97,6 +105,51 @@ export class SubscriptionService {
       );
 
     return this.toCurrentSubscriptionData(subscription, billingHistory);
+  }
+
+  async getSubscriptionAccess(
+    userId: string,
+  ): Promise<SubscriptionAccessSnapshot> {
+    const subscription = await this.getCurrentSubscription(userId);
+
+    return buildSubscriptionAccessSnapshot({
+      status: subscription.status,
+      statusLabel: subscription.statusLabel,
+      graceUntil: subscription.graceUntil,
+    });
+  }
+
+  async assertOwnerFeatureAccess(userId: string): Promise<void> {
+    const access = await this.getSubscriptionAccess(userId);
+
+    if (!access.canUseOwnerFeatures) {
+      throw new SubscriptionAccessDeniedError(
+        SUBSCRIPTION_ACCESS_DENIED_MESSAGE,
+      );
+    }
+  }
+
+  async assertCanReceiveBookingsForCourt(courtId: string): Promise<void> {
+    const ownerId =
+      await this.subscriptionRepository.findOwnerIdByCourtId(courtId);
+
+    if (!ownerId) {
+      return;
+    }
+
+    let subscription = await this.subscriptionRepository.findByOwnerId(ownerId);
+
+    if (!subscription) {
+      return;
+    }
+
+    subscription = await this.expireSubscription(subscription.id);
+
+    if (!canUseOwnerFeatures(subscription.status)) {
+      throw new SubscriptionAccessDeniedError(
+        SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE,
+      );
+    }
   }
 
   async createSubscriptionPayment(

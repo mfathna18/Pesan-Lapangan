@@ -25,3 +25,10 @@ export class SubscriptionPaymentNotFoundError extends Error {
     this.name = "SubscriptionPaymentNotFoundError";
   }
 }
+
+export class SubscriptionAccessDeniedError extends Error {
+  constructor(message?: string) {
+    super(message ?? "Subscription access denied.");
+    this.name = "SubscriptionAccessDeniedError";
+  }
+}

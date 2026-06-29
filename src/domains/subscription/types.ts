@@ -97,3 +97,12 @@ export type SubscriptionMidtransCallbackPayload = {
   fraud_status?: string;
   transaction_time?: string;
 };
+
+export type SubscriptionAccessSnapshot = {
+  status: SubscriptionStatus;
+  statusLabel: string;
+  canUseOwnerFeatures: boolean;
+  showGraceWarning: boolean;
+  isExpired: boolean;
+  graceUntil: string | null;
+};

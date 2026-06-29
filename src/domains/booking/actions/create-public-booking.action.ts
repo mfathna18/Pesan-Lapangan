@@ -21,6 +21,7 @@ import {
 } from "@/domains/booking/errors";
 import type { BookingWithContact } from "@/domains/booking/repositories/booking-repository";
 import { getCourtService } from "@/domains/booking/actions/get-court-service";
+import { SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE } from "@/domains/subscription/constants";
 
 function isSlotStillAvailable(
   slots: Awaited<
@@ -88,7 +89,8 @@ export async function createPublicBookingAction(
     if (error instanceof BookingValidationError) {
       if (
         error.message.includes("price rule") ||
-        error.message.includes("unavailable")
+        error.message.includes("unavailable") ||
+        error.message === SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE
       ) {
         return actionFailure(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
       }

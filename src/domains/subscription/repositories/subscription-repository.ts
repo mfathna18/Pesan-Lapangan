@@ -104,6 +104,21 @@ export class SubscriptionRepository {
     return owner?.id ?? null;
   }
 
+  async findOwnerIdByCourtId(courtId: string): Promise<string | null> {
+    const court = await this.prisma.court.findUnique({
+      where: { id: courtId },
+      select: {
+        gor: {
+          select: {
+            ownerId: true,
+          },
+        },
+      },
+    });
+
+    return court?.gor?.ownerId ?? null;
+  }
+
   async createDefaultForOwner(ownerId: string): Promise<SubscriptionRecord> {
     return this.prisma.subscription.create({
       data: {

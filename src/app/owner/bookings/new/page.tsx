@@ -1,9 +1,19 @@
 import { BookingForm } from "@/components/booking/booking-form";
+import { SubscriptionExpiredBlock } from "@/components/subscription/subscription-expired-block";
 import { getCourtRepository } from "@/domains/booking/actions/get-court-repository";
+import { getOwnerSubscriptionAccess } from "@/domains/subscription/guards/subscription-guard";
+import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export const dynamic = "force-dynamic";
 
 export default async function OwnerNewBookingPage() {
+  await requireOwnerSession();
+  const { access } = await getOwnerSubscriptionAccess();
+
+  if (!access.canUseOwnerFeatures) {
+    return <SubscriptionExpiredBlock />;
+  }
+
   const courts = await getCourtRepository().findActiveCourts();
 
   return (

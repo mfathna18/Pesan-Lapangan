@@ -26,6 +26,18 @@ export const SUBSCRIPTION_ACTIVE_STATUSES = [
   "GRACE_PERIOD",
 ] as const;
 
+export const SUBSCRIPTION_OWNER_FEATURE_STATUSES = [
+  "TRIAL",
+  "ACTIVE",
+  "GRACE_PERIOD",
+] as const;
+
+export const SUBSCRIPTION_ACCESS_DENIED_MESSAGE =
+  "Langganan kamu telah kedaluwarsa. Perpanjang langganan untuk menggunakan fitur ini." as const;
+
+export const SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE =
+  "Venue tidak menerima booking baru saat ini." as const;
+
 export const SUBSCRIPTION_BILLING_ACTION = {
   UPGRADE: "UPGRADE",
   RENEW: "RENEW",
