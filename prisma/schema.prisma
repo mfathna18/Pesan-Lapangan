@@ -94,12 +94,16 @@ model Owner {
 // GOR (sports venue) — one per owner/user, many courts.
 
 model Gor {
-  id        String   @id @default(cuid())
-  ownerId   String   @unique
-  owner     Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  courts    Court[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(cuid())
+  ownerId     String   @unique
+  owner       Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String   @unique
+  address     String
+  description String?
+  courts      Court[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("gor")
 }
