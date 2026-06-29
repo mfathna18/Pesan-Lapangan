@@ -56,6 +56,30 @@ export type BookingDetailRecord = Prisma.BookingGetPayload<
   typeof bookingDetailArgs
 >;
 
+export type PublicCheckoutBookingRecord = {
+  id: string;
+  bookingNumber: string;
+  bookingDate: Date;
+  startMinute: number;
+  endMinute: number;
+  durationMinute: number;
+  totalPrice: number;
+  pricePerHourSnapshot: number;
+  status: BookingStatus;
+  courtNameSnapshot: string;
+  contact: {
+    customerName: string;
+    customerPhone: string;
+    note: string | null;
+  } | null;
+  court: {
+    gor: {
+      slug: string;
+      name: string;
+    };
+  };
+};
+
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
@@ -95,6 +119,49 @@ export class BookingRepository {
       where: { id },
       ...bookingWithContactArgs,
     });
+  }
+
+  async findPublicCheckoutById(
+    bookingId: string,
+  ): Promise<PublicCheckoutBookingRecord | null> {
+    const booking = await this.prisma.booking.findUnique({
+      where: { id: bookingId },
+      select: {
+        id: true,
+        bookingNumber: true,
+        bookingDate: true,
+        startMinute: true,
+        endMinute: true,
+        durationMinute: true,
+        totalPrice: true,
+        pricePerHourSnapshot: true,
+        status: true,
+        courtNameSnapshot: true,
+        contact: {
+          select: {
+            customerName: true,
+            customerPhone: true,
+            note: true,
+          },
+        },
+        court: {
+          select: {
+            gor: {
+              select: {
+                slug: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!booking?.court?.gor) {
+      return null;
+    }
+
+    return booking;
   }
 
   async findByBookingNumber(

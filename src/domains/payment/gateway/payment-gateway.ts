@@ -3,6 +3,7 @@ export type CreateGatewayTransactionInput = {
   amount: number;
   customerName: string;
   customerPhone: string;
+  finishRedirectUrl?: string;
 };
 
 export type CreateGatewayTransactionResult = {

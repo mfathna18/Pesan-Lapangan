@@ -31,6 +31,13 @@ export class MidtransGateway implements PaymentGateway {
           first_name: input.customerName,
           phone: input.customerPhone,
         },
+        ...(input.finishRedirectUrl
+          ? {
+              callbacks: {
+                finish: input.finishRedirectUrl,
+              },
+            }
+          : {}),
       });
 
       return {

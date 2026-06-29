@@ -1,4 +1,8 @@
-import type { PaymentMethod, PaymentStatus } from "@/generated/prisma/client";
+import type {
+  BookingStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from "@/generated/prisma/client";
 
 import type { RevenueDateRangePreset } from "@/domains/payment/constants";
 
@@ -32,8 +36,27 @@ export type MarkPaymentStatusInput = {
   id: string;
 };
 
+export type PublicCheckoutData = {
+  bookingId: string;
+  bookingNumber: string;
+  bookingDate: string;
+  startMinute: number;
+  endMinute: number;
+  durationMinute: number;
+  totalPrice: number;
+  pricePerHourSnapshot: number;
+  status: BookingStatus;
+  customerName: string;
+  customerPhone: string;
+  venueName: string;
+  venueSlug: string;
+  courtName: string;
+  hasPaidPayment: boolean;
+};
+
 export type CreatePaymentRequest = {
   bookingId: string;
+  finishRedirectUrl?: string;
 };
 
 export type CreatePaymentResult = {

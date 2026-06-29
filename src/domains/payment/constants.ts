@@ -10,6 +10,10 @@ export const PAYMENT_METHOD = {
   MIDTRANS: "MIDTRANS",
 } as const;
 
+export const PAYMENT_METHOD_LABELS = {
+  MIDTRANS: "Midtrans",
+} as const;
+
 export const DEFAULT_PAYMENT_METHOD = PAYMENT_METHOD.MIDTRANS;
 
 export const REVENUE_RECENT_PAYMENTS_LIMIT = 20 as const;

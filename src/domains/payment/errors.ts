@@ -1,3 +1,10 @@
+export class PublicCheckoutNotFoundError extends Error {
+  constructor(message = "Checkout booking not found.") {
+    super(message);
+    this.name = "PublicCheckoutNotFoundError";
+  }
+}
+
 export class PaymentValidationError extends Error {
   constructor(message: string) {
     super(message);

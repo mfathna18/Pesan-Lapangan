@@ -100,6 +100,7 @@ export class PaymentService {
         amount: booking.totalPrice,
         customerName: booking.contact.customerName,
         customerPhone: booking.contact.customerPhone,
+        finishRedirectUrl: input.finishRedirectUrl,
       });
 
       await this.paymentRepository.update({

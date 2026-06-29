@@ -106,7 +106,7 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
         return;
       }
 
-      const checkoutUrl = `/gor/${context.gorSlug}/court/${context.courtId}/booking/checkout?bookingId=${response.data.id}`;
+      const checkoutUrl = `/gor/${context.gorSlug}/checkout/${response.data.id}`;
       router.push(checkoutUrl);
     });
   }
