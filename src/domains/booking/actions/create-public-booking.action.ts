@@ -1,6 +1,5 @@
 "use server";
 
-import { getAvailabilityService } from "@/domains/availability/actions/get-availability-service";
 import { getBookingService } from "@/domains/booking/actions/get-booking-service";
 import { getCourtService } from "@/domains/booking/actions/get-court-service";
 import {
@@ -26,17 +25,6 @@ import {
   createKnownActionError,
   handleServerActionError,
 } from "@/lib/server/actions";
-
-function isSlotStillAvailable(
-  slots: Awaited<
-    ReturnType<ReturnType<typeof getAvailabilityService>["getSlotGrid"]>
-  >,
-  startMinute: number,
-) {
-  return slots.some(
-    (slot) => slot.startMinute === startMinute && slot.available,
-  );
-}
 
 function mapBookingValidationError(error: BookingValidationError): string {
   if (
@@ -84,15 +72,6 @@ export async function createPublicBookingAction(
 
   if (Number.isNaN(bookingDate.getTime())) {
     return actionFailure("Tanggal booking tidak valid.");
-  }
-
-  const slots = await getAvailabilityService().getSlotGrid({
-    courtId: parsed.data.courtId,
-    date: bookingDate,
-  });
-
-  if (!isSlotStillAvailable(slots, parsed.data.startMinute)) {
-    return actionFailure(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
   }
 
   try {
