@@ -2,6 +2,18 @@ import type { OWNER_ROLE } from "@/domains/owner/constants";
 
 export type OwnerRole = typeof OWNER_ROLE;
 
+export type PublicGorRecord = {
+  id: string;
+  name: string;
+  slug: string;
+  address: string;
+  city: string;
+  description: string | null;
+  logoUrl: string | null;
+  coverImageUrl: string | null;
+  isActive: boolean;
+};
+
 export type GorProfileRecord = {
   id: string;
   name: string;

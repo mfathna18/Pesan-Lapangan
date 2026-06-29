@@ -1,4 +1,7 @@
 import { mergeIntervals } from "@/domains/availability/utils/time-interval";
+import type { PublicCourtRecord } from "@/domains/booking/repositories/court-repository";
+import { formatMinuteOfDay } from "@/domains/booking/utils/booking-display";
+import type { PublicGorRecord } from "@/domains/owner/types";
 import {
   VENUE_DAY_OF_WEEK_LABELS,
   VENUE_SPORT_TYPE_LABELS,
@@ -6,11 +9,7 @@ import {
 import type {
   PublicVenueData,
   PublicVenueOpenHours,
-  VenueCourtRecord,
-  VenueOperatingHoursRecord,
-  VenueRecord,
 } from "@/domains/venue/types";
-import { formatMinuteOfDay } from "@/domains/booking/utils/booking-display";
 import type { SportType } from "@/generated/prisma/client";
 
 function formatSportLabel(sportType: string): string {
@@ -28,10 +27,17 @@ function formatHoursRange(startMinute: number, endMinute: number): string {
   return `${formatMinuteOfDay(startMinute)} - ${formatMinuteOfDay(endMinute)}`;
 }
 
-function buildOpenHours(courts: VenueCourtRecord[]): PublicVenueOpenHours[] {
-  const hoursByDay = new Map<number, VenueOperatingHoursRecord[]>();
+function buildOpenHours(courts: PublicCourtRecord[]): PublicVenueOpenHours[] {
+  const hoursByDay = new Map<
+    number,
+    { dayOfWeek: number; startMinute: number; endMinute: number }[]
+  >();
 
   for (const court of courts) {
+    if (!court.isActive) {
+      continue;
+    }
+
     for (const window of court.operatingHours) {
       if (!window.isActive) {
         continue;
@@ -69,37 +75,41 @@ function buildOpenHours(courts: VenueCourtRecord[]): PublicVenueOpenHours[] {
   });
 }
 
-export function mapVenueRecordToPublicVenue(
-  venue: VenueRecord,
+export function mapGorAndCourtsToPublicVenue(
+  gor: PublicGorRecord,
+  courts: PublicCourtRecord[],
 ): PublicVenueData {
-  const activeCourts = venue.courts
-    .filter((court) => court.isActive)
-    .sort((left, right) => {
-      if (left.displayOrder !== right.displayOrder) {
-        return left.displayOrder - right.displayOrder;
-      }
+  const sortedCourts = [...courts].sort((left, right) => {
+    if (left.displayOrder !== right.displayOrder) {
+      return left.displayOrder - right.displayOrder;
+    }
 
-      return left.name.localeCompare(right.name);
-    });
+    return left.name.localeCompare(right.name);
+  });
 
+  const activeCourts = sortedCourts.filter((court) => court.isActive);
   const sportTypes = [...new Set(activeCourts.map((court) => court.sportType))];
 
   return {
-    id: venue.id,
-    name: venue.name,
-    slug: venue.slug,
-    address: venue.address,
-    description: venue.description,
+    id: gor.id,
+    name: gor.name,
+    slug: gor.slug,
+    address: gor.address,
+    city: gor.city,
+    description: gor.description,
+    logoUrl: gor.logoUrl,
+    coverImageUrl: gor.coverImageUrl,
     sports: sportTypes.map((type) => ({
       type,
       label: formatSportLabel(type),
     })),
-    courts: activeCourts.map((court) => ({
+    courts: sortedCourts.map((court) => ({
       id: court.id,
       name: court.name,
       sportType: court.sportType,
       sportLabel: formatSportLabel(court.sportType),
+      isActive: court.isActive,
     })),
-    openHours: buildOpenHours(activeCourts),
+    openHours: buildOpenHours(sortedCourts),
   };
 }

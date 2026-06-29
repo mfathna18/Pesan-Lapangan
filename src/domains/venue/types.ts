@@ -3,6 +3,7 @@ export type PublicVenueCourt = {
   name: string;
   sportType: string;
   sportLabel: string;
+  isActive: boolean;
 };
 
 export type PublicVenueOpenHours = {
@@ -16,36 +17,14 @@ export type PublicVenueData = {
   name: string;
   slug: string;
   address: string;
+  city: string;
   description: string | null;
+  logoUrl: string | null;
+  coverImageUrl: string | null;
   sports: {
     type: string;
     label: string;
   }[];
   courts: PublicVenueCourt[];
   openHours: PublicVenueOpenHours[];
-};
-
-export type VenueOperatingHoursRecord = {
-  dayOfWeek: number;
-  startMinute: number;
-  endMinute: number;
-  isActive: boolean;
-};
-
-export type VenueCourtRecord = {
-  id: string;
-  name: string;
-  sportType: string;
-  isActive: boolean;
-  displayOrder: number;
-  operatingHours: VenueOperatingHoursRecord[];
-};
-
-export type VenueRecord = {
-  id: string;
-  name: string;
-  slug: string;
-  address: string;
-  description: string | null;
-  courts: VenueCourtRecord[];
 };

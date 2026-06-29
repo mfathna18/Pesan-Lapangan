@@ -1,33 +1,51 @@
+import { GorNotFoundError } from "@/domains/owner/errors";
+import type { GorService } from "@/domains/owner/services/gor-service";
+import type { CourtService } from "@/domains/booking/services/court-service";
 import { VenueNotFoundError } from "@/domains/venue/errors";
-import { VenueRepository } from "@/domains/venue/repositories/venue-repository";
 import type { PublicVenueData } from "@/domains/venue/types";
-import { mapVenueRecordToPublicVenue } from "@/domains/venue/utils/venue-mapper";
+import { mapGorAndCourtsToPublicVenue } from "@/domains/venue/utils/venue-mapper";
+import { createCourtRepository } from "@/domains/booking/repositories/court-repository";
+import { createCourtService } from "@/domains/booking/services/court-service";
+import { createGorRepository } from "@/domains/owner/repositories/gor-repository";
+import { createGorService } from "@/domains/owner/services/gor-service";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type VenueServiceDependencies = {
-  venueRepository: VenueRepository;
+  gorService: GorService;
+  courtService: CourtService;
 };
 
 export class VenueService {
-  private readonly venueRepository: VenueRepository;
+  private readonly gorService: GorService;
+  private readonly courtService: CourtService;
 
-  constructor({ venueRepository }: VenueServiceDependencies) {
-    this.venueRepository = venueRepository;
+  constructor({ gorService, courtService }: VenueServiceDependencies) {
+    this.gorService = gorService;
+    this.courtService = courtService;
   }
 
   async getPublicVenueBySlug(slug: string): Promise<PublicVenueData> {
-    const venue = await this.venueRepository.findPublicVenueBySlug(slug);
+    try {
+      const gor = await this.gorService.getPublicGorBySlug(slug);
+      const courts = await this.courtService.getPublicCourtsForGor(gor.id);
 
-    if (!venue) {
-      throw new VenueNotFoundError(`Venue not found: ${slug}`);
+      return mapGorAndCourtsToPublicVenue(gor, courts);
+    } catch (error) {
+      if (error instanceof GorNotFoundError) {
+        throw new VenueNotFoundError(error.message);
+      }
+
+      throw error;
     }
-
-    return mapVenueRecordToPublicVenue(venue);
   }
 }
 
 export function createVenueService(prisma: PrismaClient): VenueService {
+  const gorRepository = createGorRepository(prisma);
+  const courtRepository = createCourtRepository(prisma);
+
   return new VenueService({
-    venueRepository: new VenueRepository(prisma),
+    gorService: createGorService(gorRepository),
+    courtService: createCourtService(courtRepository),
   });
 }

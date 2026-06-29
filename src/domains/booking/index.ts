@@ -13,7 +13,10 @@ export {
   CourtRepository,
   createCourtRepository,
 } from "./repositories/court-repository";
-export type { CourtForBooking } from "./repositories/court-repository";
+export type {
+  CourtForBooking,
+  PublicCourtRecord,
+} from "./repositories/court-repository";
 export {
   createPriceRuleRepository,
   PriceRuleRepository,
@@ -26,6 +29,7 @@ export {
   BookingService,
   createBookingService,
 } from "./services/booking-service";
+export { CourtService, createCourtService } from "./services/court-service";
 export type { CreateBookingRequest } from "./services/booking-service.types";
 export type {
   AnalyticsCountPoint,

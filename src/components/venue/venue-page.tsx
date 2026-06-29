@@ -1,4 +1,3 @@
-import { VenueBookCta } from "@/components/venue/venue-book-cta";
 import { VenueCourtsSection } from "@/components/venue/venue-courts-section";
 import { VenueHeader } from "@/components/venue/venue-header";
 import { VenueHero } from "@/components/venue/venue-hero";
@@ -16,10 +15,9 @@ export function VenuePage({ venue }: VenuePageProps) {
       <VenueHeader />
       <main>
         <VenueHero venue={venue} />
+        <VenueOpenHoursSection openHours={venue.openHours} />
         <VenueSportsSection sports={venue.sports} />
         <VenueCourtsSection courts={venue.courts} />
-        <VenueOpenHoursSection openHours={venue.openHours} />
-        <VenueBookCta venue={venue} />
       </main>
     </div>
   );

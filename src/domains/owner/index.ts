@@ -6,11 +6,13 @@ export {
 } from "./constants";
 export {
   GorProfileValidationError,
+  GorNotFoundError,
   GorSlugConflictError,
   OwnerNotFoundError,
 } from "./errors";
 export { getGorProfileAction } from "./actions/get-gor-profile.action";
 export { getGorProfileService } from "./actions/get-gor-profile-service";
+export { getGorService } from "./actions/get-gor-service";
 export { updateGorProfileAction } from "./actions/update-gor-profile.action";
 export {
   createGorRepository,
@@ -20,4 +22,10 @@ export {
   createGorProfileService,
   GorProfileService,
 } from "./services/gor-profile-service";
-export type { GorProfileData, OwnerRole, UpdateGorProfileInput } from "./types";
+export { createGorService, GorService } from "./services/gor-service";
+export type {
+  GorProfileData,
+  OwnerRole,
+  PublicGorRecord,
+  UpdateGorProfileInput,
+} from "./types";

@@ -16,6 +16,20 @@ export type CourtOption = {
   sportType: string;
 };
 
+export type PublicCourtRecord = {
+  id: string;
+  name: string;
+  sportType: string;
+  isActive: boolean;
+  displayOrder: number;
+  operatingHours: {
+    dayOfWeek: number;
+    startMinute: number;
+    endMinute: number;
+    isActive: boolean;
+  }[];
+};
+
 export class CourtRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
@@ -28,6 +42,30 @@ export class CourtRepository {
         id: true,
         name: true,
         sportType: true,
+      },
+      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+    });
+  }
+
+  async findPublicCourtsByGorId(gorId: string): Promise<PublicCourtRecord[]> {
+    return this.prisma.court.findMany({
+      where: { gorId },
+      select: {
+        id: true,
+        name: true,
+        sportType: true,
+        isActive: true,
+        displayOrder: true,
+        operatingHours: {
+          where: { isActive: true },
+          select: {
+            dayOfWeek: true,
+            startMinute: true,
+            endMinute: true,
+            isActive: true,
+          },
+          orderBy: [{ dayOfWeek: "asc" }, { startMinute: "asc" }],
+        },
       },
       orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
     });

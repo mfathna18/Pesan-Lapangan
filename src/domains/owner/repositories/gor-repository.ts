@@ -1,6 +1,7 @@
 import type {
   GorProfileRecord,
   OwnerWithGorRecord,
+  PublicGorRecord,
 } from "@/domains/owner/types";
 import type { PrismaClient } from "@/generated/prisma/client";
 
@@ -21,8 +22,27 @@ const gorProfileSelect = {
   isActive: true,
 } as const;
 
+const publicGorSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  address: true,
+  city: true,
+  description: true,
+  logoUrl: true,
+  coverImageUrl: true,
+  isActive: true,
+} as const;
+
 export class GorRepository {
   constructor(private readonly prisma: PrismaClient) {}
+
+  async findPublicGorBySlug(slug: string): Promise<PublicGorRecord | null> {
+    return this.prisma.gor.findUnique({
+      where: { slug },
+      select: publicGorSelect,
+    });
+  }
 
   async findOwnerWithGorByUserId(
     userId: string,
