@@ -38,6 +38,7 @@ import {
 import type { BookingWriter } from "@/domains/payment/writers/booking-writer";
 import { createPaymentBookingWriter } from "@/domains/payment/writers/booking-writer";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { logInfo } from "@/lib/server/logger";
 
 type PaymentServiceDependencies = {
   paymentRepository: PaymentRepository;
@@ -152,6 +153,19 @@ export class PaymentService {
 
     switch (resolution) {
       case "paid": {
+        if (payment.status === PAYMENT_STATUS.PAID) {
+          logInfo(
+            "Duplicate Midtrans paid callback ignored for booking payment",
+            {
+              paymentId: payment.id,
+              bookingId: payment.bookingId,
+              orderId: payload.order_id,
+            },
+          );
+
+          return payment;
+        }
+
         const updatedPayment = await this.markAsPaid({
           id: payment.id,
           externalReference: payload.order_id,
@@ -269,6 +283,11 @@ export class PaymentService {
     const payment = await this.requirePayment(input.id);
 
     if (payment.status === PAYMENT_STATUS.PAID) {
+      logInfo("Payment already marked as paid", {
+        paymentId: payment.id,
+        bookingId: payment.bookingId,
+      });
+
       return payment;
     }
 

@@ -56,6 +56,7 @@ import {
   resolveUpgradeExpiresAt,
 } from "@/domains/subscription/utils/subscription-billing";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { logInfo } from "@/lib/server/logger";
 
 const SUBSCRIPTION_PAYMENT_PENDING_HOURS = 24;
 
@@ -263,6 +264,11 @@ export class SubscriptionService {
     }
 
     if (payment.status === PAYMENT_STATUS.PAID) {
+      logInfo("Subscription payment already marked as paid", {
+        subscriptionPaymentId: payment.id,
+        subscriptionId: payment.subscriptionId,
+      });
+
       return this.requireSubscription(payment.subscriptionId);
     }
 
@@ -368,6 +374,19 @@ export class SubscriptionService {
 
     switch (resolution) {
       case "paid": {
+        if (payment.status === PAYMENT_STATUS.PAID) {
+          logInfo(
+            "Duplicate Midtrans paid callback ignored for subscription payment",
+            {
+              subscriptionPaymentId: payment.id,
+              subscriptionId: payment.subscriptionId,
+              orderId: payload.order_id,
+            },
+          );
+
+          return payment;
+        }
+
         await this.activateSubscription({
           subscriptionPaymentId: payment.id,
           paidAt: parseMidtransTransactionTime(payload.transaction_time),

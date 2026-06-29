@@ -19,6 +19,7 @@ import type {
 } from "@/domains/invoice/types";
 import { generateInvoiceNumber } from "@/domains/invoice/utils/invoice-number";
 import type { PrismaClient } from "@/generated/prisma/client";
+import { logInfo } from "@/lib/server/logger";
 
 type InvoiceServiceDependencies = {
   invoiceRepository: InvoiceRepository;
@@ -58,6 +59,11 @@ export class InvoiceService {
 
     if (existingInvoice) {
       if (existingInvoice.status === INVOICE_STATUS.GENERATED) {
+        logInfo("Invoice already generated for payment", {
+          paymentId: input.paymentId,
+          invoiceId: existingInvoice.id,
+        });
+
         return existingInvoice;
       }
 
