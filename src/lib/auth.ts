@@ -15,6 +15,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  advanced: {
+    cookiePrefix: "pesan-lapangan",
+    useSecureCookies: env.NODE_ENV === "production",
+  },
   user: {
     additionalFields: {
       role: {

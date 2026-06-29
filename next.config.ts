@@ -32,6 +32,8 @@ if (process.env.NODE_ENV === "production") {
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Public venue images use native <img> tags with owner-provided URLs.
+  // Add remotePatterns here when migrating to next/image.
   async headers() {
     return [
       {

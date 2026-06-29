@@ -1,6 +1,28 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+function publicAppUrl(label: string) {
+  return z
+    .string()
+    .url()
+    .superRefine((value, context) => {
+      const isLocalDevelopmentUrl =
+        value.startsWith("http://localhost") ||
+        value.startsWith("http://127.0.0.1");
+
+      if (isLocalDevelopmentUrl) {
+        return;
+      }
+
+      if (!value.startsWith("https://")) {
+        context.addIssue({
+          code: "custom",
+          message: `${label} must use HTTPS for non-local deployments.`,
+        });
+      }
+    });
+}
+
 export const env = createEnv({
   server: {
     NODE_ENV: z
@@ -8,7 +30,7 @@ export const env = createEnv({
       .default("development"),
     DATABASE_URL: z.string().min(1),
     BETTER_AUTH_SECRET: z.string().min(32),
-    BETTER_AUTH_URL: z.string().url(),
+    BETTER_AUTH_URL: publicAppUrl("BETTER_AUTH_URL"),
     MIDTRANS_SERVER_KEY: z.string().min(1),
     MIDTRANS_CLIENT_KEY: z.string().min(1),
     MIDTRANS_IS_PRODUCTION: z
@@ -17,7 +39,7 @@ export const env = createEnv({
       .transform((value) => value === "true"),
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url(),
+    NEXT_PUBLIC_APP_URL: publicAppUrl("NEXT_PUBLIC_APP_URL"),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,

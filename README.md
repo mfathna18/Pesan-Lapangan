@@ -73,7 +73,7 @@ prisma/
 
 ## Environment Variables
 
-See `.env.example` for required variables.
+See `.env.example` for required variables and `docs/DEPLOYMENT.md` for the Vercel deployment and environment checklists.
 
 ## Database
 
