@@ -1,6 +1,8 @@
 import type {
   CreatePaymentInput,
   FindPaymentsByBookingIdInput,
+  RevenueDashboardQueryInput,
+  RevenueSnapshotRecord,
   UpdatePaymentInput,
 } from "@/domains/payment/types";
 import type {
@@ -11,6 +13,7 @@ import type {
 } from "@/generated/prisma/client";
 
 import { DEFAULT_PAYMENT_METHOD } from "@/domains/payment/constants";
+import { PAYMENT_STATUS } from "@/domains/payment/constants";
 
 export class PaymentRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -73,6 +76,107 @@ export class PaymentRepository {
           : {}),
       },
     });
+  }
+
+  async fetchRevenueSnapshot(
+    input: RevenueDashboardQueryInput,
+  ): Promise<RevenueSnapshotRecord> {
+    const paidStatusFilter = { status: PAYMENT_STATUS.PAID } as const;
+    const pendingStatusFilter = { status: PAYMENT_STATUS.PENDING } as const;
+
+    const [
+      todayAggregate,
+      monthAggregate,
+      completedPayments,
+      pendingPayments,
+      paidInMonth,
+      recentPayments,
+    ] = await Promise.all([
+      this.prisma.payment.aggregate({
+        where: {
+          ...paidStatusFilter,
+          paidAt: {
+            gte: input.todayStart,
+            lte: input.todayEnd,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          ...paidStatusFilter,
+          paidAt: {
+            gte: input.monthStart,
+            lte: input.monthEnd,
+          },
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      this.prisma.payment.count({
+        where: paidStatusFilter,
+      }),
+      this.prisma.payment.count({
+        where: pendingStatusFilter,
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          ...paidStatusFilter,
+          paidAt: {
+            gte: input.monthStart,
+            lte: input.monthEnd,
+          },
+        },
+        select: {
+          paidAt: true,
+          amount: true,
+        },
+      }),
+      this.prisma.payment.findMany({
+        where: {
+          createdAt: {
+            gte: input.rangeFrom,
+            lte: input.rangeTo,
+          },
+        },
+        select: {
+          id: true,
+          amount: true,
+          status: true,
+          paidAt: true,
+          booking: {
+            select: {
+              bookingNumber: true,
+              contact: {
+                select: {
+                  customerName: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: input.recentLimit,
+      }),
+    ]);
+
+    return {
+      todayRevenue: todayAggregate._sum.amount ?? 0,
+      monthRevenue: monthAggregate._sum.amount ?? 0,
+      completedPayments,
+      pendingPayments,
+      paidInMonth: paidInMonth.flatMap((payment) =>
+        payment.paidAt
+          ? [{ paidAt: payment.paidAt, amount: payment.amount }]
+          : [],
+      ),
+      recentPayments,
+    };
   }
 }
 

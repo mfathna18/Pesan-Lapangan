@@ -1,4 +1,5 @@
 import { PAYMENT_STATUS } from "@/domains/payment/constants";
+import { REVENUE_RECENT_PAYMENTS_LIMIT } from "@/domains/payment/constants";
 import {
   BookingNotFoundForPaymentError,
   PaymentInvalidSignatureError,
@@ -21,7 +22,15 @@ import type {
   MarkPaymentAsPaidInput,
   MarkPaymentStatusInput,
   MidtransCallbackPayload,
+  RevenueDashboardData,
+  RevenueDashboardInput,
 } from "@/domains/payment/types";
+import {
+  buildMonthDailyRevenuePoints,
+  endOfMonth,
+  resolveRevenueDateRange,
+  startOfMonth,
+} from "@/domains/payment/utils/revenue-date-range";
 import {
   parseMidtransTransactionTime,
   resolveMidtransCallbackStatus,
@@ -166,6 +175,72 @@ export class PaymentService {
       default:
         return payment;
     }
+  }
+
+  async getRevenueDashboard(
+    input: RevenueDashboardInput,
+    referenceDate: Date = new Date(),
+  ): Promise<RevenueDashboardData> {
+    const monthStart = startOfMonth(referenceDate);
+    const monthEnd = endOfMonth(referenceDate);
+    const { from: rangeFrom, to: rangeTo } = resolveRevenueDateRange(
+      input.preset,
+      referenceDate,
+      input.customFrom,
+      input.customTo,
+    );
+
+    const todayStart = new Date(
+      referenceDate.getFullYear(),
+      referenceDate.getMonth(),
+      referenceDate.getDate(),
+    );
+    const todayEnd = new Date(
+      referenceDate.getFullYear(),
+      referenceDate.getMonth(),
+      referenceDate.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+
+    const snapshot = await this.paymentRepository.fetchRevenueSnapshot({
+      todayStart,
+      todayEnd,
+      monthStart,
+      monthEnd,
+      rangeFrom,
+      rangeTo,
+      recentLimit: REVENUE_RECENT_PAYMENTS_LIMIT,
+    });
+
+    return {
+      summary: {
+        todayRevenue: snapshot.todayRevenue,
+        monthRevenue: snapshot.monthRevenue,
+        completedPayments: snapshot.completedPayments,
+        pendingPayments: snapshot.pendingPayments,
+      },
+      chart: buildMonthDailyRevenuePoints(
+        monthStart,
+        monthEnd,
+        snapshot.paidInMonth,
+      ),
+      recentPayments: snapshot.recentPayments.map((payment) => ({
+        id: payment.id,
+        bookingNumber: payment.booking.bookingNumber,
+        customerName: payment.booking.contact?.customerName ?? "-",
+        amount: payment.amount,
+        status: payment.status,
+        paidAt: payment.paidAt?.toISOString() ?? null,
+      })),
+      dateRange: {
+        preset: input.preset,
+        from: rangeFrom.toISOString(),
+        to: rangeTo.toISOString(),
+      },
+    };
   }
 
   async createPaymentAttempt(input: CreatePaymentInput): Promise<Payment> {
