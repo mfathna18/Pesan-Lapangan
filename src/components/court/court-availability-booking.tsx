@@ -1,10 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 
 import { getTodayDateInputValue } from "@/components/booking/booking-form.utils";
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -102,6 +103,17 @@ export function CourtAvailabilityBooking({
   const selectedDateLabel = formatBookingDate(
     new Date(`${bookingDate}T00:00:00`),
   );
+  const formHref =
+    selectedSlot != null
+      ? `/gor/${court.gorSlug}/court/${court.courtId}/booking/form?${new URLSearchParams(
+          {
+            date: bookingDate,
+            startMinute: String(selectedSlot.startMinute),
+            endMinute: String(selectedSlot.endMinute),
+            price: String(selectedSlot.price),
+          },
+        ).toString()}`
+      : null;
 
   return (
     <div className="bg-background min-h-screen pb-32">
@@ -239,9 +251,18 @@ export function CourtAvailabilityBooking({
             </div>
           </div>
 
-          <Button type="button" size="lg" disabled={!selectedSlot}>
-            Lanjutkan
-          </Button>
+          {formHref ? (
+            <Link
+              href={formHref}
+              className={cn(buttonVariants({ size: "lg" }))}
+            >
+              Lanjutkan
+            </Link>
+          ) : (
+            <Button type="button" size="lg" disabled>
+              Lanjutkan
+            </Button>
+          )}
         </div>
       </div>
     </div>

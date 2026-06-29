@@ -1,5 +1,8 @@
 export const BOOKING_DURATION_INTERVAL_MINUTES = 60 as const;
 
+export const BOOKING_SLOT_UNAVAILABLE_MESSAGE =
+  "Slot waktu yang dipilih sudah tidak tersedia. Silakan pilih waktu lain." as const;
+
 export const BOOKING_NUMBER_PREFIX = "BK" as const;
 
 export const BOOKING_NUMBER_SEQUENCE_LENGTH = 4 as const;
