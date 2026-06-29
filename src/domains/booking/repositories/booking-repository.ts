@@ -84,8 +84,15 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
+type PrismaDbClient =
+  | PrismaClient
+  | Omit<
+      PrismaClient,
+      "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
+    >;
+
 export class BookingRepository {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly prisma: PrismaDbClient) {}
 
   async create(input: CreateBookingInput): Promise<BookingWithContact> {
     return this.prisma.booking.create({

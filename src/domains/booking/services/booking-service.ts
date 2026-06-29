@@ -1,4 +1,7 @@
-import { ANALYTICS_TOP_COURTS_LIMIT } from "@/domains/booking/constants";
+import {
+  ANALYTICS_TOP_COURTS_LIMIT,
+  BOOKING_SLOT_UNAVAILABLE_MESSAGE,
+} from "@/domains/booking/constants";
 import {
   BookingNotFoundError,
   BookingValidationError,
@@ -26,7 +29,13 @@ import type {
 import { buildAnalyticsDashboard } from "@/domains/booking/utils/analytics";
 import { generateBookingNumber } from "@/domains/booking/utils/booking-number";
 import { resolveBookingPaymentDisplayStatus } from "@/domains/booking/utils/booking-display";
+import { acquireCourtBookingDateLock } from "@/domains/booking/utils/court-booking-lock";
+import {
+  BLOCKING_BOOKING_STATUSES,
+  slotConflictsWithBookings,
+} from "@/domains/booking/utils/slot-availability";
 import { validateCreateBookingRequest } from "@/domains/booking/utils/validation";
+import { startOfDay } from "@/domains/availability/utils/time-interval";
 import {
   endOfMonth,
   startOfMonth,
@@ -37,6 +46,7 @@ import { SubscriptionAccessDeniedError } from "@/domains/subscription/errors";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type BookingServiceDependencies = {
+  prisma: PrismaClient;
   bookingRepository: BookingRepository;
   priceRuleRepository: PriceRuleRepository;
   courtRepository: CourtRepository;
@@ -44,17 +54,20 @@ type BookingServiceDependencies = {
 };
 
 export class BookingService {
+  private readonly prisma: PrismaClient;
   private readonly bookingRepository: BookingRepository;
   private readonly priceRuleRepository: PriceRuleRepository;
   private readonly courtRepository: CourtRepository;
   private readonly subscriptionAccessReader: SubscriptionAccessReader;
 
   constructor({
+    prisma,
     bookingRepository,
     priceRuleRepository,
     courtRepository,
     subscriptionAccessReader,
   }: BookingServiceDependencies) {
+    this.prisma = prisma;
     this.bookingRepository = bookingRepository;
     this.priceRuleRepository = priceRuleRepository;
     this.courtRepository = courtRepository;
@@ -102,7 +115,7 @@ export class BookingService {
 
     const hourlyPrice = priceRule.price;
 
-    return this.bookingRepository.create({
+    const createInput = {
       courtId: court.id,
       bookingNumber,
       bookingDate: input.bookingDate,
@@ -115,6 +128,35 @@ export class BookingService {
       sportTypeSnapshot: court.sportType,
       pricePerHourSnapshot: hourlyPrice,
       contact: input.contact,
+    };
+
+    const requestedSlot = {
+      startMinute: input.startMinute,
+      endMinute,
+    };
+
+    return this.prisma.$transaction(async (tx) => {
+      await acquireCourtBookingDateLock(tx, court.id, input.bookingDate);
+
+      const existingBookings = await tx.booking.findMany({
+        where: {
+          courtId: court.id,
+          bookingDate: startOfDay(input.bookingDate),
+          status: {
+            in: BLOCKING_BOOKING_STATUSES,
+          },
+        },
+        select: {
+          startMinute: true,
+          endMinute: true,
+        },
+      });
+
+      if (slotConflictsWithBookings(requestedSlot, existingBookings)) {
+        throw new BookingValidationError(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
+      }
+
+      return new BookingRepository(tx).create(createInput);
     });
   }
 
@@ -270,6 +312,7 @@ export function createBookingService(
     createSubscriptionAccessReader(prisma);
 
   return new BookingService({
+    prisma,
     bookingRepository,
     priceRuleRepository,
     courtRepository,

@@ -34,20 +34,6 @@ export type PublicCourtRecord = {
 export class CourtRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async findActiveCourts(): Promise<CourtOption[]> {
-    return this.prisma.court.findMany({
-      where: {
-        isActive: true,
-      },
-      select: {
-        id: true,
-        name: true,
-        sportType: true,
-      },
-      orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
-    });
-  }
-
   async findActiveCourtsByOwnerId(ownerId: string): Promise<CourtOption[]> {
     return this.prisma.court.findMany({
       where: {

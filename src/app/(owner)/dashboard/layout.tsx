@@ -1,6 +1,6 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { SubscriptionGraceBanner } from "@/components/subscription/subscription-grace-banner";
-import { getOwnerSubscriptionAccess } from "@/domains/subscription/guards/subscription-guard";
+import { getOwnerSubscriptionAccessForUser } from "@/domains/subscription/guards/subscription-guard";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
 export default async function DashboardLayout({
@@ -9,7 +9,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }>) {
   const session = await requireOwnerSession();
-  const { access } = await getOwnerSubscriptionAccess();
+  const { access } = await getOwnerSubscriptionAccessForUser(session.user.id);
 
   return (
     <DashboardShell user={session.user}>

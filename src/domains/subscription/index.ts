@@ -17,6 +17,7 @@ export {
 export { createSubscriptionPaymentAction } from "./actions/create-subscription-payment.action";
 export {
   getOwnerSubscriptionAccess,
+  getOwnerSubscriptionAccessForUser,
   requireOwnerFeatureAccess,
 } from "./guards/subscription-guard";
 export {
