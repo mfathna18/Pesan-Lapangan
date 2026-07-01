@@ -1,20 +1,19 @@
-import { ProtectedOwnerFeaturePlaceholder } from "@/components/subscription/protected-owner-feature-placeholder";
+import { PricingManagement } from "@/components/pricing/pricing-management";
 import { SubscriptionFeatureGate } from "@/components/subscription/subscription-feature-gate";
+import { createPageMetadata } from "@/config/page-metadata";
 import { getOwnerSubscriptionAccess } from "@/domains/subscription/guards/subscription-guard";
 
-export const metadata = {
-  title: "Pricing",
-};
+export const metadata = createPageMetadata(
+  "Harga",
+  "Atur harga lapangan berdasarkan hari dan jam.",
+);
 
 export default async function DashboardPricingPage() {
   const { access } = await getOwnerSubscriptionAccess();
 
   return (
     <SubscriptionFeatureGate access={access}>
-      <ProtectedOwnerFeaturePlaceholder
-        title="Pricing"
-        description="Atur price rules untuk setiap lapangan."
-      />
+      <PricingManagement />
     </SubscriptionFeatureGate>
   );
 }

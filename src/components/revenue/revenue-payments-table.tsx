@@ -29,27 +29,27 @@ export function RevenuePaymentsTable({ payments }: RevenuePaymentsTableProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Payments</CardTitle>
+        <CardTitle>Pembayaran Terbaru</CardTitle>
         <CardDescription>
-          Payments within the selected date range
+          Pembayaran dalam rentang tanggal yang dipilih
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Booking Number</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead>Nomor Booking</TableHead>
+              <TableHead>Pelanggan</TableHead>
+              <TableHead>Jumlah</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Paid At</TableHead>
+              <TableHead>Dibayar Pada</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {payments.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-muted-foreground">
-                  No payments found for this date range.
+                  Tidak ada pembayaran pada rentang tanggal ini.
                 </TableCell>
               </TableRow>
             ) : (

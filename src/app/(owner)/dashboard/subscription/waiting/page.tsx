@@ -68,7 +68,7 @@ export default async function SubscriptionWaitingPage({
             <div className="flex items-center justify-between gap-3">
               <CardTitle>{subscription.planLabel}</CardTitle>
               <Badge variant={isPaid ? "confirmed" : "pending"}>
-                {isPaid ? "Paid" : "Pending"}
+                {isPaid ? "Lunas" : "Menunggu"}
               </Badge>
             </div>
             <CardDescription>Detail pembayaran langganan kamu.</CardDescription>
@@ -104,7 +104,7 @@ export default async function SubscriptionWaitingPage({
             href="/dashboard/subscription"
             className={cn(buttonVariants(), "flex-1")}
           >
-            Kembali ke Subscription
+            Kembali ke Langganan
           </Link>
         </div>
       </div>

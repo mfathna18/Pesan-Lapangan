@@ -1,4 +1,4 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { landingContent } from "@/config/landing";
 import { cn } from "@/lib/utils";
 
@@ -20,14 +20,15 @@ export function CtaSection() {
             </p>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-              <Button
-                type="button"
-                size="lg"
-                variant="secondary"
-                className="w-full sm:w-auto"
+              <a
+                href="#cari-lapangan"
+                className={cn(
+                  buttonVariants({ size: "lg", variant: "secondary" }),
+                  "w-full sm:w-auto",
+                )}
               >
                 {cta.primaryButton}
-              </Button>
+              </a>
               <a
                 href="#cara-kerja"
                 className={cn(

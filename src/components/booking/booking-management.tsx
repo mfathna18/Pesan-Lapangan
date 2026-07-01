@@ -42,6 +42,7 @@ import {
   formatBookingDate,
   formatMinuteOfDay,
 } from "@/domains/booking/utils/booking-display";
+import { UI_COPY } from "@/config/ui-copy";
 
 type BookingFiltersState = {
   bookingDate: string;
@@ -157,14 +158,14 @@ export function BookingManagement() {
       <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
         <div className="space-y-1">
           <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-            Management
+            Manajemen
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Bookings</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Booking</h1>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Filters</CardTitle>
+            <CardTitle>Filter</CardTitle>
           </CardHeader>
           <CardContent>
             {filterOptionsError ? (
@@ -174,7 +175,7 @@ export function BookingManagement() {
             ) : null}
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <div className="space-y-2">
-                <Label htmlFor="booking-date">Date</Label>
+                <Label htmlFor="booking-date">Tanggal</Label>
                 <Input
                   id="booking-date"
                   type="date"
@@ -186,7 +187,7 @@ export function BookingManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label>Court</Label>
+                <Label>{UI_COPY.court}</Label>
                 <Select
                   value={filters.courtId}
                   onValueChange={(value) =>
@@ -194,10 +195,10 @@ export function BookingManagement() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All courts" />
+                    <SelectValue placeholder={UI_COPY.allCourts} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All courts</SelectItem>
+                    <SelectItem value="all">{UI_COPY.allCourts}</SelectItem>
                     {filterOptions?.courts.map((court) => (
                       <SelectItem key={court.id} value={court.id}>
                         {court.name}
@@ -208,7 +209,7 @@ export function BookingManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label>Booking Status</Label>
+                <Label>Status Booking</Label>
                 <Select
                   value={filters.status}
                   onValueChange={(value) =>
@@ -216,20 +217,20 @@ export function BookingManagement() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All statuses" />
+                    <SelectValue placeholder="Semua status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-                    <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                    <SelectItem value="all">Semua status</SelectItem>
+                    <SelectItem value="PENDING">Menunggu</SelectItem>
+                    <SelectItem value="CONFIRMED">Dikonfirmasi</SelectItem>
+                    <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="booking-number-search">
-                  Search Booking Number
+                  Cari Nomor Booking
                 </Label>
                 <Input
                   id="booking-number-search"
@@ -242,7 +243,7 @@ export function BookingManagement() {
               </div>
 
               <div className="space-y-2">
-                <Label>Sort</Label>
+                <Label>Urutkan</Label>
                 <Select
                   value={filters.sort}
                   onValueChange={(value) =>
@@ -250,11 +251,11 @@ export function BookingManagement() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sort" />
+                    <SelectValue placeholder="Urutkan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="newest">Newest</SelectItem>
-                    <SelectItem value="oldest">Oldest</SelectItem>
+                    <SelectItem value="newest">Terbaru</SelectItem>
+                    <SelectItem value="oldest">Terlama</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -264,7 +265,7 @@ export function BookingManagement() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Booking List</CardTitle>
+            <CardTitle>Daftar Booking</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {listError ? (
@@ -276,21 +277,23 @@ export function BookingManagement() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Booking Number</TableHead>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Court</TableHead>
-                  <TableHead>Booking Date</TableHead>
-                  <TableHead>Time</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead>Nomor Booking</TableHead>
+                  <TableHead>Pelanggan</TableHead>
+                  <TableHead>{UI_COPY.court}</TableHead>
+                  <TableHead>Tanggal Booking</TableHead>
+                  <TableHead>Jam</TableHead>
+                  <TableHead>{UI_COPY.status}</TableHead>
+                  <TableHead>Pembayaran</TableHead>
+                  <TableHead className="text-right">
+                    {UI_COPY.actions}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingList && !listResult ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-muted-foreground">
-                      Loading bookings...
+                      Memuat daftar booking...
                     </TableCell>
                   </TableRow>
                 ) : null}
@@ -300,7 +303,7 @@ export function BookingManagement() {
                 listResult.items.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-muted-foreground">
-                      No bookings found.
+                      Tidak ada booking ditemukan.
                     </TableCell>
                   </TableRow>
                 ) : null}
@@ -336,7 +339,7 @@ export function BookingManagement() {
                         size="sm"
                         onClick={() => openDetail(booking)}
                       >
-                        View
+                        {UI_COPY.view}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -346,8 +349,8 @@ export function BookingManagement() {
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-muted-foreground text-sm">
-                Page {listResult?.page ?? page} of {totalPages}
-                {listResult ? ` · ${listResult.total} bookings` : ""}
+                Halaman {listResult?.page ?? page} dari {totalPages}
+                {listResult ? ` · ${listResult.total} booking` : ""}
               </p>
 
               <div className="flex items-center gap-2">
@@ -357,7 +360,7 @@ export function BookingManagement() {
                   disabled={page <= 1 || isLoadingList}
                   onClick={() => setPage((current) => Math.max(1, current - 1))}
                 >
-                  Previous
+                  {UI_COPY.previous}
                 </Button>
                 <Button
                   variant="outline"
@@ -367,7 +370,7 @@ export function BookingManagement() {
                     setPage((current) => Math.min(totalPages, current + 1))
                   }
                 >
-                  Next
+                  {UI_COPY.next}
                 </Button>
               </div>
             </div>

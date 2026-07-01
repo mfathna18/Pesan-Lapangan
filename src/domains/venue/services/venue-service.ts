@@ -3,7 +3,10 @@ import { GorNotFoundError } from "@/domains/owner/errors";
 import type { GorService } from "@/domains/owner/services/gor-service";
 import type { CourtService } from "@/domains/booking/services/court-service";
 import { VenueNotFoundError } from "@/domains/venue/errors";
-import type { PublicVenueData } from "@/domains/venue/types";
+import type {
+  PublicVenueData,
+  PublicVenueListItem,
+} from "@/domains/venue/types";
 import { mapGorAndCourtsToPublicVenue } from "@/domains/venue/utils/venue-mapper";
 import { createCourtRepository } from "@/domains/booking/repositories/court-repository";
 import { createPriceRuleRepository } from "@/domains/booking/repositories/price-rule-repository";
@@ -40,6 +43,21 @@ export class VenueService {
       throw error;
     }
   }
+
+  async listActivePublicVenues(): Promise<PublicVenueListItem[]> {
+    const gors = await this.gorService.listActivePublicGors();
+
+    return gors.map((gor) => ({
+      id: gor.id,
+      name: gor.name,
+      slug: gor.slug,
+      city: gor.city,
+      address: gor.address,
+      description: gor.description,
+      logoUrl: gor.logoUrl,
+      coverImageUrl: gor.coverImageUrl,
+    }));
+  }
 }
 
 export function createVenueService(prisma: PrismaClient): VenueService {
@@ -52,6 +70,7 @@ export function createVenueService(prisma: PrismaClient): VenueService {
       courtRepository,
       operatingHoursRepository: createOperatingHoursRepository(prisma),
       priceRuleRepository: createPriceRuleRepository(prisma),
+      gorRepository,
     }),
   });
 }

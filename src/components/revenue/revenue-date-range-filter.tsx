@@ -62,7 +62,7 @@ export function RevenueDateRangeFilter({
   return (
     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
       <div className="space-y-2">
-        <Label>Date Range</Label>
+        <Label>Rentang Tanggal</Label>
         <Select
           value={range}
           onValueChange={(value) =>
@@ -73,18 +73,18 @@ export function RevenueDateRangeFilter({
           }
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select range" />
+            <SelectValue placeholder="Pilih rentang" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={REVENUE_DATE_RANGE.TODAY}>Today</SelectItem>
+            <SelectItem value={REVENUE_DATE_RANGE.TODAY}>Hari Ini</SelectItem>
             <SelectItem value={REVENUE_DATE_RANGE.SEVEN_DAYS}>
-              7 Days
+              7 Hari
             </SelectItem>
             <SelectItem value={REVENUE_DATE_RANGE.THIRTY_DAYS}>
-              30 Days
+              30 Hari
             </SelectItem>
             <SelectItem value={REVENUE_DATE_RANGE.CUSTOM}>
-              Custom Range
+              Rentang Kustom
             </SelectItem>
           </SelectContent>
         </Select>
@@ -93,7 +93,7 @@ export function RevenueDateRangeFilter({
       {range === REVENUE_DATE_RANGE.CUSTOM ? (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="revenue-from">From</Label>
+            <Label htmlFor="revenue-from">Dari</Label>
             <Input
               id="revenue-from"
               type="date"
@@ -102,7 +102,7 @@ export function RevenueDateRangeFilter({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="revenue-to">To</Label>
+            <Label htmlFor="revenue-to">Sampai</Label>
             <Input
               id="revenue-to"
               type="date"
@@ -121,7 +121,7 @@ export function RevenueDateRangeFilter({
           onClick={applyFilters}
           className="w-full md:w-auto"
         >
-          Apply Filter
+          Terapkan Filter
         </Button>
       </div>
     </div>

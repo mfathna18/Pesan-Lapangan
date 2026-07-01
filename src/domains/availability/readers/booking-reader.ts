@@ -1,5 +1,6 @@
 import type { PrismaClient } from "@/generated/prisma/client";
 import type { TimeInterval } from "@/domains/availability/types";
+import { buildAvailabilityBlockingBookingWhere } from "@/domains/booking/utils/booking-expiration";
 import { startOfDay } from "@/domains/availability/utils/time-interval";
 
 export type BookingReader = {
@@ -13,9 +14,7 @@ export function createPrismaBookingReader(prisma: PrismaClient): BookingReader {
         where: {
           courtId,
           bookingDate: startOfDay(date),
-          status: {
-            in: ["PENDING", "CONFIRMED"],
-          },
+          ...buildAvailabilityBlockingBookingWhere(new Date()),
         },
         select: {
           startMinute: true,

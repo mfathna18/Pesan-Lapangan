@@ -37,7 +37,7 @@ export function DashboardSidebar({
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold">{siteConfig.name}</p>
             <p className="text-muted-foreground truncate text-xs">
-              Owner Dashboard
+              Panel Pemilik
             </p>
           </div>
 
@@ -46,7 +46,7 @@ export function DashboardSidebar({
             size="icon-sm"
             className="lg:hidden"
             onClick={onClose}
-            aria-label="Close sidebar"
+            aria-label="Tutup menu"
           >
             <X />
           </Button>

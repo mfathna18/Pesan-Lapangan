@@ -54,6 +54,50 @@ export class PaymentRepository {
     });
   }
 
+  async findPendingByBookingId(bookingId: string): Promise<Payment | null> {
+    return this.prisma.payment.findFirst({
+      where: {
+        bookingId,
+        status: PAYMENT_STATUS.PENDING,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async findPaidDetailsByBookingId(bookingId: string): Promise<
+    | (Payment & {
+        invoice: {
+          id: string;
+          invoiceNumber: string;
+        } | null;
+      })
+    | null
+  > {
+    return this.prisma.payment.findFirst({
+      where: {
+        bookingId,
+        status: PAYMENT_STATUS.PAID,
+      },
+      include: {
+        invoice: {
+          select: {
+            id: true,
+            invoiceNumber: true,
+          },
+        },
+      },
+    });
+  }
+
+  async findLatestByBookingId(bookingId: string): Promise<Payment | null> {
+    return this.prisma.payment.findFirst({
+      where: { bookingId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   async findByExternalReference(
     externalReference: string,
   ): Promise<Payment | null> {
@@ -69,6 +113,12 @@ export class PaymentRepository {
         ...(input.status !== undefined ? { status: input.status } : {}),
         ...(input.externalReference !== undefined
           ? { externalReference: input.externalReference }
+          : {}),
+        ...(input.paymentUrl !== undefined
+          ? { paymentUrl: input.paymentUrl }
+          : {}),
+        ...(input.snapToken !== undefined
+          ? { snapToken: input.snapToken }
           : {}),
         ...(input.paidAt !== undefined ? { paidAt: input.paidAt } : {}),
         ...(input.expiredAt !== undefined

@@ -40,7 +40,7 @@ export async function generateMetadata({
     const checkout = await getCachedCheckoutData(slug, bookingId);
 
     return {
-      title: `Checkout ${checkout.bookingNumber}`,
+      title: `Pembayaran ${checkout.bookingNumber}`,
       description: `Selesaikan pembayaran booking ${checkout.bookingNumber} di ${checkout.venueName}.`,
       alternates: {
         canonical: `${siteConfig.url}/gor/${slug}/checkout/${bookingId}`,
@@ -48,7 +48,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Checkout",
+      title: "Pembayaran",
     };
   }
 }

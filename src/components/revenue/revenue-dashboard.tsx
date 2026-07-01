@@ -34,10 +34,10 @@ export function RevenueDashboard({
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="space-y-1">
         <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Overview
+          Ringkasan
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Revenue Dashboard
+          Dasbor Pendapatan
         </h1>
       </div>
 
@@ -47,14 +47,12 @@ export function RevenueDashboard({
 
       <Card>
         <CardHeader>
-          <CardTitle>Filter Recent Payments</CardTitle>
+          <CardTitle>Filter Pembayaran Terbaru</CardTitle>
         </CardHeader>
         <CardContent>
           <Suspense
             fallback={
-              <p className="text-muted-foreground text-sm">
-                Loading filters...
-              </p>
+              <p className="text-muted-foreground text-sm">Memuat filter...</p>
             }
           >
             <RevenueDateRangeFilter

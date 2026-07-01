@@ -43,27 +43,36 @@ export function VenueCourtsSection({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {courts.map((court) => (
-              <Card key={court.id} className="flex flex-col">
+              <Card
+                key={court.id}
+                className={cn("flex flex-col", !court.isActive && "opacity-75")}
+              >
                 <CardHeader className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <CardTitle className="text-lg">{court.name}</CardTitle>
-                    <Badge variant={court.isActive ? "confirmed" : "cancelled"}>
-                      {court.isActive ? "Aktif" : "Nonaktif"}
+                    <Badge variant={court.isActive ? "confirmed" : "expired"}>
+                      {court.isActive ? "Aktif" : "Tidak Aktif"}
                     </Badge>
                   </div>
                   <CardDescription>{court.sportLabel}</CardDescription>
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
-                  <Link
-                    href={`/gor/${gorSlug}/court/${court.id}`}
-                    className={cn(
-                      buttonVariants({ variant: "outline" }),
-                      "w-full",
-                    )}
-                  >
-                    <CalendarDays className="size-4" />
-                    Lihat Jadwal
-                  </Link>
+                  {court.isActive ? (
+                    <Link
+                      href={`/gor/${gorSlug}/court/${court.id}/booking`}
+                      className={cn(
+                        buttonVariants({ variant: "outline" }),
+                        "w-full",
+                      )}
+                    >
+                      <CalendarDays className="size-4" />
+                      Booking Sekarang
+                    </Link>
+                  ) : (
+                    <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-3 text-center text-sm">
+                      Lapangan ini tidak tersedia untuk booking.
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}

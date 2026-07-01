@@ -26,12 +26,12 @@ export default function RootError({ error, reset }: RootErrorProps) {
         <p className="text-muted-foreground text-sm sm:text-base" role="alert">
           {getPublicErrorMessage(
             error,
-            "Something went wrong. Please try again.",
+            "Terjadi kesalahan. Silakan coba lagi.",
           )}
         </p>
       </div>
       <Button type="button" onClick={reset}>
-        Try again
+        Coba lagi
       </Button>
     </main>
   );

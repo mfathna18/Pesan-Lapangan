@@ -37,9 +37,12 @@ export async function getCourtAvailabilityAction(
       "getCourtAvailabilityAction.loadCourt",
       error,
       {
-        fallbackMessage: "Failed to load court.",
+        fallbackMessage: "Gagal memuat lapangan.",
         knownErrors: [
-          createKnownActionError(CourtNotFoundError, "Court not found."),
+          createKnownActionError(
+            CourtNotFoundError,
+            "Lapangan tidak ditemukan.",
+          ),
         ],
       },
     );
@@ -48,7 +51,7 @@ export async function getCourtAvailabilityAction(
   const bookingDate = new Date(`${parsed.data.bookingDate}T00:00:00`);
 
   if (Number.isNaN(bookingDate.getTime())) {
-    return actionFailure("Booking date is invalid.");
+    return actionFailure("Tanggal booking tidak valid.");
   }
 
   try {
@@ -63,7 +66,7 @@ export async function getCourtAvailabilityAction(
       "getCourtAvailabilityAction.loadAvailability",
       error,
       {
-        fallbackMessage: "Failed to load availability.",
+        fallbackMessage: "Gagal memuat ketersediaan.",
       },
     );
   }

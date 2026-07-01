@@ -1,41 +1,34 @@
-import type { AnalyticsDashboardData } from "@/domains/booking/types";
+import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/types";
+import { formatCurrency } from "@/domains/booking/utils/booking-display";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type AnalyticsSummaryCardsProps = {
-  cards: AnalyticsDashboardData["cards"];
+  kpis: OwnerAnalyticsDashboardData["kpis"];
 };
 
-export function AnalyticsSummaryCards({ cards }: AnalyticsSummaryCardsProps) {
+export function AnalyticsSummaryCards({ kpis }: AnalyticsSummaryCardsProps) {
   const summaryCards = [
     {
-      title: "Most Booked Court",
-      value: cards.mostBookedCourt,
+      title: "Booking Hari Ini",
+      value: kpis.bookingsToday.toLocaleString("id-ID"),
     },
     {
-      title: "Peak Booking Hour",
-      value: cards.peakBookingHour,
+      title: "Booking Minggu Ini",
+      value: kpis.bookingsThisWeek.toLocaleString("id-ID"),
     },
     {
-      title: "Peak Booking Day",
-      value: cards.peakBookingDay,
+      title: "Booking Bulan Ini",
+      value: kpis.bookingsThisMonth.toLocaleString("id-ID"),
     },
     {
-      title: "Booking Success Rate",
-      value: `${cards.bookingSuccessRate}%`,
-    },
-    {
-      title: "Cancellation Rate",
-      value: `${cards.cancellationRate}%`,
-    },
-    {
-      title: "Court Utilization",
-      value: `${cards.courtUtilization}%`,
+      title: "Pendapatan Bulan Ini",
+      value: formatCurrency(kpis.revenueThisMonth),
     },
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {summaryCards.map((card) => (
         <Card key={card.title}>
           <CardHeader className="pb-2">

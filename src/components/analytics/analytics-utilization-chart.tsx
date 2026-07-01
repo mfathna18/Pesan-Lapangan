@@ -18,12 +18,14 @@ export function AnalyticsUtilizationChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Court Utilization</CardTitle>
-        <CardDescription>Occupancy percentage by court</CardDescription>
+        <CardTitle>Utilisasi Lapangan</CardTitle>
+        <CardDescription>Persentase okupansi per lapangan</CardDescription>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No courts available.</p>
+          <p className="text-muted-foreground text-sm">
+            Tidak ada lapangan tersedia.
+          </p>
         ) : (
           <div className="space-y-4">
             {data.map((court) => (

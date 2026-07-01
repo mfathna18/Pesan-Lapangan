@@ -10,19 +10,19 @@ type RevenueSummaryCardsProps = {
 export function RevenueSummaryCards({ summary }: RevenueSummaryCardsProps) {
   const cards = [
     {
-      title: "Today's Revenue",
+      title: "Pendapatan Hari Ini",
       value: formatCurrency(summary.todayRevenue),
     },
     {
-      title: "This Month Revenue",
+      title: "Pendapatan Bulan Ini",
       value: formatCurrency(summary.monthRevenue),
     },
     {
-      title: "Completed Payments",
+      title: "Pembayaran Selesai",
       value: summary.completedPayments.toLocaleString("id-ID"),
     },
     {
-      title: "Pending Payments",
+      title: "Pembayaran Tertunda",
       value: summary.pendingPayments.toLocaleString("id-ID"),
     },
   ];

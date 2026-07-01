@@ -78,3 +78,17 @@ export function formatCurrency(amount: number): string {
     maximumFractionDigits: 0,
   }).format(amount);
 }
+
+export function formatTimeRange(
+  startMinute: number,
+  endMinute: number,
+): string {
+  return `${formatMinuteOfDay(startMinute)} - ${formatMinuteOfDay(endMinute)}`;
+}
+
+export function formatCompactHourRange(
+  startMinute: number,
+  endMinute: number,
+): string {
+  return formatTimeRange(startMinute, endMinute);
+}

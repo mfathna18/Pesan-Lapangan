@@ -1,191 +1,315 @@
-# PesanLapangan — Vercel Deployment Guide
+# PesanLapangan — Production Deployment (Vercel)
 
-Production deployment checklist and environment variable reference for Vercel.
-
----
-
-## Deployment Checklist
-
-### 1. Repository & Vercel project
-
-- [ ] Import the Git repository into Vercel
-- [ ] Set **Framework Preset** to **Next.js**
-- [ ] Set **Root Directory** to repository root (default)
-- [ ] Set **Build Command** to `npm run build` (default)
-- [ ] Set **Install Command** to `npm install` (default)
-- [ ] Set **Output Directory** to `.next` (default)
-- [ ] Confirm Node.js version is **20.x** or newer in Project Settings
-
-### 2. Environment variables
-
-- [ ] Configure all required variables in Vercel → **Settings → Environment Variables**
-- [ ] Set variables for **Production**, **Preview**, and **Development** scopes as needed
-- [ ] Use **HTTPS** URLs for `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` in Production
-- [ ] Generate a unique `BETTER_AUTH_SECRET` (32+ characters) per environment
-- [ ] Do **not** commit `.env` to Git
-
-### 3. Database (PostgreSQL)
-
-- [ ] Provision PostgreSQL (Neon, Supabase, Vercel Postgres, etc.)
-- [ ] Copy the **pooled** connection string into `DATABASE_URL`
-- [ ] Ensure `?sslmode=require` (or provider equivalent) for production
-- [ ] Run migrations against production **before** or **during** first deploy:
-  ```bash
-  npm run db:migrate:deploy
-  ```
-- [ ] `postinstall` runs `prisma generate` automatically on Vercel builds
-- [ ] No schema changes are required for deployment — only apply existing migrations
-
-### 4. Better Auth
-
-- [ ] Set `BETTER_AUTH_URL` to your canonical production URL (e.g. `https://your-domain.com`)
-- [ ] Set `NEXT_PUBLIC_APP_URL` to the same public URL
-- [ ] Both URLs must match the domain users visit (including `www` vs apex consistency)
-- [ ] Cookies are `httpOnly` and `Secure` in production via Better Auth
-- [ ] Auth API route: `/api/auth/[...all]` (no extra configuration needed)
-
-### 5. Midtrans
-
-- [ ] Set `MIDTRANS_IS_PRODUCTION=true` in Production when using live keys
-- [ ] Register production **Payment Notification URL** in Midtrans Dashboard:
-  ```
-  https://your-domain.com/api/payment/midtrans/callback
-  ```
-- [ ] Register **Finish Redirect URL** patterns if required by your Midtrans account settings
-- [ ] Keep sandbox keys only in Preview/Development environments
-
-### 6. Domain & HTTPS
-
-- [ ] Add custom domain in Vercel → **Settings → Domains**
-- [ ] Enable automatic HTTPS (Vercel default)
-- [ ] Redirect apex ↔ `www` to a single canonical host
-- [ ] Update `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` after domain is final
-
-### 7. Security (already configured in repo)
-
-- [ ] Security headers via `next.config.ts` (HSTS in production, X-Frame-Options, etc.)
-- [ ] `X-Powered-By` header disabled
-- [ ] Owner dashboard routes blocked in `robots.txt` (`/dashboard/`, `/owner/`, `/api/`)
-- [ ] Server Actions require owner session + owner-scoped data access
-
-### 8. SEO & metadata
-
-- [ ] Root metadata configured in `src/app/layout.tsx`
-- [ ] `robots.txt` generated at `/robots.txt`
-- [ ] `sitemap.xml` generated at `/sitemap.xml` (includes active public venue pages)
-- [ ] Per-route metadata on public venue and dashboard pages
-
-### 9. Images
-
-- [ ] Venue/court images use native `<img>` with owner-provided URLs — **no** `next/image` remotePatterns required today
-- [ ] When migrating to `next/image`, add `images.remotePatterns` in `next.config.ts` for your CDN domains
-
-### 10. Post-deploy verification
-
-- [ ] `npm run build` passes locally with production-like env vars
-- [ ] Home page loads over HTTPS
-- [ ] Owner sign-in / sign-up works (`/api/auth/*`)
-- [ ] Public venue page loads: `/gor/[slug]`
-- [ ] Midtrans sandbox payment flow completes (checkout + callback)
-- [ ] Subscription payment callback works for owner billing
-- [ ] Dashboard loads for authenticated owner: `/dashboard`
-- [ ] `/robots.txt` and `/sitemap.xml` are reachable
-
-### 11. Preview deployments
-
-- [ ] Set Preview-scoped env vars (separate DB or branch DB recommended)
-- [ ] Use Midtrans **sandbox** keys for Preview (`MIDTRANS_IS_PRODUCTION=false`)
-- [ ] Use Preview URL for `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL` on preview branches, or use a stable staging domain
+Guide for deploying PesanLapangan to Vercel with PostgreSQL, Better Auth, Midtrans, and Prisma migrations.
 
 ---
 
-## Environment Variable Checklist
+## 1. GitHub
 
-| Variable                 | Required | Scope          | Production notes                                        |
-| ------------------------ | -------- | -------------- | ------------------------------------------------------- |
-| `NODE_ENV`               | Auto     | All            | Set to `production` on Vercel Production                |
-| `DATABASE_URL`           | Yes      | Server         | Pooled PostgreSQL URL with SSL                          |
-| `BETTER_AUTH_SECRET`     | Yes      | Server         | Unique 32+ char secret; never reuse across envs         |
-| `BETTER_AUTH_URL`        | Yes      | Server         | **HTTPS** canonical app URL                             |
-| `NEXT_PUBLIC_APP_URL`    | Yes      | Client + build | **HTTPS** canonical app URL; baked into client bundle   |
-| `MIDTRANS_SERVER_KEY`    | Yes      | Server         | Production key when `MIDTRANS_IS_PRODUCTION=true`       |
-| `MIDTRANS_CLIENT_KEY`    | Yes      | Server         | Production key when live                                |
-| `MIDTRANS_IS_PRODUCTION` | Yes      | Server         | `true` for live Midtrans; `false` for sandbox           |
-| `SKIP_ENV_VALIDATION`    | No       | Build          | Only for CI/Docker; **do not** use on Vercel Production |
+1. Push the repository to GitHub (private or public).
+2. Ensure these files are committed:
+   - `prisma/migrations/` — all migration history
+   - `prisma/schema.prisma`
+   - `vercel.json` — cron schedule for booking expiration
+   - `.env.example` — variable reference (never commit `.env`)
+3. Protect the `main` branch if working with a team.
+4. Use **Preview** deployments for feature branches; use **Production** only for the live domain.
 
-### Validation rules (enforced by `src/config/env.ts`)
+---
 
-- `DATABASE_URL`, Midtrans keys: non-empty strings
-- `BETTER_AUTH_SECRET`: minimum 32 characters
-- `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`: valid URLs; **HTTPS required for non-local deployments** (localhost HTTP allowed for local builds)
-- `MIDTRANS_IS_PRODUCTION`: `"true"` or `"false"` (transformed to boolean)
-- Env is validated at server startup via `src/instrumentation.ts`
+## 2. Vercel
+
+### Create project
+
+1. Go to [vercel.com/new](https://vercel.com/new) and import the GitHub repository.
+2. **Framework Preset:** Next.js (auto-detected).
+3. **Root Directory:** repository root.
+4. **Build Command:** leave default — Vercel runs `vercel-build` when defined in `package.json`:
+   ```json
+   "vercel-build": "prisma migrate deploy && npm run build"
+   ```
+5. **Install Command:** `npm install` (default). `postinstall` runs `prisma generate`.
+6. **Node.js version:** 20.x or newer (see `engines` in `package.json`).
+
+### Cron jobs
+
+`vercel.json` registers a cron job:
+
+| Path                        | Schedule     | Purpose                        |
+| --------------------------- | ------------ | ------------------------------ |
+| `/api/cron/expire-bookings` | Every minute | Expire unpaid pending bookings |
+
+Set `CRON_SECRET` in Vercel Environment Variables. Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` when invoking cron routes.
+
+### Serverless runtime
+
+These routes require the **Node.js** runtime (not Edge):
+
+- `/api/auth/[...all]`
+- `/api/payment/midtrans/callback`
+- `/api/cron/expire-bookings`
+- Invoice PDF routes (`*/invoice/pdf`)
+
+PDF generation uses **pdfkit** (listed in `serverExternalPackages` in `next.config.ts`) with built-in Helvetica fonts — compatible with Vercel serverless functions.
+
+---
+
+## 3. Environment Variables
+
+Configure in **Vercel → Project → Settings → Environment Variables**.
+
+| Variable                 | Required | Scopes              | Description                                                  |
+| ------------------------ | -------- | ------------------- | ------------------------------------------------------------ |
+| `DATABASE_URL`           | Yes      | All                 | PostgreSQL connection string (pooled + SSL in production)    |
+| `BETTER_AUTH_SECRET`     | Yes      | All                 | 32+ character secret; unique per environment                 |
+| `BETTER_AUTH_URL`        | Yes      | All                 | Public app URL (must match domain users visit)               |
+| `NEXT_PUBLIC_APP_URL`    | Yes      | All                 | Same as `BETTER_AUTH_URL`; baked into client bundle at build |
+| `MIDTRANS_SERVER_KEY`    | Yes      | All                 | Midtrans server key (sandbox or production)                  |
+| `MIDTRANS_CLIENT_KEY`    | Yes      | All                 | Midtrans client key                                          |
+| `MIDTRANS_IS_PRODUCTION` | Yes      | All                 | `false` for sandbox, `true` for live Midtrans                |
+| `CRON_SECRET`            | Yes      | Production, Preview | Secret for `/api/cron/expire-bookings`                       |
+| `SKIP_ENV_VALIDATION`    | No       | Never on Production | Only for special CI/Docker builds                            |
+
+### Auto-provided by Vercel (do not set)
+
+| Variable     | Purpose                                   |
+| ------------ | ----------------------------------------- |
+| `VERCEL_URL` | Current deployment hostname               |
+| `VERCEL_ENV` | `production`, `preview`, or `development` |
+
+Preview deployments automatically trust `https://${VERCEL_URL}` for Better Auth CSRF (see `src/config/auth-urls.ts`).
+
+### Validation (`src/config/env.ts`)
+
+- URLs must use **HTTPS** except `localhost` / `127.0.0.1` (local dev only).
+- Env is loaded at server startup via `src/instrumentation.ts`.
+- Build fails if required variables are missing or invalid.
 
 ### Production example
 
 ```env
-NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
-BETTER_AUTH_SECRET=your-unique-secret-at-least-32-characters-long
+BETTER_AUTH_SECRET=<generate-unique-32-plus-chars>
 BETTER_AUTH_URL=https://your-domain.com
 MIDTRANS_SERVER_KEY=Mid-server-...
 MIDTRANS_CLIENT_KEY=Mid-client-...
 MIDTRANS_IS_PRODUCTION=true
+CRON_SECRET=<generate-unique-32-plus-chars>
 ```
 
----
+### Preview / staging example
 
-## Vercel-specific notes
+```env
+NEXT_PUBLIC_APP_URL=https://your-app-git-branch.vercel.app
+BETTER_AUTH_URL=https://your-app-git-branch.vercel.app
+MIDTRANS_IS_PRODUCTION=false
+# Use sandbox Midtrans keys
+# Use a separate staging database (recommended)
+```
 
-### Build
-
-- `postinstall` → `prisma generate` (Prisma Client generated before build)
-- `npm run build` → `next build --turbopack`
-- Env validation runs during build when server modules import `@/config/env`
-
-### Database connections
-
-- Use connection pooling (`pgbouncer`, Neon pooler, Supabase pooler) in `DATABASE_URL` for serverless functions
-- Run `npm run db:migrate:deploy` from CI or locally against production DB — do not rely on build step for migrations unless you add it explicitly
-
-### Serverless runtime
-
-- Prisma uses `@prisma/adapter-pg` with `pg` driver (configured in `src/lib/db/prisma.ts`)
-- Prisma client is cached in development; new instance per function in production (expected for serverless)
-
-### Auth cookies on Vercel
-
-- `useSecureCookies` enabled when `NODE_ENV=production`
-- Cookie prefix: `pesan-lapangan`
-- Requires HTTPS (Vercel provides TLS automatically)
-
----
-
-## Quick deploy commands (local / CI)
+Copy `.env.example` locally:
 
 ```bash
-# Install
+cp .env.example .env
+```
+
+---
+
+## 4. Prisma
+
+### Local development
+
+```bash
 npm install
+npm run db:generate
+npm run db:migrate        # prisma migrate dev
+```
 
-# Apply migrations to target database
+### Production deployment
+
+Migrations run automatically on Vercel via `vercel-build`:
+
+```bash
+prisma migrate deploy && npm run build
+```
+
+You can also run migrations manually before the first deploy:
+
+```bash
+DATABASE_URL="postgresql://..." npm run db:migrate:deploy
+```
+
+### Database provider tips
+
+- Use a **pooled** connection string for serverless (Neon pooler, Supabase pooler, Vercel Postgres, PgBouncer).
+- Include `?sslmode=require` (or provider equivalent) in production.
+- Prisma uses `@prisma/adapter-pg` with the `pg` driver (`src/lib/db/prisma.ts`).
+- `postinstall` runs `prisma generate` on every install/build.
+
+### Do not use in production
+
+- `prisma db push` — bypasses migration history
+- `prisma migrate dev` — interactive; for local dev only
+
+---
+
+## 5. Domain
+
+1. In Vercel → **Settings → Domains**, add your custom domain (e.g. `pesanlapangan.com`).
+2. Configure DNS per Vercel instructions (A/CNAME records).
+3. Enable automatic HTTPS (Vercel default).
+4. Pick one canonical host (apex or `www`) and redirect the other.
+5. Update environment variables to the **final** HTTPS URL:
+   - `NEXT_PUBLIC_APP_URL=https://your-domain.com`
+   - `BETTER_AUTH_URL=https://your-domain.com`
+6. Redeploy after changing `NEXT_PUBLIC_APP_URL` (client bundle is built at deploy time).
+
+Public URLs in the app (sitemap, robots, Open Graph, canonical links) come from `NEXT_PUBLIC_APP_URL` via `src/config/site.ts` — no hardcoded localhost in production.
+
+---
+
+## 6. First Deployment
+
+### Pre-deploy checklist
+
+- [ ] PostgreSQL database provisioned
+- [ ] All environment variables set in Vercel (Production scope)
+- [ ] `BETTER_AUTH_SECRET` and `CRON_SECRET` generated (32+ chars each)
+- [ ] HTTPS URLs for `BETTER_AUTH_URL` and `NEXT_PUBLIC_APP_URL`
+- [ ] Midtrans notification URL registered (see section 8 for sandbox)
+
+### Deploy
+
+1. Push to `main` (or merge PR) — Vercel starts a Production deployment.
+2. Watch build logs:
+   - `prisma migrate deploy` applies pending migrations
+   - `prisma generate` (via postinstall)
+   - `next build --turbopack`
+3. Confirm deployment status is **Ready**.
+
+### Alternative: manual migration before deploy
+
+```bash
+export DATABASE_URL="postgresql://..."
 npm run db:migrate:deploy
+git push origin main
+```
 
-# Verify production build
-npm run typecheck
+---
+
+## 7. Post-Deployment Verification
+
+Run locally first (optional):
+
+```bash
 npm run lint
+npm run typecheck
 npm run build
 ```
+
+### Smoke tests (Production)
+
+| Check             | URL / action                        | Expected                                |
+| ----------------- | ----------------------------------- | --------------------------------------- |
+| Home page         | `/`                                 | Loads over HTTPS                        |
+| Robots            | `/robots.txt`                       | Disallows `/dashboard/`, `/api/`        |
+| Sitemap           | `/sitemap.xml`                      | Lists venue URLs with production domain |
+| Owner register    | `/register`                         | Form loads                              |
+| Owner login       | `/login`                            | Session cookie set after login          |
+| Dashboard         | `/dashboard`                        | Redirects to login if unauthenticated   |
+| Public venue      | `/gor/[slug]`                       | Venue page loads                        |
+| Booking flow      | Public booking → checkout           | Snap / payment UI loads                 |
+| Midtrans callback | Pay in sandbox                      | Booking status updates                  |
+| Invoice PDF       | Download from dashboard or checkout | A4 PDF downloads                        |
+| Cron              | Vercel Cron logs                    | 200 from `/api/cron/expire-bookings`    |
+
+### Security headers (configured in `next.config.ts`)
+
+- `Strict-Transport-Security` (production only)
+- `X-Frame-Options: SAMEORIGIN`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: origin-when-cross-origin`
+- `X-Powered-By` disabled
+
+### Auth cookies (Better Auth)
+
+- `httpOnly` session cookies
+- `Secure` flag in production (`useSecureCookies: true`)
+- Cookie prefix: `pesan-lapangan`
+
+---
+
+## 8. Midtrans Sandbox Activation
+
+Use sandbox on **Preview** and for local/staging verification before going live.
+
+### Environment (sandbox)
+
+```env
+MIDTRANS_IS_PRODUCTION=false
+MIDTRANS_SERVER_KEY=SB-Mid-server-...
+MIDTRANS_CLIENT_KEY=SB-Mid-client-...
+NEXT_PUBLIC_APP_URL=https://your-deployment-url
+BETTER_AUTH_URL=https://your-deployment-url
+```
+
+Get keys from [Midtrans Sandbox Dashboard](https://dashboard.sandbox.midtrans.com) → **Settings → Access Keys**.
+
+### Notification URL
+
+Register in Midtrans Sandbox → **Settings → Configuration → Payment Notification URL**:
+
+```text
+https://your-deployment-url/api/payment/midtrans/callback
+```
+
+| Environment                 | URL                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Vercel Preview / Production | `https://<your-vercel-or-custom-domain>/api/payment/midtrans/callback`               |
+| Local dev                   | Requires HTTPS tunnel (ngrok, Cloudflare Tunnel) — Midtrans cannot reach `localhost` |
+
+See [docs/MIDTRANS_SANDBOX.md](./MIDTRANS_SANDBOX.md) for the full end-to-end sandbox flow (test cards, `deny` → failed, invoice PDF).
+
+### Going live (production Midtrans)
+
+1. Obtain production keys from [Midtrans Dashboard](https://dashboard.midtrans.com).
+2. Set `MIDTRANS_IS_PRODUCTION=true` in Vercel **Production** only.
+3. Update notification URL to production domain.
+4. Redeploy Production.
 
 ---
 
 ## Troubleshooting
 
-| Issue                         | Likely cause                          | Fix                                                                      |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
-| Build fails on env validation | Missing or invalid env vars in Vercel | Add all required vars; use HTTPS URLs in Production                      |
-| Auth redirect loops           | `BETTER_AUTH_URL` mismatch            | Match exact deployed domain (scheme + host)                              |
-| Midtrans callback 403         | Invalid signature                     | Verify `MIDTRANS_SERVER_KEY` matches environment (sandbox vs production) |
-| Midtrans callback 404         | Wrong notification URL                | Set Midtrans dashboard URL to `/api/payment/midtrans/callback`           |
-| Database connection errors    | Non-pooled URL or missing SSL         | Use provider pooled URL + `sslmode=require`                              |
-| Prisma client not found       | Generate step skipped                 | Ensure `postinstall` runs; check build logs                              |
+| Issue                         | Likely cause                    | Fix                                                                         |
+| ----------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
+| Build fails on env validation | Missing/invalid env vars        | Add all required vars; use HTTPS in Production                              |
+| `prisma migrate deploy` fails | Wrong `DATABASE_URL` or network | Verify pooled URL, SSL, IP allowlist                                        |
+| Auth redirect loops           | URL mismatch                    | `BETTER_AUTH_URL` must exactly match browser URL                            |
+| Preview auth fails            | Wrong trusted origin            | Set Preview `BETTER_AUTH_URL` to preview URL, or rely on `VERCEL_URL` trust |
+| Midtrans callback 403         | Wrong server key                | Match sandbox vs production keys with `MIDTRANS_IS_PRODUCTION`              |
+| Midtrans callback 404         | Wrong notification URL          | Must be `/api/payment/midtrans/callback`                                    |
+| PDF generation error          | Edge runtime                    | Routes use `runtime = "nodejs"`; pdfkit in `serverExternalPackages`         |
+| Database connection errors    | Non-pooled URL                  | Use provider connection pooler                                              |
+| Cron 401                      | Missing/wrong `CRON_SECRET`     | Set in Vercel env; redeploy                                                 |
+
+---
+
+## Quick reference commands
+
+```bash
+# Local
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run dev
+
+# Pre-deploy verification
+npm run lint
+npm run typecheck
+npm run build
+
+# Manual production migration
+DATABASE_URL="..." npm run db:migrate:deploy
+```

@@ -24,7 +24,7 @@ export async function getGorProfileAction(): Promise<
     return actionSuccess(profile);
   } catch (error) {
     return handleServerActionError("getGorProfileAction", error, {
-      fallbackMessage: "Failed to load GOR profile.",
+      fallbackMessage: "Gagal memuat profil GOR.",
       knownErrors: [createKnownActionError(OwnerNotFoundError)],
     });
   }

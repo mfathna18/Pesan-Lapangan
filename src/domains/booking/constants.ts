@@ -1,5 +1,7 @@
 export const BOOKING_DURATION_INTERVAL_MINUTES = 60 as const;
 
+export const BOOKING_PENDING_EXPIRY_MINUTES = 5 as const;
+
 export const BOOKING_SLOT_UNAVAILABLE_MESSAGE =
   "Slot waktu yang dipilih sudah tidak tersedia. Silakan pilih waktu lain." as const;
 
@@ -28,12 +30,21 @@ export const COURT_FACILITY_LABELS = {
   OTHER: "Lainnya",
 } as const;
 
+export const COURT_SPORT_TYPE_VALUES = [
+  "BADMINTON",
+  "FUTSAL",
+  "BASKETBALL",
+  "VOLLEYBALL",
+  "TENNIS",
+  "OTHER",
+] as const;
+
 export const DAY_OF_WEEK_LABELS = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
 ] as const;

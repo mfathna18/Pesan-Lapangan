@@ -11,10 +11,7 @@ import {
   actionSuccess,
   type ActionResponse,
 } from "@/domains/booking/actions/types";
-import {
-  BOOKING_DURATION_INTERVAL_MINUTES,
-  BOOKING_SLOT_UNAVAILABLE_MESSAGE,
-} from "@/domains/booking/constants";
+import { BOOKING_SLOT_UNAVAILABLE_MESSAGE } from "@/domains/booking/constants";
 import {
   BookingValidationError,
   CourtNotFoundError,
@@ -79,7 +76,7 @@ export async function createPublicBookingAction(
       courtId: parsed.data.courtId,
       bookingDate,
       startMinute: parsed.data.startMinute,
-      durationMinute: BOOKING_DURATION_INTERVAL_MINUTES,
+      endMinute: parsed.data.endMinute,
       contact: {
         customerName: parsed.data.contact.customerName,
         customerPhone: parsed.data.contact.customerPhone.replace(/[\s-]/g, ""),

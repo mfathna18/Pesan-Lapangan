@@ -25,7 +25,7 @@ export function resolveMidtransCallbackStatus(
   }
 
   if (transaction_status === "deny") {
-    return "ignored";
+    return "failed";
   }
 
   if (transaction_status === "pending") {

@@ -47,7 +47,7 @@ export async function listBookingsAction(
     return actionSuccess(result);
   } catch (error) {
     return handleServerActionError("listBookingsAction", error, {
-      fallbackMessage: "Failed to load bookings.",
+      fallbackMessage: "Gagal memuat booking.",
     });
   }
 }
@@ -64,7 +64,7 @@ export async function getBookingFilterOptionsAction(): Promise<
     return actionSuccess(options);
   } catch (error) {
     return handleServerActionError("getBookingFilterOptionsAction", error, {
-      fallbackMessage: "Failed to load booking filters.",
+      fallbackMessage: "Gagal memuat filter booking.",
     });
   }
 }

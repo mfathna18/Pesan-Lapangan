@@ -1,9 +1,11 @@
-import type { PrismaClient } from "@/generated/prisma/client";
+import type { BookingStatus, PrismaClient } from "@/generated/prisma/client";
 
 export type BookingForPayment = {
   id: string;
   bookingNumber: string;
   totalPrice: number;
+  status: BookingStatus;
+  expiresAt: Date;
   contact: {
     customerName: string;
     customerPhone: string;
@@ -25,6 +27,8 @@ export function createPaymentBookingReader(
           id: true,
           bookingNumber: true,
           totalPrice: true,
+          status: true,
+          expiresAt: true,
           contact: {
             select: {
               customerName: true,

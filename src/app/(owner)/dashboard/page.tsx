@@ -1,36 +1,20 @@
-import {
-  buildRevenueDashboardInput,
-  RevenueDashboard,
-} from "@/components/revenue/revenue-dashboard";
-import { getPaymentService } from "@/domains/payment/actions/get-payment-service";
+import { OwnerOperationalDashboard } from "@/components/dashboard/owner-operational-dashboard";
+import { createPageMetadata } from "@/config/page-metadata";
+import { getOwnerAnalyticsService } from "@/domains/analytics/actions/get-owner-analytics-service";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 
-export const metadata = {
-  title: "Revenue Dashboard",
-};
+export const metadata = createPageMetadata(
+  "Beranda",
+  "Ringkasan operasional venue, booking, dan pendapatan.",
+);
 
-type DashboardPageProps = {
-  searchParams: Promise<{
-    range?: string;
-    from?: string;
-    to?: string;
-  }>;
-};
-
-export default async function DashboardPage({
-  searchParams,
-}: DashboardPageProps) {
+export default async function DashboardPage() {
   const session = await requireOwnerSession();
   const ownerId = await requireOwnerId(session.user.id);
 
-  const resolvedSearchParams = await searchParams;
-  const revenueData = await getPaymentService().getRevenueDashboard({
-    ownerId,
-    ...buildRevenueDashboardInput(resolvedSearchParams),
-  });
+  const dashboardData =
+    await getOwnerAnalyticsService().getOperationalDashboard(ownerId);
 
-  return (
-    <RevenueDashboard data={revenueData} searchParams={resolvedSearchParams} />
-  );
+  return <OwnerOperationalDashboard data={dashboardData} />;
 }

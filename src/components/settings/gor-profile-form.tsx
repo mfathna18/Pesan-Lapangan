@@ -105,9 +105,9 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
     <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-6">
       <div className="space-y-1">
         <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Settings
+          Pengaturan
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">GOR Profile</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">Profil GOR</h1>
         <p className="text-muted-foreground text-sm sm:text-base">
           Kelola informasi venue yang akan ditampilkan saat pelanggan melakukan
           booking.
@@ -220,7 +220,7 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Branding &amp; Detail</CardTitle>
+          <CardTitle>Identitas &amp; Detail</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
@@ -248,14 +248,14 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.logoUrl}
-                alt="Logo preview"
+                alt="Pratinjau logo"
                 className="border-border mt-2 h-16 w-16 rounded-lg border object-cover"
               />
             ) : null}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="gor-cover">Cover Image</Label>
+            <Label htmlFor="gor-cover">Gambar Sampul</Label>
             <Input
               id="gor-cover"
               type="url"
@@ -269,20 +269,20 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={form.coverImageUrl}
-                alt="Cover preview"
+                alt="Pratinjau sampul"
                 className="border-border mt-2 h-28 w-full rounded-lg border object-cover"
               />
             ) : null}
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="gor-timezone">Timezone</Label>
+            <Label htmlFor="gor-timezone">Zona Waktu</Label>
             <Select
               value={form.timezone}
               onValueChange={(value) => updateField("timezone", value ?? "")}
             >
               <SelectTrigger id="gor-timezone" className="w-full">
-                <SelectValue placeholder="Pilih timezone" />
+                <SelectValue placeholder="Pilih zona waktu" />
               </SelectTrigger>
               <SelectContent>
                 {GOR_TIMEZONE_OPTIONS.map((option) => (

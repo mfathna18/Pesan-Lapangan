@@ -2,11 +2,11 @@ import { Badge } from "@/components/ui/badge";
 import type { PaymentStatus } from "@/generated/prisma/client";
 
 const paymentStatusLabels: Record<PaymentStatus, string> = {
-  PENDING: "Pending",
-  PAID: "Paid",
-  FAILED: "Failed",
-  EXPIRED: "Expired",
-  REFUNDED: "Refunded",
+  PENDING: "Menunggu",
+  PAID: "Lunas",
+  FAILED: "Gagal",
+  EXPIRED: "Kedaluwarsa",
+  REFUNDED: "Dikembalikan",
 };
 
 const paymentStatusVariants: Record<

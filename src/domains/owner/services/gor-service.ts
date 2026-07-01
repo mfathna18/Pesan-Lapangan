@@ -14,6 +14,10 @@ export class GorService {
 
     return gor;
   }
+
+  async listActivePublicGors(): Promise<PublicGorRecord[]> {
+    return this.gorRepository.findActivePublicGors();
+  }
 }
 
 export function createGorService(gorRepository: GorRepository): GorService {

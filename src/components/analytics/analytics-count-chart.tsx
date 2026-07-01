@@ -43,7 +43,9 @@ export function AnalyticsCountChart({
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <p className="text-muted-foreground text-sm">No data available.</p>
+          <p className="text-muted-foreground text-sm">
+            Tidak ada data tersedia.
+          </p>
         ) : (
           <div className="overflow-x-auto">
             <div className={`flex h-56 ${minWidthClass} items-end gap-1.5`}>

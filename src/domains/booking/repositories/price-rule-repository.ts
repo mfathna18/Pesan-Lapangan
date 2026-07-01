@@ -12,12 +12,32 @@ export type ActivePriceRule = {
   isActive: boolean;
 };
 
+export type OwnerPriceRuleRecord = {
+  id: string;
+  courtId: string;
+  dayOfWeek: number;
+  startMinute: number;
+  endMinute: number;
+  price: number;
+  isActive: boolean;
+};
+
 export type FindMatchingPriceRuleInput = {
   courtId: string;
   dayOfWeek: number;
   startMinute: number;
   endMinute: number;
 };
+
+const priceRuleSelect = {
+  id: true,
+  courtId: true,
+  dayOfWeek: true,
+  startMinute: true,
+  endMinute: true,
+  price: true,
+  isActive: true,
+} as const;
 
 export class PriceRuleRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -86,6 +106,112 @@ export class PriceRuleRepository {
       },
       orderBy: [{ dayOfWeek: "asc" }, { startMinute: "asc" }],
     });
+  }
+
+  async findAllByCourt(courtId: string): Promise<OwnerPriceRuleRecord[]> {
+    return this.prisma.priceRule.findMany({
+      where: { courtId },
+      select: priceRuleSelect,
+      orderBy: [{ dayOfWeek: "asc" }, { startMinute: "asc" }],
+    });
+  }
+
+  async findByIdForCourt(
+    priceRuleId: string,
+    courtId: string,
+  ): Promise<OwnerPriceRuleRecord | null> {
+    return this.prisma.priceRule.findFirst({
+      where: {
+        id: priceRuleId,
+        courtId,
+      },
+      select: priceRuleSelect,
+    });
+  }
+
+  async createForCourt(
+    courtId: string,
+    data: {
+      dayOfWeek: number;
+      startMinute: number;
+      endMinute: number;
+      price: number;
+      isActive: boolean;
+    },
+  ): Promise<OwnerPriceRuleRecord> {
+    return this.prisma.priceRule.create({
+      data: {
+        courtId,
+        dayOfWeek: data.dayOfWeek,
+        startMinute: data.startMinute,
+        endMinute: data.endMinute,
+        price: data.price,
+        isActive: data.isActive,
+      },
+      select: priceRuleSelect,
+    });
+  }
+
+  async updateForCourt(
+    priceRuleId: string,
+    courtId: string,
+    data: {
+      dayOfWeek: number;
+      startMinute: number;
+      endMinute: number;
+      price: number;
+      isActive: boolean;
+    },
+  ): Promise<OwnerPriceRuleRecord | null> {
+    const existing = await this.findByIdForCourt(priceRuleId, courtId);
+
+    if (!existing) {
+      return null;
+    }
+
+    return this.prisma.priceRule.update({
+      where: { id: priceRuleId },
+      data: {
+        dayOfWeek: data.dayOfWeek,
+        startMinute: data.startMinute,
+        endMinute: data.endMinute,
+        price: data.price,
+        isActive: data.isActive,
+      },
+      select: priceRuleSelect,
+    });
+  }
+
+  async setActiveForCourt(
+    priceRuleId: string,
+    courtId: string,
+    isActive: boolean,
+  ): Promise<OwnerPriceRuleRecord | null> {
+    const existing = await this.findByIdForCourt(priceRuleId, courtId);
+
+    if (!existing) {
+      return null;
+    }
+
+    return this.prisma.priceRule.update({
+      where: { id: priceRuleId },
+      data: { isActive },
+      select: priceRuleSelect,
+    });
+  }
+
+  async deleteForCourt(priceRuleId: string, courtId: string): Promise<boolean> {
+    const existing = await this.findByIdForCourt(priceRuleId, courtId);
+
+    if (!existing) {
+      return false;
+    }
+
+    await this.prisma.priceRule.delete({
+      where: { id: priceRuleId },
+    });
+
+    return true;
   }
 }
 

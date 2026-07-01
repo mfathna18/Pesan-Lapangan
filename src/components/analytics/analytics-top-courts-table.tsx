@@ -1,5 +1,4 @@
-import type { AnalyticsTopCourtRow } from "@/domains/booking/types";
-import { formatCurrency } from "@/domains/booking/utils/booking-display";
+import type { OwnerAnalyticsTopCourtRow } from "@/domains/analytics/types";
 
 import {
   Card,
@@ -18,7 +17,7 @@ import {
 } from "@/components/ui/table";
 
 type AnalyticsTopCourtsTableProps = {
-  courts: AnalyticsTopCourtRow[];
+  courts: OwnerAnalyticsTopCourtRow[];
 };
 
 export function AnalyticsTopCourtsTable({
@@ -27,37 +26,37 @@ export function AnalyticsTopCourtsTable({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Top 10 Most Booked Courts</CardTitle>
+        <CardTitle>Lapangan Terlaris</CardTitle>
         <CardDescription>
-          Ranked by total bookings in the current period
+          Lapangan dengan booking terbanyak bulan ini
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Court</TableHead>
-              <TableHead>Total Bookings</TableHead>
-              <TableHead>Revenue</TableHead>
-              <TableHead>Occupancy %</TableHead>
+              <TableHead>#</TableHead>
+              <TableHead>Lapangan</TableHead>
+              <TableHead className="text-right">Total Booking</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {courts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-muted-foreground">
-                  No court booking data available.
+                <TableCell colSpan={3} className="text-muted-foreground">
+                  Belum ada data booking lapangan bulan ini.
                 </TableCell>
               </TableRow>
             ) : (
-              courts.map((court) => (
+              courts.map((court, index) => (
                 <TableRow key={court.courtId}>
+                  <TableCell>{index + 1}</TableCell>
                   <TableCell className="font-medium">
                     {court.courtName}
                   </TableCell>
-                  <TableCell>{court.totalBookings}</TableCell>
-                  <TableCell>{formatCurrency(court.revenue)}</TableCell>
-                  <TableCell>{court.occupancyPercent}%</TableCell>
+                  <TableCell className="text-right">
+                    {court.totalBookings.toLocaleString("id-ID")}
+                  </TableCell>
                 </TableRow>
               ))
             )}

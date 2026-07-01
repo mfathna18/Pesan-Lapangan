@@ -44,6 +44,23 @@ export class GorRepository {
     });
   }
 
+  async findActivePublicGors(): Promise<PublicGorRecord[]> {
+    return this.prisma.gor.findMany({
+      where: { isActive: true },
+      select: publicGorSelect,
+      orderBy: { name: "asc" },
+    });
+  }
+
+  async findGorIdByOwnerId(ownerId: string): Promise<string | null> {
+    const gor = await this.prisma.gor.findUnique({
+      where: { ownerId },
+      select: { id: true },
+    });
+
+    return gor?.id ?? null;
+  }
+
   async findOwnerWithGorByUserId(
     userId: string,
   ): Promise<OwnerWithGorRecord | null> {

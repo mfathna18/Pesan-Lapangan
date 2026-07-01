@@ -47,6 +47,10 @@ export async function createPublicPaymentAction(
       return actionFailure("Booking tidak dapat dibayar saat ini.");
     }
 
+    if (new Date(checkout.expiresAt).getTime() <= Date.now()) {
+      return actionFailure("Waktu pembayaran booking telah habis.");
+    }
+
     const waitingUrl = `${siteConfig.url}/gor/${parsed.data.gorSlug}/checkout/${parsed.data.bookingId}/waiting`;
     const payment = await getPaymentService().createPayment({
       bookingId: parsed.data.bookingId,

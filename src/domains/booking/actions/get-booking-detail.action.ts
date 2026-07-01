@@ -40,7 +40,7 @@ export async function getBookingDetailAction(
     return actionSuccess(detail);
   } catch (error) {
     return handleServerActionError("getBookingDetailAction", error, {
-      fallbackMessage: "Failed to load booking detail.",
+      fallbackMessage: "Gagal memuat detail booking.",
       knownErrors: [createKnownActionError(BookingNotFoundError)],
     });
   }

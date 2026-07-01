@@ -4,6 +4,6 @@ export type CreateBookingRequest = {
   courtId: string;
   bookingDate: Date;
   startMinute: number;
-  durationMinute: number;
+  endMinute: number;
   contact: CreateBookingContactInput;
 };

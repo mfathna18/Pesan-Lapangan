@@ -1,15 +1,14 @@
-import {
-  AnalyticsCountChart,
-  formatDayLabel,
-} from "@/components/analytics/analytics-count-chart";
+import { AnalyticsFavoriteHoursChart } from "@/components/analytics/analytics-favorite-hours-chart";
+import { AnalyticsSportDistributionChart } from "@/components/analytics/analytics-sport-distribution-chart";
 import { AnalyticsSummaryCards } from "@/components/analytics/analytics-summary-cards";
 import { AnalyticsTopCourtsTable } from "@/components/analytics/analytics-top-courts-table";
-import { AnalyticsUtilizationChart } from "@/components/analytics/analytics-utilization-chart";
-import type { AnalyticsDashboardData } from "@/domains/booking/types";
+import { OwnerOnboardingEmptyState } from "@/components/dashboard/owner-onboarding-empty-state";
+import { OwnerRecentBookingsTable } from "@/components/dashboard/owner-recent-bookings-table";
+import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/types";
 import { formatBookingDate } from "@/domains/booking/utils/booking-display";
 
 type AnalyticsDashboardProps = {
-  data: AnalyticsDashboardData;
+  data: OwnerAnalyticsDashboardData;
 };
 
 export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
@@ -17,37 +16,37 @@ export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
     <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
       <div className="space-y-1">
         <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Operations
+          Analitik
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
-          Analytics Dashboard
+          Analitik Operasional
         </h1>
         <p className="text-muted-foreground text-sm">
-          {formatBookingDate(data.period.from)} -{" "}
-          {formatBookingDate(data.period.to)}
+          Ringkasan booking dan performa venue untuk periode{" "}
+          {formatBookingDate(data.period.from)} –{" "}
+          {formatBookingDate(data.period.to)}.
         </p>
       </div>
 
-      <AnalyticsSummaryCards cards={data.cards} />
-
-      <div className="grid gap-6 xl:grid-cols-2">
-        <AnalyticsCountChart
-          title="Bookings by Day"
-          description="Daily booking volume in the current month"
-          data={data.charts.bookingsByDay}
-          formatLabel={formatDayLabel}
+      {!data.hasBookings ? (
+        <OwnerOnboardingEmptyState
+          title="Belum ada data analitik"
+          description="Halaman analitik akan menampilkan lapangan terlaris, jam favorit, dan distribusi olahraga setelah pelanggan pertama kali melakukan booking di venue Anda."
         />
-        <AnalyticsCountChart
-          title="Bookings by Hour"
-          description="Booking distribution by start hour"
-          data={data.charts.bookingsByHour}
-          minWidthClass="min-w-[960px]"
-        />
-      </div>
+      ) : (
+        <>
+          <AnalyticsSummaryCards kpis={data.kpis} />
 
-      <AnalyticsUtilizationChart data={data.charts.courtUtilization} />
+          <div className="grid gap-6 xl:grid-cols-2">
+            <AnalyticsTopCourtsTable courts={data.topCourts} />
+            <AnalyticsFavoriteHoursChart data={data.topHours} />
+          </div>
 
-      <AnalyticsTopCourtsTable courts={data.topCourts} />
+          <AnalyticsSportDistributionChart data={data.sportDistribution} />
+
+          <OwnerRecentBookingsTable bookings={data.recentBookings} />
+        </>
+      )}
     </div>
   );
 }

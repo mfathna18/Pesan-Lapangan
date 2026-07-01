@@ -276,6 +276,7 @@ model Booking {
   durationMinute      Int
   totalPrice          Int
   status              BookingStatus @default(PENDING)
+  expiresAt           DateTime
   gorNameSnapshot     String
   courtNameSnapshot   String
   sportTypeSnapshot   String
@@ -326,6 +327,8 @@ model Payment {
   status            PaymentStatus @default(PENDING)
   method            PaymentMethod @default(MIDTRANS)
   externalReference String?
+  paymentUrl        String?
+  snapToken         String?
   paidAt            DateTime?
   expiredAt         DateTime?
   createdAt         DateTime      @default(now())

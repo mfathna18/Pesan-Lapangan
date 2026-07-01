@@ -1,6 +1,6 @@
 export function getPublicErrorMessage(
   error: Error,
-  fallback = "Something went wrong. Please try again.",
+  fallback = "Terjadi kesalahan. Silakan coba lagi.",
 ): string {
   if (process.env.NODE_ENV === "development") {
     return error.message || fallback;

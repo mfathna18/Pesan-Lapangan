@@ -38,18 +38,20 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Scripts
 
-| Script                | Description                  |
-| --------------------- | ---------------------------- |
-| `npm run dev`         | Start development server     |
-| `npm run build`       | Create production build      |
-| `npm run start`       | Start production server      |
-| `npm run lint`        | Run ESLint                   |
-| `npm run format`      | Format code with Prettier    |
-| `npm run typecheck`   | Run TypeScript type checking |
-| `npm run db:generate` | Generate Prisma Client       |
-| `npm run db:push`     | Push schema to database      |
-| `npm run db:migrate`  | Run database migrations      |
-| `npm run db:studio`   | Open Prisma Studio           |
+| Script                      | Description                     |
+| --------------------------- | ------------------------------- |
+| `npm run dev`               | Start development server        |
+| `npm run build`             | Create production build         |
+| `npm run vercel-build`      | Vercel deploy (migrate + build) |
+| `npm run start`             | Start production server         |
+| `npm run lint`              | Run ESLint                      |
+| `npm run format`            | Format code with Prettier       |
+| `npm run typecheck`         | Run TypeScript type checking    |
+| `npm run db:generate`       | Generate Prisma Client          |
+| `npm run db:push`           | Push schema to database         |
+| `npm run db:migrate`        | Run database migrations (dev)   |
+| `npm run db:migrate:deploy` | Apply migrations (production)   |
+| `npm run db:studio`         | Open Prisma Studio              |
 
 ## Project Structure
 
@@ -73,7 +75,7 @@ prisma/
 
 ## Environment Variables
 
-See `.env.example` for required variables and `docs/DEPLOYMENT.md` for the Vercel deployment and environment checklists.
+See `.env.example` for required variables and [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full Vercel deployment guide (GitHub, env vars, Prisma, domain, Midtrans sandbox).
 
 ## Database
 

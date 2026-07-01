@@ -77,7 +77,7 @@ export function SubscriptionDashboard({
     <div className="flex flex-1 flex-col gap-6">
       <div className="space-y-1">
         <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Subscription
+          Langganan
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">
           Paket Langganan

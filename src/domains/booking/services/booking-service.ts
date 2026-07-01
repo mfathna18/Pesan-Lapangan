@@ -27,14 +27,20 @@ import type {
   ListBookingsResult,
 } from "@/domains/booking/types";
 import { buildAnalyticsDashboard } from "@/domains/booking/utils/analytics";
+import { buildAvailabilityBlockingBookingWhere } from "@/domains/booking/utils/booking-expiration";
 import { generateBookingNumber } from "@/domains/booking/utils/booking-number";
+import {
+  buildHourlyIntervals,
+  resolveRangeTotalPrice,
+} from "@/domains/booking/utils/booking-range";
 import { resolveBookingPaymentDisplayStatus } from "@/domains/booking/utils/booking-display";
 import { acquireCourtBookingDateLock } from "@/domains/booking/utils/court-booking-lock";
-import {
-  BLOCKING_BOOKING_STATUSES,
-  slotConflictsWithBookings,
-} from "@/domains/booking/utils/slot-availability";
+import { slotConflictsWithBookings } from "@/domains/booking/utils/slot-availability";
 import { validateCreateBookingRequest } from "@/domains/booking/utils/validation";
+import {
+  AvailabilityService,
+  createAvailabilityService,
+} from "@/domains/availability/services/availability-service";
 import { startOfDay } from "@/domains/availability/utils/time-interval";
 import {
   endOfMonth,
@@ -51,6 +57,7 @@ type BookingServiceDependencies = {
   priceRuleRepository: PriceRuleRepository;
   courtRepository: CourtRepository;
   subscriptionAccessReader: SubscriptionAccessReader;
+  availabilityService: AvailabilityService;
 };
 
 export class BookingService {
@@ -59,6 +66,7 @@ export class BookingService {
   private readonly priceRuleRepository: PriceRuleRepository;
   private readonly courtRepository: CourtRepository;
   private readonly subscriptionAccessReader: SubscriptionAccessReader;
+  private readonly availabilityService: AvailabilityService;
 
   constructor({
     prisma,
@@ -66,16 +74,19 @@ export class BookingService {
     priceRuleRepository,
     courtRepository,
     subscriptionAccessReader,
+    availabilityService,
   }: BookingServiceDependencies) {
     this.prisma = prisma;
     this.bookingRepository = bookingRepository;
     this.priceRuleRepository = priceRuleRepository;
     this.courtRepository = courtRepository;
     this.subscriptionAccessReader = subscriptionAccessReader;
+    this.availabilityService = availabilityService;
   }
 
   async create(input: CreateBookingRequest): Promise<BookingWithContact> {
-    const { endMinute, dayOfWeek } = validateCreateBookingRequest(input);
+    const { endMinute, durationMinute, dayOfWeek } =
+      validateCreateBookingRequest(input);
 
     const court = await this.courtRepository.findActiveCourtWithGor(
       input.courtId,
@@ -95,17 +106,47 @@ export class BookingService {
       throw error;
     }
 
-    const priceRule = await this.priceRuleRepository.findMatchingRule({
+    const slotGrid = await this.availabilityService.getSlotGrid({
       courtId: input.courtId,
-      dayOfWeek,
-      startMinute: input.startMinute,
-      endMinute,
+      date: input.bookingDate,
     });
+    const availabilityTotalPrice = resolveRangeTotalPrice(
+      slotGrid,
+      input.startMinute,
+      endMinute,
+    );
 
-    if (!priceRule) {
-      throw new BookingValidationError(
-        "No active price rule matches the requested booking window.",
-      );
+    if (availabilityTotalPrice === null) {
+      throw new BookingValidationError(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
+    }
+
+    const hourlyIntervals = buildHourlyIntervals(input.startMinute, endMinute);
+    let totalPrice = 0;
+    let firstHourPrice: number | null = null;
+
+    for (const interval of hourlyIntervals) {
+      const priceRule = await this.priceRuleRepository.findMatchingRule({
+        courtId: input.courtId,
+        dayOfWeek,
+        startMinute: interval.startMinute,
+        endMinute: interval.endMinute,
+      });
+
+      if (!priceRule) {
+        throw new BookingValidationError(
+          "No active price rule matches the requested booking window.",
+        );
+      }
+
+      if (firstHourPrice === null) {
+        firstHourPrice = priceRule.price;
+      }
+
+      totalPrice += priceRule.price;
+    }
+
+    if (totalPrice !== availabilityTotalPrice) {
+      throw new BookingValidationError(BOOKING_SLOT_UNAVAILABLE_MESSAGE);
     }
 
     const bookingNumber = await generateBookingNumber(
@@ -113,20 +154,18 @@ export class BookingService {
       this.bookingRepository,
     );
 
-    const hourlyPrice = priceRule.price;
-
     const createInput = {
       courtId: court.id,
       bookingNumber,
       bookingDate: input.bookingDate,
       startMinute: input.startMinute,
       endMinute,
-      durationMinute: input.durationMinute,
-      totalPrice: hourlyPrice,
+      durationMinute,
+      totalPrice,
       gorNameSnapshot: court.gor.name,
       courtNameSnapshot: court.name,
       sportTypeSnapshot: court.sportType,
-      pricePerHourSnapshot: hourlyPrice,
+      pricePerHourSnapshot: firstHourPrice ?? totalPrice,
       contact: input.contact,
     };
 
@@ -138,13 +177,13 @@ export class BookingService {
     return this.prisma.$transaction(async (tx) => {
       await acquireCourtBookingDateLock(tx, court.id, input.bookingDate);
 
+      const referenceDate = new Date();
+
       const existingBookings = await tx.booking.findMany({
         where: {
           courtId: court.id,
           bookingDate: startOfDay(input.bookingDate),
-          status: {
-            in: BLOCKING_BOOKING_STATUSES,
-          },
+          ...buildAvailabilityBlockingBookingWhere(referenceDate),
         },
         select: {
           startMinute: true,
@@ -310,6 +349,8 @@ export function createBookingService(
   const subscriptionAccessReader =
     dependencies?.subscriptionAccessReader ??
     createSubscriptionAccessReader(prisma);
+  const availabilityService =
+    dependencies?.availabilityService ?? createAvailabilityService(prisma);
 
   return new BookingService({
     prisma,
@@ -317,5 +358,6 @@ export function createBookingService(
     priceRuleRepository,
     courtRepository,
     subscriptionAccessReader,
+    availabilityService,
   });
 }

@@ -1,11 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import type { BookingPaymentDisplayStatus } from "@/domains/booking/types";
+import {
+  getOwnerBookingDisplayStatusVariant,
+  OWNER_BOOKING_DISPLAY_STATUS_LABELS,
+  resolveOwnerBookingDisplayStatus,
+} from "@/domains/analytics/utils/owner-booking-display";
 import type { BookingStatus } from "@/generated/prisma/client";
 
 const bookingStatusLabels: Record<BookingStatus, string> = {
-  PENDING: "Pending",
-  CONFIRMED: "Confirmed",
-  CANCELLED: "Cancelled",
+  PENDING: "Menunggu",
+  CONFIRMED: "Dikonfirmasi",
+  CANCELLED: "Dibatalkan",
 };
 
 const bookingStatusVariants: Record<
@@ -26,12 +31,12 @@ export function BookingStatusBadge({ status }: { status: BookingStatus }) {
 }
 
 const paymentStatusLabels: Record<BookingPaymentDisplayStatus, string> = {
-  NONE: "No Payment",
-  PENDING: "Pending",
-  PAID: "Paid",
-  FAILED: "Failed",
-  EXPIRED: "Expired",
-  REFUNDED: "Refunded",
+  NONE: "Belum Bayar",
+  PENDING: "Menunggu",
+  PAID: "Lunas",
+  FAILED: "Gagal",
+  EXPIRED: "Kadaluarsa",
+  REFUNDED: "Dikembalikan",
 };
 
 const paymentStatusVariants: Record<
@@ -54,6 +59,27 @@ export function PaymentStatusBadge({
   return (
     <Badge variant={paymentStatusVariants[status]}>
       {paymentStatusLabels[status]}
+    </Badge>
+  );
+}
+
+type OwnerBookingDisplayStatusBadgeProps = {
+  bookingStatus: BookingStatus;
+  paymentStatus: BookingPaymentDisplayStatus;
+};
+
+export function OwnerBookingDisplayStatusBadge({
+  bookingStatus,
+  paymentStatus,
+}: OwnerBookingDisplayStatusBadgeProps) {
+  const displayStatus = resolveOwnerBookingDisplayStatus(
+    bookingStatus,
+    paymentStatus,
+  );
+
+  return (
+    <Badge variant={getOwnerBookingDisplayStatusVariant(displayStatus)}>
+      {OWNER_BOOKING_DISPLAY_STATUS_LABELS[displayStatus]}
     </Badge>
   );
 }

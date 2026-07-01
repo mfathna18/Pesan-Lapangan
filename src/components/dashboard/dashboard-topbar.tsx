@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { LogoutButton } from "@/components/dashboard/logout-button";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
         size="icon-sm"
         className="lg:hidden"
         onClick={onMenuClick}
-        aria-label="Open sidebar"
+        aria-label="Buka menu"
       >
         <Menu />
       </Button>
@@ -50,15 +50,6 @@ export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label="Notifications coming soon"
-          disabled
-        >
-          <Bell />
-        </Button>
-
         <div className="hidden items-center gap-3 sm:flex">
           <div className="text-right">
             <p className="max-w-40 truncate text-sm font-medium">{user.name}</p>

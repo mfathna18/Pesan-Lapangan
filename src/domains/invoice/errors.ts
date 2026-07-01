@@ -18,3 +18,10 @@ export class InvoiceAlreadyExistsError extends Error {
     this.name = "InvoiceAlreadyExistsError";
   }
 }
+
+export class PublicInvoiceNotFoundError extends Error {
+  constructor(message = "Invoice tidak ditemukan.") {
+    super(message);
+    this.name = "PublicInvoiceNotFoundError";
+  }
+}

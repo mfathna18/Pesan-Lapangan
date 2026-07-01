@@ -1,8 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
 
+import {
+  BookingExpirationCountdown,
+  isCheckoutExpired,
+} from "@/components/checkout/booking-expiration-countdown";
+import { CheckoutSuccessDetails } from "@/components/checkout/checkout-success-details";
+import {
+  CheckoutExpiredState,
+  CheckoutStatusBanner,
+} from "@/components/checkout/checkout-state-panels";
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,7 +31,7 @@ import type { PublicCheckoutData } from "@/domains/payment/types";
 import {
   formatBookingDate,
   formatCurrency,
-  formatMinuteOfDay,
+  formatTimeRange,
 } from "@/domains/booking/utils/booking-display";
 import { cn } from "@/lib/utils";
 
@@ -30,15 +39,62 @@ type PublicCheckoutProps = {
   checkout: PublicCheckoutData;
 };
 
-function formatTimeRange(startMinute: number, endMinute: number) {
-  return `${formatMinuteOfDay(startMinute)} - ${formatMinuteOfDay(endMinute)}`;
+const EXPIRY_ERROR_PATTERNS = [
+  "waktu pembayaran",
+  "payment window",
+  "tidak dapat dibayar",
+  "cannot be paid",
+  "sudah habis",
+  "expired",
+] as const;
+
+function isExpiryRelatedError(message: string): boolean {
+  const normalized = message.toLowerCase();
+
+  return EXPIRY_ERROR_PATTERNS.some((pattern) => normalized.includes(pattern));
+}
+
+function toFriendlyPaymentError(message: string): string {
+  if (isExpiryRelatedError(message)) {
+    return "";
+  }
+
+  if (
+    message.includes("Gagal membuat pembayaran") ||
+    message.includes("gateway")
+  ) {
+    return "Gagal memulai pembayaran. Silakan coba lagi sebentar lagi.";
+  }
+
+  if (message.includes("tidak ditemukan") || message.includes("not found")) {
+    return "Checkout ini sudah tidak tersedia.";
+  }
+
+  return "Gagal memulai pembayaran. Silakan coba lagi.";
 }
 
 export function PublicCheckout({ checkout }: PublicCheckoutProps) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [isExpired, setIsExpired] = useState(() =>
+    isCheckoutExpired(checkout.expiresAt, checkout.status),
+  );
 
-  const isPayable = checkout.status === "PENDING" && !checkout.hasPaidPayment;
+  const handleExpired = useCallback(() => {
+    setIsExpired(true);
+    setError(null);
+  }, []);
+
+  const isPaid = checkout.hasPaidPayment;
+  const isPayable =
+    !isExpired &&
+    checkout.status === "PENDING" &&
+    !isPaid &&
+    new Date(checkout.expiresAt).getTime() > Date.now();
+
+  const payButtonLabel = checkout.hasPendingPayment
+    ? "Lanjutkan Pembayaran"
+    : "Bayar Sekarang";
 
   function handlePayNow() {
     setError(null);
@@ -50,12 +106,53 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
       });
 
       if (!response.success) {
-        setError(response.error);
+        if (isExpiryRelatedError(response.error)) {
+          setIsExpired(true);
+          setError(null);
+          return;
+        }
+
+        setError(toFriendlyPaymentError(response.error));
         return;
       }
 
       window.location.href = response.data.paymentUrl;
     });
+  }
+
+  if (isPaid) {
+    return (
+      <div className="bg-background min-h-screen">
+        <CourtDetailHeader
+          gorSlug={checkout.venueSlug}
+          gorName={checkout.venueName}
+        />
+        <main className="px-4 py-8 sm:px-6 lg:py-10">
+          <div className="mx-auto flex max-w-3xl flex-col gap-8">
+            <CheckoutSuccessDetails checkout={checkout} />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (isExpired) {
+    return (
+      <div className="bg-background min-h-screen">
+        <CourtDetailHeader
+          gorSlug={checkout.venueSlug}
+          gorName={checkout.venueName}
+        />
+        <main className="px-4 py-8 sm:px-6 lg:py-10">
+          <div className="mx-auto flex max-w-3xl flex-col gap-8">
+            <CheckoutExpiredState
+              venueSlug={checkout.venueSlug}
+              venueName={checkout.venueName}
+            />
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -68,23 +165,31 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
         <div className="mx-auto flex max-w-3xl flex-col gap-8">
           <div className="space-y-2">
             <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-              Checkout
+              Pembayaran
             </p>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Selesaikan Pembayaran
             </h1>
             <p className="text-muted-foreground text-sm sm:text-base">
-              Tinjau detail booking dan lanjutkan ke Midtrans.
+              Tinjau detail booking dan lanjutkan ke pembayaran.
             </p>
           </div>
+
+          <CheckoutStatusBanner
+            label="Menunggu Pembayaran"
+            description="Selesaikan pembayaran sebelum waktu habis untuk mengamankan slotmu."
+          />
+
+          <BookingExpirationCountdown
+            expiresAt={checkout.expiresAt}
+            onExpired={handleExpired}
+          />
 
           <Card>
             <CardHeader className="space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle>{checkout.bookingNumber}</CardTitle>
-                <Badge variant={checkout.hasPaidPayment ? "paid" : "pending"}>
-                  {checkout.hasPaidPayment ? "Paid" : checkout.status}
-                </Badge>
+                <Badge variant="pending">Menunggu</Badge>
               </div>
               <CardDescription>
                 Detail booking dan informasi pelanggan.
@@ -100,7 +205,7 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
                 <p className="font-medium">{checkout.customerPhone}</p>
               </div>
               <div>
-                <p className="text-muted-foreground text-sm">Venue</p>
+                <p className="text-muted-foreground text-sm">GOR</p>
                 <p className="font-medium">{checkout.venueName}</p>
               </div>
               <div>
@@ -142,20 +247,17 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
             <CardHeader>
               <CardTitle>Metode Pembayaran</CardTitle>
               <CardDescription>
-                Pilih metode yang tersedia untuk menyelesaikan booking.
+                Lanjutkan ke Midtrans Snap untuk menyelesaikan booking.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="border-border flex items-center justify-between rounded-xl border p-4">
-                <div>
-                  <p className="font-medium">
-                    {PAYMENT_METHOD_LABELS[DEFAULT_PAYMENT_METHOD]}
-                  </p>
-                  <p className="text-muted-foreground text-sm">
-                    Kartu, e-wallet, dan transfer via Midtrans Snap
-                  </p>
-                </div>
-                <Badge variant="outline">MVP</Badge>
+              <div className="border-border rounded-xl border p-4">
+                <p className="font-medium">
+                  {PAYMENT_METHOD_LABELS[DEFAULT_PAYMENT_METHOD]}
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  Kartu, e-wallet, dan transfer bank via Midtrans Snap
+                </p>
               </div>
 
               <div className="bg-muted/40 rounded-xl p-4">
@@ -168,9 +270,15 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
               </div>
 
               {error ? (
-                <p className="text-destructive text-sm" role="alert">
-                  {error}
-                </p>
+                <div
+                  className="border-destructive/30 bg-destructive/5 rounded-xl border p-4"
+                  role="alert"
+                >
+                  <p className="text-destructive text-sm font-medium">
+                    Pembayaran gagal dimulai
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-sm">{error}</p>
+                </div>
               ) : null}
 
               <Button
@@ -180,12 +288,13 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
                 disabled={!isPayable || isPending}
                 onClick={handlePayNow}
               >
-                {isPending ? "Memproses..." : "Bayar Sekarang"}
+                {isPending ? "Memproses..." : payButtonLabel}
               </Button>
 
-              {!isPayable ? (
-                <p className="text-muted-foreground text-sm">
-                  Booking ini tidak dapat dibayar lagi dari halaman checkout.
+              {checkout.hasPendingPayment ? (
+                <p className="text-muted-foreground text-center text-sm">
+                  Kamu punya sesi pembayaran yang belum selesai. Lanjutkan untuk
+                  menyelesaikannya.
                 </p>
               ) : null}
             </CardContent>
@@ -195,7 +304,7 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
             href={`/gor/${checkout.venueSlug}`}
             className={cn(buttonVariants({ variant: "outline" }), "w-fit")}
           >
-            Kembali ke Venue
+            Kembali ke GOR
           </Link>
         </div>
       </main>

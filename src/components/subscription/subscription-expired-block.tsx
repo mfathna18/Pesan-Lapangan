@@ -37,7 +37,7 @@ export function SubscriptionExpiredBlock() {
         <CardHeader className="space-y-2">
           <CardTitle>Langganan Kedaluwarsa</CardTitle>
           <CardDescription>
-            Subscription expired. Perpanjang langganan untuk melanjutkan
+            Langganan telah kedaluwarsa. Perpanjang langganan untuk melanjutkan
             menggunakan fitur owner.
           </CardDescription>
         </CardHeader>

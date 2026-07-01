@@ -5,7 +5,7 @@ export default function DashboardLoading() {
       aria-live="polite"
       aria-busy="true"
     >
-      Loading dashboard...
+      Memuat dashboard...
     </div>
   );
 }

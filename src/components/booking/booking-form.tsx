@@ -28,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { createBookingAction } from "@/domains/booking/actions/create-booking.action";
 import { BOOKING_DURATION_INTERVAL_MINUTES } from "@/domains/booking/constants";
 import type { CourtOption } from "@/domains/booking/repositories/court-repository";
+import { UI_COPY } from "@/config/ui-copy";
 import { cn } from "@/lib/utils";
 
 type BookingFormProps = {
@@ -73,7 +74,7 @@ export function BookingForm({ courts }: BookingFormProps) {
     const startMinute = timeStringToStartMinute(form.startTime);
 
     if (Number.isNaN(startMinute)) {
-      setError("Start time is invalid.");
+      setError("Waktu mulai tidak valid.");
       return;
     }
 
@@ -82,7 +83,7 @@ export function BookingForm({ courts }: BookingFormProps) {
         courtId: form.courtId,
         bookingDate: form.bookingDate,
         startMinute,
-        durationMinute: BOOKING_DURATION_INTERVAL_MINUTES,
+        endMinute: startMinute + BOOKING_DURATION_INTERVAL_MINUTES,
         contact: {
           customerName: form.customerName,
           customerPhone: form.customerPhone,
@@ -96,7 +97,7 @@ export function BookingForm({ courts }: BookingFormProps) {
       }
 
       setSuccessMessage(
-        `Booking ${result.data.bookingNumber} created successfully.`,
+        `Booking ${result.data.bookingNumber} berhasil dibuat.`,
       );
       setForm(initialFormState());
     });
@@ -105,9 +106,9 @@ export function BookingForm({ courts }: BookingFormProps) {
   return (
     <Card className="mx-auto w-full max-w-2xl">
       <CardHeader>
-        <CardTitle>Create Booking</CardTitle>
+        <CardTitle>Buat Booking</CardTitle>
         <CardDescription>
-          Record a new court booking for your venue.
+          Catat booking lapangan baru untuk venue Anda.
         </CardDescription>
       </CardHeader>
 
@@ -115,8 +116,8 @@ export function BookingForm({ courts }: BookingFormProps) {
         <CardContent className="space-y-6">
           {courts.length === 0 ? (
             <p className="text-muted-foreground rounded-lg border border-dashed px-4 py-6 text-sm">
-              No active courts are available. Add a court before creating
-              bookings.
+              Tidak ada lapangan aktif. Tambahkan lapangan terlebih dahulu
+              sebelum membuat booking.
             </p>
           ) : null}
 
@@ -140,7 +141,7 @@ export function BookingForm({ courts }: BookingFormProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="courtId">Court</Label>
+              <Label htmlFor="courtId">{UI_COPY.court}</Label>
               <Select
                 value={form.courtId}
                 onValueChange={(value) => updateField("courtId", value ?? "")}
@@ -151,7 +152,7 @@ export function BookingForm({ courts }: BookingFormProps) {
                   className="w-full"
                   aria-invalid={!form.courtId}
                 >
-                  <SelectValue placeholder="Select a court" />
+                  <SelectValue placeholder={UI_COPY.selectCourt} />
                 </SelectTrigger>
                 <SelectContent>
                   {courts.map((court) => (
@@ -164,7 +165,7 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="bookingDate">Booking Date</Label>
+              <Label htmlFor="bookingDate">Tanggal Booking</Label>
               <Input
                 id="bookingDate"
                 type="date"
@@ -178,7 +179,7 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="startTime">Start Time</Label>
+              <Label htmlFor="startTime">Waktu Mulai</Label>
               <Input
                 id="startTime"
                 type="time"
@@ -192,10 +193,10 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="durationMinute">Duration</Label>
+              <Label htmlFor="durationMinute">Durasi</Label>
               <Input
                 id="durationMinute"
-                value={`${BOOKING_DURATION_INTERVAL_MINUTES} minutes`}
+                value={`${BOOKING_DURATION_INTERVAL_MINUTES} menit`}
                 readOnly
                 disabled
                 className="bg-muted/40"
@@ -203,7 +204,7 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customerName">Customer Name</Label>
+              <Label htmlFor="customerName">Nama Pelanggan</Label>
               <Input
                 id="customerName"
                 value={form.customerName}
@@ -217,7 +218,7 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="customerPhone">Customer Phone</Label>
+              <Label htmlFor="customerPhone">Telepon Pelanggan</Label>
               <Input
                 id="customerPhone"
                 type="tel"
@@ -232,13 +233,13 @@ export function BookingForm({ courts }: BookingFormProps) {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes">Catatan (opsional)</Label>
               <Textarea
                 id="notes"
                 value={form.notes}
                 onChange={(event) => updateField("notes", event.target.value)}
                 disabled={isPending || courts.length === 0}
-                placeholder="Additional booking notes"
+                placeholder="Catatan tambahan untuk booking"
                 rows={4}
               />
             </div>
@@ -250,7 +251,7 @@ export function BookingForm({ courts }: BookingFormProps) {
             type="submit"
             disabled={isPending || courts.length === 0 || !form.courtId}
           >
-            {isPending ? "Creating booking..." : "Create booking"}
+            {isPending ? "Membuat booking..." : "Buat booking"}
           </Button>
         </CardFooter>
       </form>

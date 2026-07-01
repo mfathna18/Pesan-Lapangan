@@ -15,6 +15,8 @@ import {
 import { prisma } from "@/lib/db/prisma";
 import { logError } from "@/lib/server/logger";
 
+export const runtime = "nodejs";
+
 function isMidtransCallbackPayload(
   value: unknown,
 ): value is MidtransCallbackPayload {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { LandingPage } from "@/components/landing/landing-page";
 import { siteConfig } from "@/config/site";
+import { getVenueService } from "@/domains/venue/actions/get-venue-service";
 
 export const metadata: Metadata = {
   title: "Pesan Lapangan Olahraga Online",
@@ -29,6 +30,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HomePage() {
-  return <LandingPage />;
+export default async function HomePage() {
+  const venues = await getVenueService().listActivePublicVenues();
+
+  return <LandingPage venues={venues} />;
 }

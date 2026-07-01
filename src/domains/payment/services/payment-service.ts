@@ -37,14 +37,25 @@ import {
 } from "@/domains/payment/utils/midtrans-callback-status";
 import type { BookingWriter } from "@/domains/payment/writers/booking-writer";
 import { createPaymentBookingWriter } from "@/domains/payment/writers/booking-writer";
+import type { InvoiceService } from "@/domains/invoice/services/invoice-service";
+import { createInvoiceService } from "@/domains/invoice/services/invoice-service";
 import type { PrismaClient } from "@/generated/prisma/client";
-import { logInfo } from "@/lib/server/logger";
+import { logError, logInfo } from "@/lib/server/logger";
 
 type PaymentServiceDependencies = {
   paymentRepository: PaymentRepository;
   bookingReader: BookingReader;
   bookingWriter: BookingWriter;
   paymentGateway: PaymentGateway;
+  invoiceService: InvoiceService;
+};
+
+type BookingForPaymentLaunch = NonNullable<
+  Awaited<ReturnType<BookingReader["findById"]>>
+> & {
+  contact: NonNullable<
+    NonNullable<Awaited<ReturnType<BookingReader["findById"]>>>["contact"]
+  >;
 };
 
 export class PaymentService {
@@ -52,17 +63,20 @@ export class PaymentService {
   private readonly bookingReader: BookingReader;
   private readonly bookingWriter: BookingWriter;
   private readonly paymentGateway: PaymentGateway;
+  private readonly invoiceService: InvoiceService;
 
   constructor({
     paymentRepository,
     bookingReader,
     bookingWriter,
     paymentGateway,
+    invoiceService,
   }: PaymentServiceDependencies) {
     this.paymentRepository = paymentRepository;
     this.bookingReader = bookingReader;
     this.bookingWriter = bookingWriter;
     this.paymentGateway = paymentGateway;
+    this.invoiceService = invoiceService;
   }
 
   async createPayment(
@@ -90,38 +104,56 @@ export class PaymentService {
       );
     }
 
+    if (booking.status !== "PENDING") {
+      throw new PaymentValidationError("Booking is not pending payment");
+    }
+
+    if (booking.expiresAt.getTime() < Date.now()) {
+      throw new PaymentValidationError("Booking payment window has expired");
+    }
+
+    const existingPending = await this.paymentRepository.findPendingByBookingId(
+      input.bookingId,
+    );
+
+    if (existingPending) {
+      if (existingPending.amount !== booking.totalPrice) {
+        throw new PaymentValidationError(
+          "Pending payment amount does not match booking total",
+        );
+      }
+
+      if (existingPending.paymentUrl && existingPending.snapToken) {
+        logInfo("Reusing pending payment Snap session for booking", {
+          paymentId: existingPending.id,
+          bookingId: input.bookingId,
+        });
+
+        return {
+          paymentUrl: existingPending.paymentUrl,
+          token: existingPending.snapToken,
+          transactionId:
+            existingPending.externalReference ?? existingPending.id,
+        };
+      }
+
+      return this.launchGatewayForPayment(
+        existingPending,
+        booking as BookingForPaymentLaunch,
+        input.finishRedirectUrl,
+      );
+    }
+
     const payment = await this.paymentRepository.create({
       bookingId: input.bookingId,
       amount: booking.totalPrice,
     });
 
-    try {
-      const gatewayResult = await this.paymentGateway.createTransaction({
-        orderId: payment.id,
-        amount: booking.totalPrice,
-        customerName: booking.contact.customerName,
-        customerPhone: booking.contact.customerPhone,
-        finishRedirectUrl: input.finishRedirectUrl,
-      });
-
-      await this.paymentRepository.update({
-        id: payment.id,
-        externalReference: gatewayResult.transactionId,
-      });
-
-      return {
-        paymentUrl: gatewayResult.paymentUrl,
-        token: gatewayResult.token,
-        transactionId: gatewayResult.transactionId,
-      };
-    } catch (error) {
-      await this.paymentRepository.update({
-        id: payment.id,
-        status: PAYMENT_STATUS.FAILED,
-      });
-
-      throw error;
-    }
+    return this.launchGatewayForPayment(
+      payment,
+      booking as BookingForPaymentLaunch,
+      input.finishRedirectUrl,
+    );
   }
 
   async handleMidtransCallback(
@@ -163,6 +195,8 @@ export class PaymentService {
             },
           );
 
+          await this.ensureInvoiceForPaidPayment(payment.id);
+
           return payment;
         }
 
@@ -173,10 +207,39 @@ export class PaymentService {
         });
 
         await this.bookingWriter.confirmIfPending(payment.bookingId);
+        await this.ensureInvoiceForPaidPayment(updatedPayment.id);
 
         return updatedPayment;
       }
       case "expired": {
+        if (payment.status === PAYMENT_STATUS.EXPIRED) {
+          logInfo(
+            "Duplicate Midtrans expired callback ignored for booking payment",
+            {
+              paymentId: payment.id,
+              bookingId: payment.bookingId,
+              orderId: payload.order_id,
+            },
+          );
+
+          await this.bookingWriter.cancelIfPending(payment.bookingId);
+
+          return payment;
+        }
+
+        if (payment.status === PAYMENT_STATUS.PAID) {
+          logInfo(
+            "Midtrans expired callback ignored for already paid booking payment",
+            {
+              paymentId: payment.id,
+              bookingId: payment.bookingId,
+              orderId: payload.order_id,
+            },
+          );
+
+          return payment;
+        }
+
         const updatedPayment = await this.markAsExpired({ id: payment.id });
 
         await this.bookingWriter.cancelIfPending(payment.bookingId);
@@ -325,6 +388,10 @@ export class PaymentService {
       );
     }
 
+    if (payment.status === PAYMENT_STATUS.EXPIRED) {
+      return payment;
+    }
+
     return this.paymentRepository.update({
       id: input.id,
       status: PAYMENT_STATUS.EXPIRED,
@@ -344,6 +411,52 @@ export class PaymentService {
       id: input.id,
       status: PAYMENT_STATUS.REFUNDED,
     });
+  }
+
+  private async launchGatewayForPayment(
+    payment: Payment,
+    booking: BookingForPaymentLaunch,
+    finishRedirectUrl?: string,
+  ): Promise<CreatePaymentResult> {
+    try {
+      const gatewayResult = await this.paymentGateway.createTransaction({
+        orderId: payment.id,
+        amount: booking.totalPrice,
+        customerName: booking.contact.customerName,
+        customerPhone: booking.contact.customerPhone,
+        finishRedirectUrl,
+      });
+
+      await this.paymentRepository.update({
+        id: payment.id,
+        externalReference: gatewayResult.transactionId,
+        paymentUrl: gatewayResult.paymentUrl,
+        snapToken: gatewayResult.token,
+      });
+
+      return {
+        paymentUrl: gatewayResult.paymentUrl,
+        token: gatewayResult.token,
+        transactionId: gatewayResult.transactionId,
+      };
+    } catch (error) {
+      await this.paymentRepository.update({
+        id: payment.id,
+        status: PAYMENT_STATUS.FAILED,
+      });
+
+      throw error;
+    }
+  }
+
+  private async ensureInvoiceForPaidPayment(paymentId: string): Promise<void> {
+    try {
+      await this.invoiceService.generateInvoice({ paymentId });
+    } catch (error) {
+      logError("Failed to generate invoice for paid payment", error, {
+        paymentId,
+      });
+    }
   }
 
   private async requirePayment(id: string): Promise<Payment> {
@@ -369,11 +482,19 @@ export class PaymentService {
   }
 }
 
-export function createPaymentService(prisma: PrismaClient): PaymentService {
+export function createPaymentService(
+  prisma: PrismaClient,
+  dependencies?: Partial<PaymentServiceDependencies>,
+): PaymentService {
   return new PaymentService({
-    paymentRepository: new PaymentRepository(prisma),
-    bookingReader: createPaymentBookingReader(prisma),
-    bookingWriter: createPaymentBookingWriter(prisma),
-    paymentGateway: createMidtransGateway(),
+    paymentRepository:
+      dependencies?.paymentRepository ?? new PaymentRepository(prisma),
+    bookingReader:
+      dependencies?.bookingReader ?? createPaymentBookingReader(prisma),
+    bookingWriter:
+      dependencies?.bookingWriter ?? createPaymentBookingWriter(prisma),
+    paymentGateway: dependencies?.paymentGateway ?? createMidtransGateway(),
+    invoiceService:
+      dependencies?.invoiceService ?? createInvoiceService(prisma),
   });
 }

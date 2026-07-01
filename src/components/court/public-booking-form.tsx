@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
+import {
+  BookingRangeSummary,
+  formatBookingDateLabel,
+} from "@/components/booking/booking-range-summary";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -18,18 +22,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createPublicBookingAction } from "@/domains/booking/actions/create-public-booking.action";
-import { BOOKING_DURATION_INTERVAL_MINUTES } from "@/domains/booking/constants";
-import {
-  formatBookingDate,
-  formatCurrency,
-  formatMinuteOfDay,
-} from "@/domains/booking/utils/booking-display";
+import type { BookingRangeLineItem } from "@/domains/booking/utils/booking-range";
 
 type PublicBookingSelection = {
   bookingDate: string;
   startMinute: number;
   endMinute: number;
+  durationMinute: number;
   price: number;
+  lineItems: BookingRangeLineItem[];
 };
 
 type PublicBookingFormContext = {
@@ -52,10 +53,6 @@ type FormState = {
   note: string;
 };
 
-function formatTimeRange(startMinute: number, endMinute: number) {
-  return `${formatMinuteOfDay(startMinute)} - ${formatMinuteOfDay(endMinute)}`;
-}
-
 export function PublicBookingForm({ context }: PublicBookingFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
@@ -70,8 +67,8 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
   );
   const [isPending, startTransition] = useTransition();
 
-  const bookingDateLabel = formatBookingDate(
-    new Date(`${context.selection.bookingDate}T00:00:00`),
+  const bookingDateLabel = formatBookingDateLabel(
+    context.selection.bookingDate,
   );
   const bookingHref = `/gor/${context.gorSlug}/court/${context.courtId}/booking`;
 
@@ -93,7 +90,7 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
         courtId: context.courtId,
         bookingDate: context.selection.bookingDate,
         startMinute: context.selection.startMinute,
-        durationMinute: BOOKING_DURATION_INTERVAL_MINUTES,
+        endMinute: context.selection.endMinute,
         contact: {
           customerName: form.customerName,
           customerPhone: form.customerPhone,
@@ -128,51 +125,14 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
             </p>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Ringkasan Booking</CardTitle>
-              <CardDescription>
-                Pastikan detail booking sudah sesuai sebelum melanjutkan.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <p className="text-muted-foreground text-sm">Venue</p>
-                <p className="font-medium">{context.gorName}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Lapangan</p>
-                <p className="font-medium">
-                  {context.courtName} · {context.sportLabel}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Tanggal</p>
-                <p className="font-medium">{bookingDateLabel}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Waktu</p>
-                <p className="font-medium">
-                  {formatTimeRange(
-                    context.selection.startMinute,
-                    context.selection.endMinute,
-                  )}
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Durasi</p>
-                <p className="font-medium">
-                  {BOOKING_DURATION_INTERVAL_MINUTES} menit
-                </p>
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Estimasi Harga</p>
-                <p className="font-medium">
-                  {formatCurrency(context.selection.price)}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <BookingRangeSummary
+            courtName={context.courtName}
+            bookingDateLabel={`${bookingDateLabel} · ${context.gorName}`}
+            startMinute={context.selection.startMinute}
+            endMinute={context.selection.endMinute}
+            lineItems={context.selection.lineItems}
+            totalPrice={context.selection.price}
+          />
 
           <form onSubmit={handleSubmit}>
             <Card>

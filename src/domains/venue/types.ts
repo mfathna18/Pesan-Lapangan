@@ -1,3 +1,14 @@
+export type PublicVenueListItem = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string;
+  address: string;
+  description: string | null;
+  logoUrl: string | null;
+  coverImageUrl: string | null;
+};
+
 export type PublicVenueCourt = {
   id: string;
   name: string;

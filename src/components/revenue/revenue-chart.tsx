@@ -25,13 +25,13 @@ export function RevenueChart({ data }: RevenueChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenue by Day</CardTitle>
-        <CardDescription>Current month paid revenue</CardDescription>
+        <CardTitle>Pendapatan per Hari</CardTitle>
+        <CardDescription>Pendapatan lunas bulan ini</CardDescription>
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
           <p className="text-muted-foreground text-sm">
-            No revenue recorded this month.
+            Belum ada pendapatan tercatat bulan ini.
           </p>
         ) : (
           <div className="overflow-x-auto">

@@ -7,6 +7,7 @@ import type {
   ListBookingsInput,
   UpdateBookingStatusInput,
 } from "@/domains/booking/types";
+import { resolveBookingExpiresAt } from "@/domains/booking/utils/booking-expiration";
 import type {
   BookingStatus,
   Prisma,
@@ -66,6 +67,7 @@ export type PublicCheckoutBookingRecord = {
   totalPrice: number;
   pricePerHourSnapshot: number;
   status: BookingStatus;
+  expiresAt: Date;
   courtNameSnapshot: string;
   contact: {
     customerName: string;
@@ -95,6 +97,8 @@ export class BookingRepository {
   constructor(private readonly prisma: PrismaDbClient) {}
 
   async create(input: CreateBookingInput): Promise<BookingWithContact> {
+    const expiresAt = resolveBookingExpiresAt(new Date());
+
     return this.prisma.booking.create({
       data: {
         courtId: input.courtId,
@@ -105,6 +109,7 @@ export class BookingRepository {
         durationMinute: input.durationMinute,
         totalPrice: input.totalPrice,
         status: input.status,
+        expiresAt,
         gorNameSnapshot: input.gorNameSnapshot,
         courtNameSnapshot: input.courtNameSnapshot,
         sportTypeSnapshot: input.sportTypeSnapshot,
@@ -143,6 +148,7 @@ export class BookingRepository {
         totalPrice: true,
         pricePerHourSnapshot: true,
         status: true,
+        expiresAt: true,
         courtNameSnapshot: true,
         contact: {
           select: {
@@ -319,6 +325,24 @@ export class BookingRepository {
       courts,
       operatingHours,
     };
+  }
+
+  async expirePendingBookings(
+    referenceDate: Date = new Date(),
+  ): Promise<number> {
+    const result = await this.prisma.booking.updateMany({
+      where: {
+        status: "PENDING",
+        expiresAt: {
+          lt: referenceDate,
+        },
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+
+    return result.count;
   }
 
   async updateStatus(

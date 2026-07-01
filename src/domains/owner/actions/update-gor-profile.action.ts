@@ -42,7 +42,7 @@ export async function updateGorProfileAction(
     return actionSuccess(profile);
   } catch (error) {
     return handleServerActionError("updateGorProfileAction", error, {
-      fallbackMessage: "Failed to save GOR profile.",
+      fallbackMessage: "Gagal menyimpan profil GOR.",
       knownErrors: [
         createKnownActionError(OwnerNotFoundError),
         createKnownActionError(GorProfileValidationError),

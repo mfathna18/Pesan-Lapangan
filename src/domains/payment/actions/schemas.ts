@@ -5,6 +5,11 @@ export const createPublicPaymentSchema = z.object({
   bookingId: z.string().trim().min(1, "Booking id is required."),
 });
 
+export const getPublicCheckoutStatusSchema = z.object({
+  gorSlug: z.string().trim().min(1, "Venue slug wajib diisi."),
+  bookingId: z.string().trim().min(1, "Booking id wajib diisi."),
+});
+
 export type CreatePublicPaymentActionInput = z.infer<
   typeof createPublicPaymentSchema
 >;

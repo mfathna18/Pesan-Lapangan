@@ -240,3 +240,53 @@ export type PublicCourtDetailData = {
     slug: string;
   };
 };
+
+export type OwnerCourtListItem = {
+  id: string;
+  name: string;
+  sportType: string;
+  sportLabel: string;
+  isActive: boolean;
+  displayOrder: number;
+};
+
+export type CreateOwnerCourtInput = {
+  name: string;
+  sportType: string;
+  isActive: boolean;
+};
+
+export type UpdateOwnerCourtInput = {
+  name: string;
+  sportType: string;
+  isActive: boolean;
+};
+
+export type OwnerPriceRuleListItem = {
+  id: string;
+  courtId: string;
+  dayOfWeek: number;
+  dayLabel: string;
+  startTime: string;
+  endTime: string;
+  price: number;
+  priceLabel: string;
+  isActive: boolean;
+};
+
+export type SaveOwnerPriceRuleInput = {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  price: number;
+  isActive: boolean;
+};
+
+export type CreateOwnerPriceRuleInput = SaveOwnerPriceRuleInput & {
+  courtId: string;
+};
+
+export type UpdateOwnerPriceRuleInput = SaveOwnerPriceRuleInput & {
+  courtId: string;
+  priceRuleId: string;
+};

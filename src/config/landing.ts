@@ -43,11 +43,11 @@ export const landingContent = {
     categories: [
       {
         name: "Badminton",
-        description: "Indoor & outdoor court dengan jadwal fleksibel.",
+        description: "Lapangan indoor dan outdoor dengan jadwal fleksibel.",
       },
       {
         name: "Futsal",
-        description: "Lapangan sintetis untuk mini soccer dan turnamen.",
+        description: "Lapangan sintetis untuk sepak bola mini dan turnamen.",
       },
       {
         name: "Basketball",
@@ -73,7 +73,7 @@ export const landingContent = {
     description: "Dirancang untuk pemain, tim, dan pengelola gor.",
     benefits: [
       {
-        title: "Booking Real-Time",
+        title: "Booking Langsung",
         description:
           "Slot lapangan diperbarui otomatis sehingga kamu tidak double booking.",
       },
@@ -88,7 +88,7 @@ export const landingContent = {
           "Invoice otomatis setelah pembayaran berhasil, siap disimpan atau dibagikan.",
       },
       {
-        title: "Mobile Friendly",
+        title: "Ramah Seluler",
         description:
           "Antarmuka ringan dan responsif, nyaman dipakai dari smartphone.",
       },
@@ -104,6 +104,7 @@ export const landingContent = {
   footer: {
     tagline: "Platform booking lapangan olahraga modern untuk Indonesia.",
     links: [
+      { label: "Cari Lapangan", href: "#cari-lapangan" },
       { label: "Cara Kerja", href: "#cara-kerja" },
       { label: "Kategori", href: "#kategori" },
       { label: "Keunggulan", href: "#keunggulan" },

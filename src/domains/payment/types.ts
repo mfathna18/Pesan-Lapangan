@@ -6,11 +6,20 @@ import type {
 
 import type { RevenueDateRangePreset } from "@/domains/payment/constants";
 
+export type PublicPaymentSummary = {
+  status: PaymentStatus;
+  amount: number;
+  paidAt: string | null;
+  method: PaymentMethod;
+};
+
 export type CreatePaymentInput = {
   bookingId: string;
   amount: number;
   method?: PaymentMethod;
   externalReference?: string | null;
+  paymentUrl?: string | null;
+  snapToken?: string | null;
   expiredAt?: Date | null;
 };
 
@@ -18,6 +27,8 @@ export type UpdatePaymentInput = {
   id: string;
   status?: PaymentStatus;
   externalReference?: string | null;
+  paymentUrl?: string | null;
+  snapToken?: string | null;
   paidAt?: Date | null;
   expiredAt?: Date | null;
 };
@@ -46,12 +57,18 @@ export type PublicCheckoutData = {
   totalPrice: number;
   pricePerHourSnapshot: number;
   status: BookingStatus;
+  expiresAt: string;
   customerName: string;
   customerPhone: string;
   venueName: string;
   venueSlug: string;
   courtName: string;
   hasPaidPayment: boolean;
+  hasPendingPayment: boolean;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
+  latestPaymentStatus: PaymentStatus | null;
+  paymentSummary: PublicPaymentSummary | null;
 };
 
 export type CreatePaymentRequest = {

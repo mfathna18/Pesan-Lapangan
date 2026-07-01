@@ -6,8 +6,11 @@ import { PublicBookingForm } from "@/components/court/public-booking-form";
 import { getAvailabilityService } from "@/domains/availability/actions/get-availability-service";
 import { publicBookingFormSearchParamsSchema } from "@/domains/booking/actions/schemas";
 import { getCourtService } from "@/domains/booking/actions/get-court-service";
-import { BOOKING_DURATION_INTERVAL_MINUTES } from "@/domains/booking/constants";
 import { CourtNotFoundError } from "@/domains/booking/errors";
+import {
+  resolveRangeLineItems,
+  resolveRangeTotalPrice,
+} from "@/domains/booking/utils/booking-range";
 import { siteConfig } from "@/config/site";
 
 type PublicBookingFormPageProps = {
@@ -39,7 +42,7 @@ export async function generateMetadata({
 
   try {
     const court = await getCachedPublicCourtDetail(slug, courtId);
-    const title = `Form Booking ${court.name} | ${court.gor.name}`;
+    const title = `Formulir Booking ${court.name} | ${court.gor.name}`;
 
     return {
       title,
@@ -50,7 +53,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Form Booking",
+      title: "Formulir Booking",
     };
   }
 }
@@ -73,20 +76,16 @@ export default async function PublicBookingFormPage({
   }
 
   const court = await getCachedPublicCourtDetail(slug, courtId);
-  const { date, startMinute, endMinute, price } = parsedSearchParams.data;
-  const computedEndMinute =
-    endMinute ?? startMinute + BOOKING_DURATION_INTERVAL_MINUTES;
+  const { date, startMinute, endMinute } = parsedSearchParams.data;
   const bookingDate = new Date(`${date}T00:00:00`);
 
   const slots = await getAvailabilityService().getSlotGrid({
     courtId,
     date: bookingDate,
   });
-  const matchedSlot = slots.find(
-    (slot) => slot.startMinute === startMinute && slot.available,
-  );
-  const slotUnavailable = !matchedSlot;
-  const resolvedPrice = matchedSlot?.price ?? price ?? 0;
+  const resolvedPrice = resolveRangeTotalPrice(slots, startMinute, endMinute);
+  const lineItems = resolveRangeLineItems(slots, startMinute, endMinute) ?? [];
+  const slotUnavailable = resolvedPrice === null;
 
   return (
     <PublicBookingForm
@@ -99,8 +98,10 @@ export default async function PublicBookingFormPage({
         selection: {
           bookingDate: date,
           startMinute,
-          endMinute: computedEndMinute,
-          price: resolvedPrice,
+          endMinute,
+          price: resolvedPrice ?? parsedSearchParams.data.price ?? 0,
+          durationMinute: endMinute - startMinute,
+          lineItems,
         },
         slotUnavailable,
       }}

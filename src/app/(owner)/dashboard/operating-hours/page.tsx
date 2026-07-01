@@ -1,20 +1,19 @@
-import { ProtectedOwnerFeaturePlaceholder } from "@/components/subscription/protected-owner-feature-placeholder";
+import { OperatingHoursManagement } from "@/components/operating-hours/operating-hours-management";
 import { SubscriptionFeatureGate } from "@/components/subscription/subscription-feature-gate";
+import { createPageMetadata } from "@/config/page-metadata";
 import { getOwnerSubscriptionAccess } from "@/domains/subscription/guards/subscription-guard";
 
-export const metadata = {
-  title: "Operating Hours",
-};
+export const metadata = createPageMetadata(
+  "Jam Operasional",
+  "Atur jadwal buka tutup lapangan setiap hari.",
+);
 
 export default async function DashboardOperatingHoursPage() {
   const { access } = await getOwnerSubscriptionAccess();
 
   return (
     <SubscriptionFeatureGate access={access}>
-      <ProtectedOwnerFeaturePlaceholder
-        title="Operating Hours"
-        description="Atur jam operasional lapangan venue kamu."
-      />
+      <OperatingHoursManagement />
     </SubscriptionFeatureGate>
   );
 }

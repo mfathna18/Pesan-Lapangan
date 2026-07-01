@@ -44,7 +44,7 @@ export async function createBookingAction(
     );
 
     if (!isOwnedCourt) {
-      return actionFailure("Court not found.");
+      return actionFailure("Lapangan tidak ditemukan.");
     }
 
     const booking = await getBookingService().create(parsed.data);
@@ -52,7 +52,7 @@ export async function createBookingAction(
     return actionSuccess(booking);
   } catch (error) {
     return handleServerActionError("createBookingAction", error, {
-      fallbackMessage: "Failed to create booking.",
+      fallbackMessage: "Gagal membuat booking.",
       knownErrors: [
         createKnownActionError(SubscriptionAccessDeniedError),
         createKnownActionError(BookingValidationError),

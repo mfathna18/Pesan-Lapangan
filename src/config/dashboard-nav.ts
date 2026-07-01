@@ -1,8 +1,8 @@
 import {
   BarChart3,
+  CalendarClock,
   CalendarDays,
   Clock,
-  CreditCard,
   FileText,
   LayoutDashboard,
   MapPin,
@@ -20,52 +20,52 @@ export type DashboardNavItem = {
 
 export const dashboardNavItems: DashboardNavItem[] = [
   {
-    title: "Dashboard",
+    title: "Beranda",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
   {
-    title: "Bookings",
+    title: "Booking",
     href: "/dashboard/bookings",
     icon: CalendarDays,
   },
   {
-    title: "Analytics",
+    title: "Analitik",
     href: "/dashboard/analytics",
     icon: BarChart3,
   },
   {
-    title: "Courts",
+    title: "Lapangan",
     href: "/dashboard/courts",
     icon: MapPin,
   },
   {
-    title: "Pricing",
+    title: "Harga",
     href: "/dashboard/pricing",
     icon: Tags,
   },
   {
-    title: "Operating Hours",
+    title: "Jam Operasional",
     href: "/dashboard/operating-hours",
     icon: Clock,
   },
   {
-    title: "Payments",
-    href: "/dashboard/payments",
-    icon: CreditCard,
+    title: "Ketersediaan",
+    href: "/dashboard/availability",
+    icon: CalendarClock,
   },
   {
-    title: "Invoices",
+    title: "Invoice",
     href: "/dashboard/invoices",
     icon: FileText,
   },
   {
-    title: "Subscription",
+    title: "Langganan",
     href: "/dashboard/subscription",
     icon: Sparkles,
   },
   {
-    title: "Settings",
+    title: "Pengaturan",
     href: "/dashboard/settings",
     icon: Settings,
   },
