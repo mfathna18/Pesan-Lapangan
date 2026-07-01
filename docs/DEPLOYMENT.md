@@ -26,7 +26,7 @@ Guide for deploying PesanLapangan to Vercel with PostgreSQL, Better Auth, Midtra
 3. **Root Directory:** repository root.
 4. **Build Command:** leave default — Vercel runs `vercel-build` when defined in `package.json`:
    ```json
-   "vercel-build": "prisma migrate deploy && npm run build"
+   "vercel-build": "node scripts/prisma-migrate-deploy.mjs && next build --turbopack"
    ```
 5. **Install Command:** `npm install` (default). `postinstall` runs `prisma generate`.
 6. **Node.js version:** 20.x or newer (see `engines` in `package.json`).
@@ -60,7 +60,8 @@ Configure in **Vercel → Project → Settings → Environment Variables**.
 
 | Variable                 | Required | Scopes              | Description                                                  |
 | ------------------------ | -------- | ------------------- | ------------------------------------------------------------ |
-| `DATABASE_URL`           | Yes      | All                 | PostgreSQL connection string (pooled + SSL in production)    |
+| `DATABASE_URL`           | Yes      | All                 | Pooled URL (Supabase port 6543) for app runtime              |
+| `DIRECT_URL`             | Yes*     | All                 | Direct URL (Supabase port 5432) for Prisma migrations        |
 | `BETTER_AUTH_SECRET`     | Yes      | All                 | 32+ character secret; unique per environment                 |
 | `BETTER_AUTH_URL`        | Yes      | All                 | Public app URL (must match domain users visit)               |
 | `NEXT_PUBLIC_APP_URL`    | Yes      | All                 | Same as `BETTER_AUTH_URL`; baked into client bundle at build |
@@ -69,6 +70,8 @@ Configure in **Vercel → Project → Settings → Environment Variables**.
 | `MIDTRANS_IS_PRODUCTION` | Yes      | All                 | `false` for sandbox, `true` for live Midtrans                |
 | `CRON_SECRET`            | Yes      | Production, Preview | Secret for `/api/cron/expire-bookings`                       |
 | `SKIP_ENV_VALIDATION`    | No       | Never on Production | Only for special CI/Docker builds                            |
+
+\* **Required on Vercel when `DATABASE_URL` uses Supabase pooler (6543 / `pgbouncer=true`).** Optional locally if `DATABASE_URL` is a direct connection.
 
 ### Auto-provided by Vercel (do not set)
 
@@ -89,7 +92,8 @@ Preview deployments automatically trust `https://${VERCEL_URL}` for Better Auth 
 
 ```env
 NEXT_PUBLIC_APP_URL=https://your-domain.com
-DATABASE_URL=postgresql://user:pass@host/db?sslmode=require
+DATABASE_URL=postgresql://...@pooler.supabase.com:6543/postgres?pgbouncer=true
+DIRECT_URL=postgresql://...@pooler.supabase.com:5432/postgres
 BETTER_AUTH_SECRET=<generate-unique-32-plus-chars>
 BETTER_AUTH_URL=https://your-domain.com
 MIDTRANS_SERVER_KEY=Mid-server-...
@@ -131,14 +135,31 @@ npm run db:migrate        # prisma migrate dev
 Migrations run automatically on Vercel via `vercel-build`:
 
 ```bash
-prisma migrate deploy && npm run build
+node scripts/prisma-migrate-deploy.mjs && next build --turbopack
 ```
 
 You can also run migrations manually before the first deploy:
 
 ```bash
-DATABASE_URL="postgresql://..." npm run db:migrate:deploy
+npm run db:migrate:deploy
 ```
+
+### Supabase (required for Vercel)
+
+Use **two** connection strings in Vercel Environment Variables:
+
+| Variable       | Connection                                                   | Used by                              |
+| -------------- | ------------------------------------------------------------ | ------------------------------------ |
+| `DATABASE_URL` | Transaction pooler — port **6543**, append `?pgbouncer=true` | App runtime (`src/lib/db/prisma.ts`) |
+| `DIRECT_URL`   | Session/direct — port **5432**                               | Prisma CLI (`prisma migrate deploy`) |
+
+Get both from Supabase → **Project Settings → Database → Connect**.
+
+**Why:** `prisma migrate deploy` through the pooler (6543 / PgBouncer) often **hangs indefinitely** with no error — this is the most common Vercel + Supabase deploy failure.
+
+`prisma.config.ts` uses `DIRECT_URL` for CLI commands. The app runtime continues using pooled `DATABASE_URL` via `@prisma/adapter-pg`.
+
+If `DATABASE_URL` uses the pooler and `DIRECT_URL` is missing, the migrate script exits immediately with a clear error instead of hanging.
 
 ### Database provider tips
 
@@ -282,17 +303,17 @@ See [docs/MIDTRANS_SANDBOX.md](./MIDTRANS_SANDBOX.md) for the full end-to-end sa
 
 ## Troubleshooting
 
-| Issue                         | Likely cause                    | Fix                                                                         |
-| ----------------------------- | ------------------------------- | --------------------------------------------------------------------------- |
-| Build fails on env validation | Missing/invalid env vars        | Add all required vars; use HTTPS in Production                              |
-| `prisma migrate deploy` fails | Wrong `DATABASE_URL` or network | Verify pooled URL, SSL, IP allowlist                                        |
-| Auth redirect loops           | URL mismatch                    | `BETTER_AUTH_URL` must exactly match browser URL                            |
-| Preview auth fails            | Wrong trusted origin            | Set Preview `BETTER_AUTH_URL` to preview URL, or rely on `VERCEL_URL` trust |
-| Midtrans callback 403         | Wrong server key                | Match sandbox vs production keys with `MIDTRANS_IS_PRODUCTION`              |
-| Midtrans callback 404         | Wrong notification URL          | Must be `/api/payment/midtrans/callback`                                    |
-| PDF generation error          | Edge runtime                    | Routes use `runtime = "nodejs"`; pdfkit in `serverExternalPackages`         |
-| Database connection errors    | Non-pooled URL                  | Use provider connection pooler                                              |
-| Cron 401                      | Missing/wrong `CRON_SECRET`     | Set in Vercel env; redeploy                                                 |
+| Issue                                   | Likely cause                   | Fix                                                                         |
+| --------------------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
+| Build fails on env validation           | Missing/invalid env vars       | Add all required vars; use HTTPS in Production                              |
+| `prisma migrate deploy` hangs on Vercel | Pooler URL used for migrations | Set `DIRECT_URL` (port 5432); keep pooler in `DATABASE_URL` only            |
+| Auth redirect loops                     | URL mismatch                   | `BETTER_AUTH_URL` must exactly match browser URL                            |
+| Preview auth fails                      | Wrong trusted origin           | Set Preview `BETTER_AUTH_URL` to preview URL, or rely on `VERCEL_URL` trust |
+| Midtrans callback 403                   | Wrong server key               | Match sandbox vs production keys with `MIDTRANS_IS_PRODUCTION`              |
+| Midtrans callback 404                   | Wrong notification URL         | Must be `/api/payment/midtrans/callback`                                    |
+| PDF generation error                    | Edge runtime                   | Routes use `runtime = "nodejs"`; pdfkit in `serverExternalPackages`         |
+| Database connection errors              | Non-pooled URL                 | Use provider connection pooler                                              |
+| Cron 401                                | Missing/wrong `CRON_SECRET`    | Set in Vercel env; redeploy                                                 |
 
 ---
 
