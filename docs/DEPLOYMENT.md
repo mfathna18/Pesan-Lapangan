@@ -35,9 +35,11 @@ Guide for deploying PesanLapangan to Vercel with PostgreSQL, Better Auth, Midtra
 
 `vercel.json` registers a cron job:
 
-| Path                        | Schedule     | Purpose                        |
-| --------------------------- | ------------ | ------------------------------ |
-| `/api/cron/expire-bookings` | Every minute | Expire unpaid pending bookings |
+| Path                        | Schedule           | Purpose                                    |
+| --------------------------- | ------------------ | ------------------------------------------ |
+| `/api/cron/expire-bookings` | Daily at 00:00 UTC | Mark expired pending bookings as CANCELLED |
+
+On **Vercel Hobby**, cron jobs may run at most once per day. Slot holds still release after 5 minutes via `expiresAt` in availability queries; the cron cleans up stale `PENDING` rows in the database. For minute-level cleanup, upgrade to **Pro** and set `"schedule": "* * * * *"`.
 
 Set `CRON_SECRET` in Vercel Environment Variables. Vercel automatically sends `Authorization: Bearer <CRON_SECRET>` when invoking cron routes.
 
