@@ -4,8 +4,10 @@ import { AnalyticsSummaryCards } from "@/components/analytics/analytics-summary-
 import { AnalyticsTopCourtsTable } from "@/components/analytics/analytics-top-courts-table";
 import { OwnerOnboardingEmptyState } from "@/components/dashboard/owner-onboarding-empty-state";
 import { OwnerRecentBookingsTable } from "@/components/dashboard/owner-recent-bookings-table";
+import { PageHeader } from "@/components/ui/page-header";
 import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/types";
 import { formatBookingDate } from "@/domains/booking/utils/booking-display";
+import { layout } from "@/lib/design-system";
 
 type AnalyticsDashboardProps = {
   data: OwnerAnalyticsDashboardData;
@@ -13,20 +15,12 @@ type AnalyticsDashboardProps = {
 
 export function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Analitik
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Analitik Operasional
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Ringkasan booking dan performa venue untuk periode{" "}
-          {formatBookingDate(data.period.from)} –{" "}
-          {formatBookingDate(data.period.to)}.
-        </p>
-      </div>
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Analitik"
+        title="Analitik Operasional"
+        description={`Ringkasan booking dan performa venue untuk periode ${formatBookingDate(data.period.from)} – ${formatBookingDate(data.period.to)}.`}
+      />
 
       {!data.hasBookings ? (
         <OwnerOnboardingEmptyState

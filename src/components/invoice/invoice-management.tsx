@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -24,6 +25,7 @@ import type {
   ListOwnerInvoicesResult,
   OwnerInvoiceDetail,
 } from "@/domains/invoice/types";
+import { layout } from "@/lib/design-system";
 import {
   formatBookingDate,
   formatCurrency,
@@ -116,16 +118,12 @@ export function InvoiceManagement() {
     listResult !== null && listResult.items.length === 0 && filtersActive;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Tagihan
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Invoice</h1>
-        <p className="text-muted-foreground text-sm">
-          Lihat dan unduh invoice dari booking yang sudah dibayar.
-        </p>
-      </div>
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Tagihan"
+        title="Invoice"
+        description="Lihat dan unduh invoice dari booking yang sudah dibayar."
+      />
 
       {listError ? (
         <p className="text-destructive text-sm" role="alert">

@@ -1,0 +1,113 @@
+/**
+ * PesanLapangan Design System 1.0
+ * Premium SaaS palette — Stripe / Linear / Vercel inspired.
+ * No heavy gradients. Subtle shadows only.
+ */
+
+:root {
+  /* ── Color: Brand ── */
+  --primary: oklch(0.45 0.14 264);
+  --primary-hover: oklch(0.4 0.14 264);
+  --primary-foreground: oklch(0.99 0 0);
+
+  /* ── Color: Semantic ── */
+  --success: oklch(0.52 0.14 155);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.72 0.14 75);
+  --warning-foreground: oklch(0.28 0.04 75);
+  --danger: oklch(0.55 0.2 25);
+  --danger-foreground: oklch(0.99 0 0);
+
+  /* ── Color: Surfaces ── */
+  --background: oklch(0.985 0.002 264);
+  --foreground: oklch(0.18 0.02 264);
+  --surface: oklch(1 0 0);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--foreground);
+
+  /* ── Color: UI chrome ── */
+  --muted: oklch(0.96 0.004 264);
+  --muted-foreground: oklch(0.48 0.02 264);
+  --accent: oklch(0.96 0.008 264);
+  --accent-foreground: oklch(0.22 0.02 264);
+  --secondary: oklch(0.96 0.004 264);
+  --secondary-foreground: oklch(0.22 0.02 264);
+  --border: oklch(0.91 0.006 264);
+  --input: oklch(0.91 0.006 264);
+  --ring: oklch(0.45 0.14 264);
+  --destructive: var(--danger);
+
+  /* ── Text aliases ── */
+  --text-primary: var(--foreground);
+  --text-secondary: var(--muted-foreground);
+
+  /* ── Charts ── */
+  --chart-1: oklch(0.45 0.14 264);
+  --chart-2: oklch(0.52 0.14 155);
+  --chart-3: oklch(0.72 0.14 75);
+  --chart-4: oklch(0.55 0.2 25);
+  --chart-5: oklch(0.48 0.02 264);
+
+  /* ── Radius ── */
+  --radius: 0.625rem;
+  --radius-button: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-input: 0.5rem;
+  --radius-dialog: 0.75rem;
+
+  /* ── Shadows (subtle only) ── */
+  --shadow-subtle: 0 1px 2px oklch(0.18 0.02 264 / 0.04);
+  --shadow-card:
+    0 1px 3px oklch(0.18 0.02 264 / 0.05),
+    0 4px 16px oklch(0.18 0.02 264 / 0.04);
+  --shadow-elevated:
+    0 4px 12px oklch(0.18 0.02 264 / 0.06),
+    0 12px 32px oklch(0.18 0.02 264 / 0.05);
+
+  /* ── Sidebar (dashboard) ── */
+  --sidebar: oklch(0.995 0.002 264);
+  --sidebar-foreground: oklch(0.28 0.02 264);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: oklch(0.96 0.008 264);
+  --sidebar-accent-foreground: oklch(0.22 0.02 264);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+.dark {
+  --primary: oklch(0.62 0.14 264);
+  --primary-hover: oklch(0.67 0.14 264);
+  --primary-foreground: oklch(0.15 0.02 264);
+
+  --success: oklch(0.62 0.14 155);
+  --warning: oklch(0.78 0.12 75);
+  --warning-foreground: oklch(0.2 0.04 75);
+  --danger: oklch(0.62 0.18 25);
+
+  --background: oklch(0.14 0.02 264);
+  --foreground: oklch(0.96 0.004 264);
+  --surface: oklch(0.18 0.02 264);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.18 0.02 264);
+  --popover-foreground: var(--foreground);
+
+  --muted: oklch(0.22 0.02 264);
+  --muted-foreground: oklch(0.65 0.02 264);
+  --accent: oklch(0.22 0.02 264);
+  --accent-foreground: oklch(0.96 0.004 264);
+  --secondary: oklch(0.22 0.02 264);
+  --secondary-foreground: oklch(0.96 0.004 264);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: oklch(0.62 0.14 264);
+
+  --sidebar: oklch(0.16 0.02 264);
+  --sidebar-foreground: oklch(0.92 0.004 264);
+  --sidebar-accent: oklch(0.22 0.02 264);
+  --sidebar-accent-foreground: oklch(0.96 0.004 264);
+  --sidebar-border: oklch(1 0 0 / 10%);
+}

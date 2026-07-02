@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -43,6 +44,7 @@ import {
   formatMinuteOfDay,
 } from "@/domains/booking/utils/booking-display";
 import { UI_COPY } from "@/config/ui-copy";
+import { layout } from "@/lib/design-system";
 
 type BookingFiltersState = {
   bookingDate: string;
@@ -155,13 +157,8 @@ export function BookingManagement() {
 
   return (
     <>
-      <div className="flex flex-1 flex-col gap-6 p-4 sm:p-6 lg:p-8">
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-            Manajemen
-          </p>
-          <h1 className="text-3xl font-semibold tracking-tight">Booking</h1>
-        </div>
+      <div className={layout.page}>
+        <PageHeader eyebrow="Manajemen" title="Booking" />
 
         <Card>
           <CardHeader>

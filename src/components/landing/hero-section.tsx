@@ -2,35 +2,40 @@ import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
 import { landingContent } from "@/config/landing";
+import { layout, typography } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 export function HeroSection() {
   const { hero } = landingContent;
 
   return (
-    <section className="relative overflow-hidden px-4 py-16 sm:px-6 sm:py-24 lg:py-28">
-      <div className="from-primary/10 via-background to-background absolute inset-0 -z-10 bg-gradient-to-b" />
-      <div className="bg-primary/20 absolute top-0 right-0 -z-10 h-64 w-64 translate-x-1/3 -translate-y-1/2 rounded-full blur-3xl" />
-
-      <div className="mx-auto flex max-w-6xl flex-col gap-10">
-        <div className="mx-auto max-w-3xl space-y-5 text-center">
-          <p className="text-primary text-sm font-medium tracking-widest uppercase">
-            {hero.eyebrow}
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-            {hero.title}
-          </h1>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-base text-pretty sm:text-lg">
+    <section className={`${layout.section} pb-12 sm:pb-16 lg:pb-20`}>
+      <div className={`${layout.container} flex flex-col items-center gap-12`}>
+        <div className="mx-auto max-w-4xl space-y-8 text-center">
+          <p className={typography.eyebrow}>{hero.eyebrow}</p>
+          <h1 className={typography.hero}>{hero.title}</h1>
+          <p
+            className={cn(
+              typography.body,
+              "text-muted-foreground mx-auto max-w-2xl text-pretty",
+            )}
+          >
             {hero.description}
           </p>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
           <Link
             href="#cari-lapangan"
-            className={cn(buttonVariants({ size: "lg" }), "h-11 px-8")}
+            className={cn(buttonVariants({ size: "lg" }))}
           >
             {hero.searchButton}
+          </Link>
+          <Link
+            href="#cara-kerja"
+            className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
+          >
+            Lihat Cara Kerja
           </Link>
         </div>
       </div>

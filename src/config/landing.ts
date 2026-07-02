@@ -101,13 +101,44 @@ export const landingContent = {
     primaryButton: "Cari Lapangan Sekarang",
     secondaryButton: "Pelajari Cara Kerja",
   },
+  testimonials: {
+    title: "Dipercaya Pemain & Pengelola Gor",
+    description:
+      "Cerita nyata dari komunitas olahraga yang memakai PesanLapangan.",
+    items: [
+      {
+        quote:
+          "Booking jadi jauh lebih rapi. Tim saya bisa pesan slot malam tanpa chat panjang ke admin gor.",
+        name: "Rizky A.",
+        role: "Kapten Tim Futsal",
+      },
+      {
+        quote:
+          "Dashboard pemilik membantu saya melihat booking harian dan pendapatan tanpa buka spreadsheet.",
+        name: "Dewi M.",
+        role: "Pengelola Gor",
+      },
+      {
+        quote:
+          "Pembayaran online dan nota digital membuat main badminton setiap minggu terasa profesional.",
+        name: "Bagas P.",
+        role: "Pemain Badminton",
+      },
+    ],
+  },
+  popularVenues: {
+    eyebrow: "Venue Populer",
+    title: "Lapangan Favorit Komunitas",
+    description:
+      "Pilih gor aktif dan lanjutkan booking lapangan favoritmu dalam beberapa langkah.",
+  },
   footer: {
     tagline: "Platform booking lapangan olahraga modern untuk Indonesia.",
     links: [
       { label: "Cari Lapangan", href: "#cari-lapangan" },
-      { label: "Cara Kerja", href: "#cara-kerja" },
-      { label: "Kategori", href: "#kategori" },
       { label: "Keunggulan", href: "#keunggulan" },
+      { label: "Venue Populer", href: "#venue-populer" },
+      { label: "Cara Kerja", href: "#cara-kerja" },
     ],
     copyright: "Semua hak dilindungi.",
   },

@@ -2,40 +2,41 @@ import Link from "next/link";
 
 import { LandingHeaderActions } from "@/components/landing/landing-header-actions";
 import { siteConfig } from "@/config/site";
+import { cn } from "@/lib/utils";
+
+const navLinks = [
+  { href: "#cari-lapangan", label: "Cari Lapangan" },
+  { href: "#keunggulan", label: "Keunggulan" },
+  { href: "#venue-populer", label: "Venue Populer" },
+  { href: "#cara-kerja", label: "Cara Kerja" },
+] as const;
 
 export function LandingHeader() {
   return (
-    <header className="border-border/60 bg-background/95 supports-[backdrop-filter]:bg-background/80 sticky top-0 z-50 border-b backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/" className="shrink-0 font-semibold tracking-tight">
+    <header className="border-border/80 bg-background/90 sticky top-0 z-50 border-b backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6">
+        <Link
+          href="/"
+          className="text-foreground shrink-0 text-base font-semibold tracking-tight"
+        >
           {siteConfig.name}
         </Link>
 
-        <nav className="hidden items-center gap-6 text-sm md:flex">
-          <a
-            href="#cari-lapangan"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Cari Lapangan
-          </a>
-          <a
-            href="#cara-kerja"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Cara Kerja
-          </a>
-          <a
-            href="#kategori"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Kategori
-          </a>
-          <a
-            href="#keunggulan"
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Keunggulan
-          </a>
+        <nav
+          className="hidden items-center gap-8 md:flex"
+          aria-label="Navigasi utama"
+        >
+          {navLinks.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "text-muted-foreground hover:text-foreground text-sm font-medium transition-colors duration-150",
+              )}
+            >
+              {link.label}
+            </a>
+          ))}
         </nav>
 
         <LandingHeaderActions />

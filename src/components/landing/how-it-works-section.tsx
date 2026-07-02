@@ -5,31 +5,29 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 import { landingContent } from "@/config/landing";
+import { layout } from "@/lib/design-system";
 
 export function HowItWorksSection() {
   const { howItWorks } = landingContent;
 
   return (
-    <section id="cara-kerja" className="px-4 py-16 sm:px-6 sm:py-20">
-      <div className="mx-auto max-w-6xl space-y-10">
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            {howItWorks.title}
-          </h2>
-          <p className="text-muted-foreground text-base sm:text-lg">
-            {howItWorks.description}
-          </p>
-        </div>
+    <section id="cara-kerja" className={`${layout.section} scroll-mt-20`}>
+      <div className={`${layout.container} flex flex-col gap-12`}>
+        <SectionHeader
+          title={howItWorks.title}
+          description={howItWorks.description}
+        />
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {howItWorks.steps.map((item) => (
             <Card key={item.step} className="h-full">
-              <CardHeader>
-                <p className="text-primary text-sm font-semibold">
-                  {item.step}
+              <CardHeader className="gap-3">
+                <p className="text-primary text-xs font-semibold tracking-widest">
+                  LANGKAH {item.step}
                 </p>
-                <CardTitle>{item.title}</CardTitle>
+                <CardTitle className="text-lg">{item.title}</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-sm leading-relaxed">

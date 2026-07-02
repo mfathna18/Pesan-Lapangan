@@ -21,7 +21,7 @@ export function DashboardSidebar({
       <div
         aria-hidden={!mobileOpen}
         className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity lg:hidden",
+          "bg-foreground/20 fixed inset-0 z-40 transition-opacity duration-150 lg:hidden",
           mobileOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={onClose}
@@ -29,13 +29,15 @@ export function DashboardSidebar({
 
       <aside
         className={cn(
-          "bg-sidebar text-sidebar-foreground border-sidebar-border fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r transition-transform duration-200 lg:translate-x-0",
+          "bg-sidebar text-sidebar-foreground border-sidebar-border fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r shadow-[var(--shadow-subtle)] transition-transform duration-150 lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
         )}
       >
-        <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-4">
+        <div className="border-sidebar-border flex h-16 items-center justify-between border-b px-5">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">{siteConfig.name}</p>
+            <p className="truncate text-sm font-semibold tracking-tight">
+              {siteConfig.name}
+            </p>
             <p className="text-muted-foreground truncate text-xs">
               Panel Pemilik
             </p>
@@ -52,7 +54,7 @@ export function DashboardSidebar({
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto py-2">
           <DashboardNav onNavigate={onClose} />
         </div>
       </aside>

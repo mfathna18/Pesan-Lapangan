@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { MapPin } from "lucide-react";
+import { useMemo } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -12,16 +12,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { SectionHeader } from "@/components/ui/section-header";
+import { landingContent } from "@/config/landing";
 import type { PublicVenueListItem } from "@/domains/venue/types";
+import { layout } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 type VenueDiscoverySectionProps = {
   venues: PublicVenueListItem[];
+  query: string;
+  onQueryChange: (value: string) => void;
 };
 
-export function VenueDiscoverySection({ venues }: VenueDiscoverySectionProps) {
-  const [query, setQuery] = useState("");
+export function VenueDiscoverySection({
+  venues,
+  query,
+  onQueryChange,
+}: VenueDiscoverySectionProps) {
+  const { popularVenues } = landingContent;
 
   const filteredVenues = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -36,39 +44,13 @@ export function VenueDiscoverySection({ venues }: VenueDiscoverySectionProps) {
   }, [query, venues]);
 
   return (
-    <section
-      id="cari-lapangan"
-      className="border-border bg-muted/30 scroll-mt-20 border-y px-4 py-16 sm:px-6 sm:py-20"
-    >
-      <div className="mx-auto flex max-w-6xl flex-col gap-8">
-        <div className="mx-auto max-w-2xl space-y-3 text-center">
-          <p className="text-primary text-sm font-medium tracking-widest uppercase">
-            Temukan Venue
-          </p>
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-            Cari Lapangan Olahraga
-          </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Pilih venue olahraga aktif dan lanjutkan booking lapangan favoritmu.
-          </p>
-        </div>
-
-        <div className="mx-auto w-full max-w-xl">
-          <div className="bg-card ring-foreground/10 flex flex-col gap-3 rounded-2xl p-3 shadow-sm ring-1 sm:flex-row sm:items-center sm:p-2">
-            <Input
-              type="search"
-              placeholder="Cari nama gor..."
-              aria-label="Cari nama gor"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              className="h-11 border-0 bg-transparent shadow-none focus-visible:ring-0"
-            />
-            <Button type="button" size="lg" className="h-11 w-full sm:w-auto">
-              <Search />
-              Cari Lapangan
-            </Button>
-          </div>
-        </div>
+    <section id="venue-populer" className={`${layout.section} scroll-mt-20`}>
+      <div className={`${layout.container} flex flex-col gap-12`}>
+        <SectionHeader
+          eyebrow={popularVenues.eyebrow}
+          title={popularVenues.title}
+          description={popularVenues.description}
+        />
 
         {venues.length === 0 ? (
           <Card className="mx-auto w-full max-w-lg">
@@ -93,20 +75,23 @@ export function VenueDiscoverySection({ venues }: VenueDiscoverySectionProps) {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setQuery("")}
+                onClick={() => onQueryChange("")}
               >
                 Tampilkan Semua Venue
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredVenues.map((venue) => (
-              <Card key={venue.id} className="flex flex-col overflow-hidden">
-                <div className="bg-muted flex aspect-[16/9] w-full items-center justify-center overflow-hidden">
+              <Card
+                key={venue.id}
+                className="group flex flex-col overflow-hidden transition-shadow duration-150 hover:shadow-[var(--shadow-elevated)]"
+              >
+                <div className="bg-muted relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden">
                   {venue.coverImageUrl ? (
                     <div
-                      className="size-full bg-cover bg-center"
+                      className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02]"
                       style={{ backgroundImage: `url(${venue.coverImageUrl})` }}
                       role="img"
                       aria-label={venue.name}
@@ -129,13 +114,13 @@ export function VenueDiscoverySection({ venues }: VenueDiscoverySectionProps) {
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
                   {venue.description ? (
-                    <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">
+                    <p className="text-muted-foreground mb-5 line-clamp-2 text-sm leading-relaxed">
                       {venue.description}
                     </p>
                   ) : null}
                   <Link
                     href={`/gor/${venue.slug}`}
-                    className={cn(buttonVariants(), "w-full")}
+                    className={cn(buttonVariants({ size: "lg" }), "w-full")}
                   >
                     Lihat Venue
                   </Link>
