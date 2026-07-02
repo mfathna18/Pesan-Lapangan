@@ -14,8 +14,8 @@ export function LandingFooter() {
         className={`${layout.container} flex flex-col gap-10 sm:flex-row sm:items-start sm:justify-between`}
       >
         <div className="max-w-sm space-y-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            {siteConfig.name}
+          <Link href="/" className="text-base font-bold tracking-tight">
+            <span className="text-primary">Pesan</span>Lapangan
           </Link>
           <p className="text-muted-foreground text-sm leading-relaxed">
             {footer.tagline}

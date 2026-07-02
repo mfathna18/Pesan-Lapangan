@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -102,15 +103,21 @@ export function VenueDiscoverySection({
                     </span>
                   )}
                 </div>
-                <CardHeader className="space-y-2">
-                  <CardTitle className="text-lg">{venue.name}</CardTitle>
-                  <CardDescription className="flex items-start gap-1.5">
-                    <MapPin className="mt-0.5 size-4 shrink-0" />
-                    <span>
+                <CardHeader className="gap-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <CardTitle className="text-lg leading-snug">
+                      {venue.name}
+                    </CardTitle>
+                    <Badge variant="success" className="shrink-0">
                       {venue.city}
-                      {venue.address ? ` · ${venue.address}` : ""}
-                    </span>
-                  </CardDescription>
+                    </Badge>
+                  </div>
+                  {venue.address ? (
+                    <CardDescription className="flex items-start gap-1.5">
+                      <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
+                      <span>{venue.address}</span>
+                    </CardDescription>
+                  ) : null}
                 </CardHeader>
                 <CardContent className="mt-auto pt-0">
                   {venue.description ? (

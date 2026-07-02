@@ -39,7 +39,7 @@ export function WhyChooseUsSection() {
             return (
               <Card key={benefit.title} className="h-full">
                 <CardHeader>
-                  <div className="bg-primary/10 text-primary mb-3 flex size-11 items-center justify-center rounded-[var(--radius-button)]">
+                  <div className="text-primary mb-3 flex size-11 items-center justify-center rounded-[var(--radius-button)] bg-[var(--primary-muted)]">
                     <Icon className="size-5" aria-hidden />
                   </div>
                   <CardTitle className="text-lg">{benefit.title}</CardTitle>

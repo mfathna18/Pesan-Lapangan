@@ -86,7 +86,18 @@
 
   .surface-card {
     @apply bg-card border-border border;
-    border-radius: var(--radius-card);
+    border-radius: var(--radius-card-lg);
     box-shadow: var(--shadow-card);
+  }
+
+  .surface-elevated {
+    @apply bg-card border-border border;
+    border-radius: var(--radius-card-lg);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .surface-muted {
+    @apply bg-muted/60 border-border/80 border;
+    border-radius: var(--radius-card);
   }
 }

@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { siteConfig } from "@/config/site";
 import { typography } from "@/lib/design-system";
 
 type AuthPageShellProps = {
@@ -25,8 +24,8 @@ export function AuthPageShell({
     <div className="bg-background min-h-screen">
       <header className="border-border bg-background/90 border-b backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center px-4 sm:px-6">
-          <Link href="/" className="text-base font-semibold tracking-tight">
-            {siteConfig.name}
+          <Link href="/" className="text-base font-bold tracking-tight">
+            <span className="text-primary">Pesan</span>Lapangan
           </Link>
         </div>
       </header>

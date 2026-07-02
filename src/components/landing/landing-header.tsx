@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { LandingHeaderActions } from "@/components/landing/landing-header-actions";
-import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -17,9 +16,9 @@ export function LandingHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6">
         <Link
           href="/"
-          className="text-foreground shrink-0 text-base font-semibold tracking-tight"
+          className="text-foreground shrink-0 text-base font-bold tracking-tight"
         >
-          {siteConfig.name}
+          <span className="text-primary">Pesan</span>Lapangan
         </Link>
 
         <nav

@@ -31,8 +31,8 @@ export function DashboardNav({ onNavigate }: DashboardNavProps) {
             className={cn(
               "flex items-center gap-3 rounded-[var(--radius-button)] px-3 py-2.5 text-sm font-medium transition-colors duration-150",
               isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[var(--shadow-subtle)]"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+                ? "bg-primary/10 text-primary font-semibold shadow-[var(--shadow-subtle)]"
+                : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
             )}
           >
             <Icon className="size-4 shrink-0" aria-hidden />

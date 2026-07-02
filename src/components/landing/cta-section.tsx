@@ -9,7 +9,7 @@ export function CtaSection() {
   return (
     <section className={layout.section}>
       <div className={layout.container}>
-        <div className="bg-primary text-primary-foreground rounded-[var(--radius-card)] px-6 py-14 text-center shadow-[var(--shadow-elevated)] sm:px-12 sm:py-16">
+        <div className="bg-primary text-primary-foreground rounded-[var(--radius-card-lg)] px-6 py-14 text-center shadow-[var(--shadow-elevated)] sm:px-12 sm:py-16">
           <div className="mx-auto max-w-2xl space-y-8">
             <h2 className={cn(typography.h2, "text-primary-foreground")}>
               {cta.title}
