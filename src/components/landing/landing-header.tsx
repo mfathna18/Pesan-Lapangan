@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { LandingHeaderActions } from "@/components/landing/landing-header-actions";
+import { layout } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -12,13 +14,21 @@ const navLinks = [
 
 export function LandingHeader() {
   return (
-    <header className="border-border/80 bg-background/90 sticky top-0 z-50 border-b backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[4.25rem] sm:px-6">
-        <Link
-          href="/"
-          className="text-foreground shrink-0 text-base font-bold tracking-tight"
-        >
-          <span className="text-primary">Pesan</span>Lapangan
+    <header className={layout.header}>
+      <div className={layout.headerInner}>
+        <Link href="/" className="flex shrink-0 items-center gap-3">
+          <Image
+            src="/icon.png"
+            alt=""
+            width={40}
+            height={40}
+            className="size-10 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)]"
+            priority
+            aria-hidden
+          />
+          <span className="text-foreground text-base font-bold tracking-tight">
+            <span className="text-primary">Pesan</span>Lapangan
+          </span>
         </Link>
 
         <nav
@@ -30,7 +40,7 @@ export function LandingHeader() {
               key={link.href}
               href={link.href}
               className={cn(
-                "text-muted-foreground hover:text-foreground text-sm font-medium transition-colors duration-150",
+                "text-muted-foreground hover:text-foreground text-sm font-medium transition-colors duration-200 motion-reduce:transition-none",
               )}
             >
               {link.label}

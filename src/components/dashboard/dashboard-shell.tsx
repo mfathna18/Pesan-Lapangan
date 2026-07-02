@@ -26,7 +26,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         onClose={() => setMobileOpen(false)}
       />
 
-      <div className="flex min-h-screen flex-col lg:pl-64">
+      <div className="flex min-h-screen flex-col lg:pl-[17.5rem]">
         <DashboardTopbar user={user} onMenuClick={() => setMobileOpen(true)} />
 
         <main className="flex flex-1 flex-col">{children}</main>

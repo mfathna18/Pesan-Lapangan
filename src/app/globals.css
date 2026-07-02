@@ -70,8 +70,14 @@
     scroll-behavior: smooth;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
   :focus-visible {
-    @apply ring-ring/40 ring-offset-background ring-2 ring-offset-2 outline-none;
+    @apply ring-ring/35 ring-offset-background ring-2 ring-offset-2 outline-none;
   }
 }
 

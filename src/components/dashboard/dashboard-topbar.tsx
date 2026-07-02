@@ -36,7 +36,7 @@ export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
   const initials = getUserInitials(user.name, user.email);
 
   return (
-    <header className="border-border bg-background/90 sticky top-0 z-30 flex h-16 items-center gap-4 border-b px-4 backdrop-blur-md lg:px-8">
+    <header className="border-border bg-background/95 sticky top-0 z-30 flex h-[4.5rem] items-center gap-4 border-b px-4 backdrop-blur-md lg:px-8">
       <Button
         variant="outline"
         size="icon-sm"
@@ -49,17 +49,19 @@ export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
 
       <div className="flex-1" />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className="hidden items-center gap-3 sm:flex">
           <div className="text-right">
-            <p className="max-w-44 truncate text-sm font-medium">{user.name}</p>
-            <p className="text-muted-foreground max-w-44 truncate text-xs">
+            <p className="max-w-48 truncate text-sm font-semibold">
+              {user.name}
+            </p>
+            <p className="text-muted-foreground max-w-48 truncate text-xs">
               {user.email}
             </p>
           </div>
 
           <div
-            className="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full text-xs font-semibold"
+            className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-full text-xs font-bold shadow-[var(--shadow-sm)]"
             aria-hidden
           >
             {initials}

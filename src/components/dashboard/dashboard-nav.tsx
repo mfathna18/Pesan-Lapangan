@@ -14,7 +14,7 @@ export function DashboardNav({ onNavigate }: DashboardNavProps) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1 px-3" aria-label="Navigasi dashboard">
+    <nav className="flex flex-col gap-1" aria-label="Navigasi dashboard">
       {dashboardNavItems.map((item) => {
         const isActive =
           item.href === "/dashboard"
@@ -29,13 +29,19 @@ export function DashboardNav({ onNavigate }: DashboardNavProps) {
             onClick={onNavigate}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-[var(--radius-button)] px-3 py-2.5 text-sm font-medium transition-colors duration-150",
+              "relative flex items-center gap-3 rounded-[var(--radius-button)] px-3 py-2.5 text-sm font-medium transition-colors duration-200 motion-reduce:transition-none",
               isActive
-                ? "bg-primary/10 text-primary font-semibold shadow-[var(--shadow-subtle)]"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+                ? "bg-primary/10 text-primary font-semibold"
+                : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
-            <Icon className="size-4 shrink-0" aria-hidden />
+            {isActive ? (
+              <span
+                className="bg-primary absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full"
+                aria-hidden
+              />
+            ) : null}
+            <Icon className="size-[1.125rem] shrink-0" aria-hidden />
             <span>{item.title}</span>
           </Link>
         );

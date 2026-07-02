@@ -1,20 +1,19 @@
 /**
- * PesanLapangan Design System 1.1
- * Sports-booking palette — forest green primary, warm neutrals, soft elevation.
- * Inspired by premium booking products; no heavy gradients.
+ * PesanLapangan — Production Design System 1.0
+ * Forest green brand · warm neutrals · soft elevation · 8px grid
  */
 
 :root {
-  /* ── Brand (forest green) ── */
-  --primary: oklch(0.56 0.15 145.5);
-  --primary-hover: oklch(0.48 0.13 145.5);
+  /* ── Brand ── */
+  --primary: oklch(0.52 0.14 145.5);
+  --primary-hover: oklch(0.46 0.13 145.5);
   --primary-foreground: oklch(0.99 0 0);
-  --primary-muted: oklch(0.56 0.15 145.5 / 0.1);
+  --primary-muted: oklch(0.52 0.14 145.5 / 0.1);
 
   /* ── Semantic ── */
-  --success: oklch(0.62 0.17 145.5);
+  --success: oklch(0.58 0.14 145.5);
   --success-foreground: oklch(0.28 0.06 145.5);
-  --warning: oklch(0.75 0.15 75);
+  --warning: oklch(0.74 0.14 75);
   --warning-foreground: oklch(0.38 0.08 75);
   --danger: oklch(0.55 0.2 25);
   --danger-foreground: oklch(0.99 0 0);
@@ -30,64 +29,96 @@
 
   /* ── UI chrome ── */
   --muted: oklch(0.965 0.004 145);
-  --muted-foreground: oklch(0.55 0.02 264);
+  --muted-foreground: oklch(0.52 0.02 264);
   --accent: oklch(0.96 0.02 145);
   --accent-foreground: oklch(0.28 0.04 145);
   --secondary: oklch(0.965 0.004 145);
   --secondary-foreground: oklch(0.28 0.02 264);
-  --border: oklch(0.92 0.004 264);
-  --input: oklch(0.92 0.004 264);
-  --ring: oklch(0.56 0.15 145.5);
+  --border: oklch(0.91 0.004 264);
+  --input: oklch(0.91 0.004 264);
+  --ring: oklch(0.52 0.14 145.5);
   --destructive: var(--danger);
 
-  /* ── Text hierarchy ── */
+  /* ── Text ── */
   --text-primary: oklch(0.21 0.02 264);
   --text-secondary: oklch(0.37 0.02 264);
-  --text-muted: oklch(0.55 0.02 264);
+  --text-muted: oklch(0.52 0.02 264);
 
-  /* ── Charts ── */
-  --chart-1: oklch(0.56 0.15 145.5);
-  --chart-2: oklch(0.62 0.17 145.5);
-  --chart-3: oklch(0.75 0.15 75);
-  --chart-4: oklch(0.55 0.2 25);
-  --chart-5: oklch(0.55 0.02 264);
+  /* ── Spacing (8px grid) ── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
 
-  /* ── Radius (8 / 12 / 16 px scale) ── */
-  --radius: 0.75rem;
-  --radius-button: 0.5rem;
-  --radius-card: 0.75rem;
-  --radius-card-lg: 1rem;
-  --radius-input: 0.5rem;
-  --radius-dialog: 0.75rem;
+  /* ── Radius ── */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-button: var(--radius-md);
+  --radius-input: var(--radius-md);
+  --radius-card: var(--radius-lg);
+  --radius-card-lg: var(--radius-xl);
+  --radius-dialog: var(--radius-xl);
   --radius-pill: 9999px;
+  --radius: var(--radius-md);
 
-  /* ── Shadows — soft, diffused ── */
-  --shadow-subtle: 0 1px 2px oklch(0.21 0.02 264 / 0.05);
-  --shadow-card:
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px oklch(0.21 0.02 264 / 0.05);
+  --shadow-md:
     0 1px 3px oklch(0.21 0.02 264 / 0.06),
     0 4px 14px oklch(0.21 0.02 264 / 0.04);
-  --shadow-elevated:
+  --shadow-lg:
     0 4px 16px oklch(0.21 0.02 264 / 0.08),
-    0 12px 40px oklch(0.21 0.02 264 / 0.06);
+    0 12px 40px oklch(0.21 0.02 264 / 0.05);
+  --shadow-subtle: var(--shadow-sm);
+  --shadow-card: var(--shadow-md);
+  --shadow-elevated: var(--shadow-lg);
+
+  /* ── Focus & motion ── */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: oklch(0.52 0.14 145.5 / 0.35);
+  --transition-fast: 150ms;
+  --transition-base: 200ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Control sizes ── */
+  --control-height-sm: 2.25rem;
+  --control-height-md: 2.75rem;
+  --control-height-lg: 3rem;
+
+  /* ── Charts ── */
+  --chart-1: oklch(0.52 0.14 145.5);
+  --chart-2: oklch(0.58 0.14 145.5);
+  --chart-3: oklch(0.74 0.14 75);
+  --chart-4: oklch(0.55 0.2 25);
+  --chart-5: oklch(0.52 0.02 264);
 
   /* ── Sidebar ── */
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.37 0.02 264);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: oklch(0.96 0.02 145);
+  --sidebar-accent: oklch(0.965 0.008 145);
   --sidebar-accent-foreground: oklch(0.28 0.04 145);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }
 
 .dark {
-  --primary: oklch(0.65 0.15 145.5);
-  --primary-hover: oklch(0.7 0.15 145.5);
+  --primary: oklch(0.64 0.14 145.5);
+  --primary-hover: oklch(0.68 0.14 145.5);
   --primary-foreground: oklch(0.15 0.02 145);
-  --primary-muted: oklch(0.65 0.15 145.5 / 0.15);
+  --primary-muted: oklch(0.64 0.14 145.5 / 0.15);
 
-  --success: oklch(0.68 0.14 145.5);
+  --success: oklch(0.66 0.13 145.5);
   --success-foreground: oklch(0.92 0.02 145);
   --warning: oklch(0.78 0.12 75);
   --warning-foreground: oklch(0.2 0.04 75);
@@ -107,15 +138,24 @@
   --secondary-foreground: oklch(0.96 0.004 145);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.65 0.15 145.5);
+  --ring: oklch(0.64 0.14 145.5);
 
   --text-primary: oklch(0.96 0.004 145);
   --text-secondary: oklch(0.75 0.02 264);
   --text-muted: oklch(0.65 0.02 264);
+
+  --focus-ring-color: oklch(0.64 0.14 145.5 / 0.4);
 
   --sidebar: oklch(0.18 0.02 145);
   --sidebar-foreground: oklch(0.92 0.004 145);
   --sidebar-accent: oklch(0.24 0.03 145);
   --sidebar-accent-foreground: oklch(0.92 0.02 145);
   --sidebar-border: oklch(1 0 0 / 10%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition-fast: 0ms;
+    --transition-base: 0ms;
+  }
 }
