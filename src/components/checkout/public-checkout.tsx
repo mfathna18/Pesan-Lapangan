@@ -150,22 +150,6 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
     );
   }
 
-  if (isAwaitingConfirmation) {
-    return (
-      <CheckoutShell checkout={checkout}>
-        <CustomerFunnelHeader
-          eyebrow={CUSTOMER_COPY.checkout.eyebrow}
-          title={CUSTOMER_COPY.checkout.waitingOwnerTitle}
-          description={CUSTOMER_COPY.checkout.waitingOwnerDescription}
-        />
-        <CheckoutStatusBanner
-          label={statusLabel}
-          description={CUSTOMER_COPY.checkout.waitingOwnerBanner}
-        />
-      </CheckoutShell>
-    );
-  }
-
   if (isRejected) {
     return (
       <CheckoutShell checkout={checkout}>
@@ -181,6 +165,10 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
           label={statusLabel}
           description={CUSTOMER_COPY.checkout.rejectedBanner}
         />
+        <ManualPaymentInstructions
+          instructions={checkout.ownerPaymentInstructions}
+          totalPrice={checkout.totalPrice}
+        />
         <Link
           href={`/gor/${checkout.venueSlug}`}
           className={cn(buttonVariants({ variant: "outline" }), "w-fit")}
@@ -195,19 +183,33 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
     <CheckoutShell checkout={checkout}>
       <CustomerFunnelHeader
         eyebrow={CUSTOMER_COPY.checkout.eyebrow}
-        title={CUSTOMER_COPY.checkout.title}
-        description={CUSTOMER_COPY.checkout.manualDescription}
+        title={
+          isAwaitingConfirmation
+            ? CUSTOMER_COPY.checkout.waitingOwnerTitle
+            : CUSTOMER_COPY.checkout.title
+        }
+        description={
+          isAwaitingConfirmation
+            ? CUSTOMER_COPY.checkout.waitingOwnerDescription
+            : CUSTOMER_COPY.checkout.manualDescription
+        }
       />
 
       <CheckoutStatusBanner
         label={statusLabel}
-        description={CUSTOMER_COPY.checkout.manualBanner}
+        description={
+          isAwaitingConfirmation
+            ? CUSTOMER_COPY.checkout.waitingOwnerBanner
+            : CUSTOMER_COPY.checkout.manualBanner
+        }
       />
 
-      <BookingExpirationCountdown
-        expiresAt={checkout.expiresAt}
-        onExpired={handleExpired}
-      />
+      {!isAwaitingConfirmation ? (
+        <BookingExpirationCountdown
+          expiresAt={checkout.expiresAt}
+          onExpired={handleExpired}
+        />
+      ) : null}
 
       <section
         className={customerLayout.checkoutSection}
@@ -270,29 +272,35 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row">
-        <Button
-          type="button"
-          size="lg"
-          className="flex-1"
-          disabled={!isPayable || isPending}
-          onClick={handleConfirmPaid}
-        >
-          {isPending
-            ? CUSTOMER_COPY.checkout.processing
-            : CUSTOMER_COPY.checkout.confirmPaid}
+      {isAwaitingConfirmation ? (
+        <Button type="button" size="lg" className="w-full" disabled>
+          {CUSTOMER_COPY.checkout.waitingConfirmButton}
         </Button>
-        <Button
-          type="button"
-          size="lg"
-          variant="outline"
-          className="flex-1"
-          disabled={isPending}
-          onClick={handleCancelBooking}
-        >
-          {CUSTOMER_COPY.checkout.cancelBooking}
-        </Button>
-      </div>
+      ) : (
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Button
+            type="button"
+            size="lg"
+            className="flex-1"
+            disabled={!isPayable || isPending}
+            onClick={handleConfirmPaid}
+          >
+            {isPending
+              ? CUSTOMER_COPY.checkout.processing
+              : CUSTOMER_COPY.checkout.confirmPaid}
+          </Button>
+          <Button
+            type="button"
+            size="lg"
+            variant="outline"
+            className="flex-1"
+            disabled={isPending}
+            onClick={handleCancelBooking}
+          >
+            {CUSTOMER_COPY.checkout.cancelBooking}
+          </Button>
+        </div>
+      )}
 
       <Link
         href={`/gor/${checkout.venueSlug}`}

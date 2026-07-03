@@ -205,55 +205,74 @@ export class PaymentRepository {
     ownerId: string;
     bookingId: string;
   }) {
-    return this.prisma.payment.findFirst({
-      where: {
-        bookingId: input.bookingId,
-        method: "MANUAL_TRANSFER",
-        booking: {
-          court: {
-            gor: {
-              ownerId: input.ownerId,
-            },
+    const ownerScope = {
+      bookingId: input.bookingId,
+      booking: {
+        court: {
+          gor: {
+            ownerId: input.ownerId,
           },
         },
       },
-      orderBy: { createdAt: "desc" },
-      include: {
-        auditLogs: {
-          orderBy: { createdAt: "desc" },
-        },
-        booking: {
-          select: {
-            id: true,
-            bookingNumber: true,
-            courtNameSnapshot: true,
-            bookingDate: true,
-            startMinute: true,
-            endMinute: true,
-            durationMinute: true,
-            contact: {
-              select: {
-                customerName: true,
-                customerPhone: true,
-                note: true,
-              },
+    };
+
+    const include = {
+      auditLogs: {
+        orderBy: { createdAt: "desc" as const },
+      },
+      booking: {
+        select: {
+          id: true,
+          bookingNumber: true,
+          courtNameSnapshot: true,
+          bookingDate: true,
+          startMinute: true,
+          endMinute: true,
+          durationMinute: true,
+          contact: {
+            select: {
+              customerName: true,
+              customerPhone: true,
+              note: true,
             },
-            court: {
-              select: {
-                gor: {
-                  select: {
-                    name: true,
-                    bankName: true,
-                    bankAccountNumber: true,
-                    bankAccountHolder: true,
-                    qrisImageUrl: true,
-                  },
+          },
+          court: {
+            select: {
+              gor: {
+                select: {
+                  name: true,
+                  bankName: true,
+                  bankAccountNumber: true,
+                  bankAccountHolder: true,
+                  qrisImageUrl: true,
                 },
               },
             },
           },
         },
       },
+    };
+
+    const awaitingConfirmation = await this.prisma.payment.findFirst({
+      where: {
+        ...ownerScope,
+        status: PAYMENT_STATUS.AWAITING_CONFIRMATION,
+      },
+      orderBy: { createdAt: "desc" },
+      include,
+    });
+
+    if (awaitingConfirmation) {
+      return awaitingConfirmation;
+    }
+
+    return this.prisma.payment.findFirst({
+      where: {
+        ...ownerScope,
+        method: "MANUAL_TRANSFER",
+      },
+      orderBy: { createdAt: "desc" },
+      include,
     });
   }
 

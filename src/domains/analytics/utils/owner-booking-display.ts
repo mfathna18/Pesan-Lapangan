@@ -36,8 +36,16 @@ export function resolveOwnerBookingDisplayStatus(
     return "LUNAS";
   }
 
-  if (paymentStatus === "PENDING" || bookingStatus === "PENDING") {
+  if (
+    paymentStatus === "PENDING" ||
+    paymentStatus === "AWAITING_CONFIRMATION" ||
+    bookingStatus === "PENDING"
+  ) {
     return "MENUNGGU";
+  }
+
+  if (paymentStatus === "REJECTED") {
+    return "GAGAL";
   }
 
   if (bookingStatus === "CONFIRMED") {

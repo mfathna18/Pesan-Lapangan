@@ -7,14 +7,20 @@ import {
   BookingStatusBadge,
   PaymentStatusBadge,
 } from "@/components/booking/booking-status-badges";
+import { BookingManualPaymentActions } from "@/components/booking/booking-manual-payment-actions";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { BookingDetail } from "@/domains/booking/types";
+import type {
+  BookingDetail,
+  BookingPaymentDisplayStatus,
+} from "@/domains/booking/types";
+import type { PaymentStatus } from "@/generated/prisma/client";
 import {
   formatBookingDate,
   formatCurrency,
   formatDateTime,
   formatTimeRange,
+  resolveBookingPaymentDisplayStatus,
 } from "@/domains/booking/utils/booking-display";
 import { UI_COPY } from "@/config/ui-copy";
 import { cn } from "@/lib/utils";
@@ -25,6 +31,7 @@ type BookingDetailPanelProps = {
   loading: boolean;
   error: string | null;
   onClose: () => void;
+  onPaymentActionComplete?: () => void;
 };
 
 function DetailField({
@@ -50,7 +57,14 @@ export function BookingDetailPanel({
   loading,
   error,
   onClose,
+  onPaymentActionComplete,
 }: BookingDetailPanelProps) {
+  const paymentDisplayStatus: BookingPaymentDisplayStatus = booking?.payment
+    ? resolveBookingPaymentDisplayStatus([
+        { status: booking.payment.status as PaymentStatus },
+      ])
+    : "NONE";
+
   return (
     <>
       <div
@@ -184,23 +198,23 @@ export function BookingDetailPanel({
                       <DetailField
                         label={UI_COPY.status}
                         value={
-                          <PaymentStatusBadge
-                            status={
-                              booking.payment.status === "PAID"
-                                ? "PAID"
-                                : booking.payment.status === "EXPIRED"
-                                  ? "EXPIRED"
-                                  : booking.payment.status === "PENDING"
-                                    ? "PENDING"
-                                    : booking.payment.status === "FAILED"
-                                      ? "FAILED"
-                                      : booking.payment.status === "REFUNDED"
-                                        ? "REFUNDED"
-                                        : "NONE"
-                            }
-                          />
+                          <PaymentStatusBadge status={paymentDisplayStatus} />
                         }
                       />
+                      {booking.payment.customerConfirmedAt ? (
+                        <DetailField
+                          label="Dikonfirmasi pelanggan"
+                          value={formatDateTime(
+                            booking.payment.customerConfirmedAt,
+                          )}
+                        />
+                      ) : null}
+                      {booking.payment.rejectionReason ? (
+                        <DetailField
+                          label="Alasan penolakan"
+                          value={booking.payment.rejectionReason}
+                        />
+                      ) : null}
                       <DetailField
                         label="Referensi"
                         value={booking.payment.externalReference ?? "-"}
@@ -208,6 +222,11 @@ export function BookingDetailPanel({
                       <DetailField
                         label="Dibayar pada"
                         value={formatDateTime(booking.payment.paidAt)}
+                      />
+                      <BookingManualPaymentActions
+                        bookingId={booking.id}
+                        paymentStatus={booking.payment.status}
+                        onComplete={onPaymentActionComplete}
                       />
                     </>
                   ) : (

@@ -158,6 +158,43 @@ export function BookingManagement() {
     setDetailError(null);
   };
 
+  const reloadDetail = () => {
+    if (!selectedBookingId) {
+      return;
+    }
+
+    startDetailTransition(async () => {
+      const response = await getBookingDetailAction({ id: selectedBookingId });
+
+      if (!response.success) {
+        setDetailError(response.error);
+        return;
+      }
+
+      setDetail(response.data);
+      setDetailError(null);
+    });
+
+    startListTransition(async () => {
+      const response = await listBookingsAction({
+        page,
+        pageSize: BOOKING_LIST_DEFAULT_PAGE_SIZE,
+        sort: filters.sort,
+        courtId: filters.courtId === "all" ? undefined : filters.courtId,
+        status:
+          filters.status === "all"
+            ? undefined
+            : (filters.status as "PENDING" | "CONFIRMED" | "CANCELLED"),
+        bookingDate: filters.bookingDate || undefined,
+        bookingNumberSearch: filters.bookingNumberSearch || undefined,
+      });
+
+      if (response.success) {
+        setListResult(response.data);
+      }
+    });
+  };
+
   const totalPages = listResult?.totalPages ?? 1;
 
   return (
@@ -420,6 +457,7 @@ export function BookingManagement() {
         loading={isLoadingDetail}
         error={detailError}
         onClose={closeDetail}
+        onPaymentActionComplete={reloadDetail}
       />
     </>
   );

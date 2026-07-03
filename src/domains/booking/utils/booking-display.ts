@@ -18,6 +18,22 @@ export function resolveBookingPaymentDisplayStatus(
     return "PAID";
   }
 
+  const awaitingConfirmation = payments.find(
+    (payment) => payment.status === "AWAITING_CONFIRMATION",
+  );
+
+  if (awaitingConfirmation) {
+    return "AWAITING_CONFIRMATION";
+  }
+
+  const rejectedPayment = payments.find(
+    (payment) => payment.status === "REJECTED",
+  );
+
+  if (rejectedPayment) {
+    return "REJECTED";
+  }
+
   const latestPayment = payments[0];
 
   if (!latestPayment) {

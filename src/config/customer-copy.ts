@@ -81,6 +81,7 @@ export const CUSTOMER_COPY = {
       "Pemilik lapangan akan memeriksa pembayaran Anda. Mohon tunggu konfirmasi.",
     waitingOwnerBanner:
       "Status: Menunggu Konfirmasi Owner. Anda tidak perlu melakukan tindakan lagi.",
+    waitingConfirmButton: "Menunggu Konfirmasi Owner",
     rejectedTitle: "Pembayaran Ditolak",
     rejectedDescription:
       "Pembayaran Anda ditolak oleh pemilik venue. Hubungi venue jika perlu klarifikasi.",

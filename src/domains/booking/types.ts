@@ -69,7 +69,14 @@ export type BookingListItem = {
 };
 
 export type BookingPaymentDisplayStatus =
-  "NONE" | "PENDING" | "PAID" | "FAILED" | "EXPIRED" | "REFUNDED";
+  | "NONE"
+  | "PENDING"
+  | "AWAITING_CONFIRMATION"
+  | "PAID"
+  | "FAILED"
+  | "EXPIRED"
+  | "REFUNDED"
+  | "REJECTED";
 
 export type BookingDetail = {
   id: string;
@@ -103,6 +110,8 @@ export type BookingDetailPayment = {
   externalReference: string | null;
   paidAt: string | null;
   expiredAt: string | null;
+  customerConfirmedAt: string | null;
+  rejectionReason: string | null;
   createdAt: string;
 };
 

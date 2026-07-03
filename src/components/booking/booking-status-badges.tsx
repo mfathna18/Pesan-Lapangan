@@ -33,10 +33,12 @@ export function BookingStatusBadge({ status }: { status: BookingStatus }) {
 const paymentStatusLabels: Record<BookingPaymentDisplayStatus, string> = {
   NONE: "Belum Bayar",
   PENDING: "Menunggu",
+  AWAITING_CONFIRMATION: "Menunggu Konfirmasi",
   PAID: "Lunas",
   FAILED: "Gagal",
   EXPIRED: "Kadaluarsa",
   REFUNDED: "Dikembalikan",
+  REJECTED: "Ditolak",
 };
 
 const paymentStatusVariants: Record<
@@ -45,10 +47,12 @@ const paymentStatusVariants: Record<
 > = {
   NONE: "outline",
   PENDING: "pending",
+  AWAITING_CONFIRMATION: "pending",
   PAID: "paid",
   FAILED: "cancelled",
   EXPIRED: "expired",
   REFUNDED: "secondary",
+  REJECTED: "cancelled",
 };
 
 export function PaymentStatusBadge({

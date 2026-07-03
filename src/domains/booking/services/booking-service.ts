@@ -269,8 +269,13 @@ export class BookingService {
   }
 
   private toBookingDetail(booking: BookingDetailRecord): BookingDetail {
-    const paidPayment =
+    const detailPayment =
+      booking.payments.find(
+        (payment) => payment.status === "AWAITING_CONFIRMATION",
+      ) ??
       booking.payments.find((payment) => payment.status === "PAID") ??
+      booking.payments.find((payment) => payment.status === "PENDING") ??
+      booking.payments.find((payment) => payment.status === "REJECTED") ??
       booking.payments[0] ??
       null;
 
@@ -296,25 +301,28 @@ export class BookingService {
             note: booking.contact.note,
           }
         : null,
-      payment: paidPayment
+      payment: detailPayment
         ? {
-            id: paidPayment.id,
-            amount: paidPayment.amount,
-            status: paidPayment.status,
-            method: paidPayment.method,
-            externalReference: paidPayment.externalReference,
-            paidAt: paidPayment.paidAt?.toISOString() ?? null,
-            expiredAt: paidPayment.expiredAt?.toISOString() ?? null,
-            createdAt: paidPayment.createdAt.toISOString(),
+            id: detailPayment.id,
+            amount: detailPayment.amount,
+            status: detailPayment.status,
+            method: detailPayment.method,
+            externalReference: detailPayment.externalReference,
+            paidAt: detailPayment.paidAt?.toISOString() ?? null,
+            expiredAt: detailPayment.expiredAt?.toISOString() ?? null,
+            customerConfirmedAt:
+              detailPayment.customerConfirmedAt?.toISOString() ?? null,
+            rejectionReason: detailPayment.rejectionReason,
+            createdAt: detailPayment.createdAt.toISOString(),
           }
         : null,
-      invoice: paidPayment?.invoice
+      invoice: detailPayment?.invoice
         ? {
-            id: paidPayment.invoice.id,
-            invoiceNumber: paidPayment.invoice.invoiceNumber,
-            status: paidPayment.invoice.status,
-            totalAmountSnapshot: paidPayment.invoice.totalAmountSnapshot,
-            generatedAt: paidPayment.invoice.generatedAt.toISOString(),
+            id: detailPayment.invoice.id,
+            invoiceNumber: detailPayment.invoice.invoiceNumber,
+            status: detailPayment.invoice.status,
+            totalAmountSnapshot: detailPayment.invoice.totalAmountSnapshot,
+            generatedAt: detailPayment.invoice.generatedAt.toISOString(),
           }
         : null,
     };
