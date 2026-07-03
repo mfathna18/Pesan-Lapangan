@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 
 import {
   BookingExpirationCountdown,
@@ -20,6 +20,8 @@ import { CourtDetailHeader } from "@/components/court/court-detail-header";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CUSTOMER_COPY } from "@/config/customer-copy";
+import { POLL_INTERVALS } from "@/config/polling-intervals";
+import { getPublicCheckoutStatusAction } from "@/domains/payment/actions/get-public-checkout-status.action";
 import { PAYMENT_STATUS } from "@/domains/payment/constants";
 import {
   cancelManualBookingAction,
@@ -34,6 +36,7 @@ import {
 } from "@/domains/booking/utils/booking-display";
 import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
+import { usePolling } from "@/hooks/use-polling";
 
 type PublicCheckoutProps = {
   checkout: PublicCheckoutData;
@@ -63,13 +66,22 @@ function CheckoutShell({
   );
 }
 
-export function PublicCheckout({ checkout }: PublicCheckoutProps) {
+export function PublicCheckout({
+  checkout: initialCheckout,
+}: PublicCheckoutProps) {
   const router = useRouter();
+  const [checkout, setCheckout] = useState(initialCheckout);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [isExpired, setIsExpired] = useState(() =>
-    isCheckoutExpired(checkout.expiresAt, checkout.status),
+    initialCheckout.latestPaymentStatus === PAYMENT_STATUS.REJECTED
+      ? false
+      : isCheckoutExpired(initialCheckout.expiresAt, initialCheckout.status),
   );
+
+  useEffect(() => {
+    setCheckout(initialCheckout);
+  }, [initialCheckout]);
 
   const handleExpired = useCallback(() => {
     setIsExpired(true);
@@ -94,6 +106,32 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
     !isAwaitingConfirmation &&
     !isRejected &&
     new Date(checkout.expiresAt).getTime() > Date.now();
+
+  const refreshCheckoutStatus = useCallback(async () => {
+    const response = await getPublicCheckoutStatusAction({
+      gorSlug: checkout.venueSlug,
+      bookingId: checkout.bookingId,
+    });
+
+    if (!response.success) {
+      return;
+    }
+
+    const nextCheckout = response.data;
+    setCheckout(nextCheckout);
+
+    if (nextCheckout.hasPaidPayment) {
+      router.replace(
+        `/gor/${nextCheckout.venueSlug}/checkout/${nextCheckout.bookingId}/invoice`,
+      );
+    }
+  }, [checkout.bookingId, checkout.venueSlug, router]);
+
+  usePolling(
+    refreshCheckoutStatus,
+    POLL_INTERVALS.CHECKOUT_STATUS_MS,
+    isAwaitingConfirmation && !isPaid,
+  );
 
   function handleConfirmPaid() {
     setError(null);
@@ -139,17 +177,6 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
     );
   }
 
-  if (isExpired || isCancelled) {
-    return (
-      <CheckoutShell checkout={checkout}>
-        <CheckoutExpiredState
-          venueSlug={checkout.venueSlug}
-          venueName={checkout.venueName}
-        />
-      </CheckoutShell>
-    );
-  }
-
   if (isRejected) {
     return (
       <CheckoutShell checkout={checkout}>
@@ -175,6 +202,17 @@ export function PublicCheckout({ checkout }: PublicCheckoutProps) {
         >
           {CUSTOMER_COPY.checkout.backToVenue}
         </Link>
+      </CheckoutShell>
+    );
+  }
+
+  if (isExpired || isCancelled) {
+    return (
+      <CheckoutShell checkout={checkout}>
+        <CheckoutExpiredState
+          venueSlug={checkout.venueSlug}
+          venueName={checkout.venueName}
+        />
       </CheckoutShell>
     );
   }

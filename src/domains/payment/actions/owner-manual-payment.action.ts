@@ -11,6 +11,26 @@ import {
 } from "@/domains/payment/errors";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import { prisma } from "@/lib/db/prisma";
+
+async function revalidatePublicCheckout(bookingId: string) {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      court: {
+        select: {
+          gor: {
+            select: { slug: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (booking) {
+    revalidatePath(`/gor/${booking.court.gor.slug}/checkout/${bookingId}`);
+  }
+}
 
 export async function approveManualPaymentAction(bookingId: string) {
   try {
@@ -26,6 +46,7 @@ export async function approveManualPaymentAction(bookingId: string) {
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");
     revalidatePath(`/dashboard/bookings/${bookingId}/payment`);
+    await revalidatePublicCheckout(bookingId);
 
     return actionSuccess({ approved: true });
   } catch (error) {
@@ -62,6 +83,7 @@ export async function rejectManualPaymentAction(input: {
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");
     revalidatePath(`/dashboard/bookings/${input.bookingId}/payment`);
+    await revalidatePublicCheckout(input.bookingId);
 
     return actionSuccess({ rejected: true });
   } catch (error) {

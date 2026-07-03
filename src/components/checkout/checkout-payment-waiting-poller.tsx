@@ -10,6 +10,7 @@ import { CustomerDetailField } from "@/components/customer/customer-detail-field
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { CUSTOMER_COPY } from "@/config/customer-copy";
+import { POLL_INTERVALS } from "@/config/polling-intervals";
 import { getPublicCheckoutStatusAction } from "@/domains/payment/actions/get-public-checkout-status.action";
 import { PAYMENT_STATUS } from "@/domains/payment/constants";
 import type { PublicCheckoutData } from "@/domains/payment/types";
@@ -20,8 +21,7 @@ import {
 } from "@/domains/booking/utils/booking-display";
 import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
-
-const POLL_INTERVAL_MS = 3000;
+import { usePolling } from "@/hooks/use-polling";
 
 type CheckoutPaymentWaitingPollerProps = {
   gorSlug: string;
@@ -37,15 +37,24 @@ export function CheckoutPaymentWaitingPoller({
   const router = useRouter();
   const [checkout, setCheckout] = useState(initialCheckout);
 
-  const successHref = `/gor/${gorSlug}/checkout/${bookingId}/success`;
+  useEffect(() => {
+    setCheckout(initialCheckout);
+  }, [initialCheckout]);
+
   const checkoutHref = `/gor/${gorSlug}/checkout/${bookingId}`;
+  const invoiceHref = `/gor/${gorSlug}/checkout/${bookingId}/invoice`;
 
   const handleCheckoutUpdate = useCallback(
     (nextCheckout: PublicCheckoutData) => {
       setCheckout(nextCheckout);
 
       if (nextCheckout.hasPaidPayment || nextCheckout.status === "CONFIRMED") {
-        router.replace(successHref);
+        router.replace(invoiceHref);
+        return;
+      }
+
+      if (nextCheckout.latestPaymentStatus === PAYMENT_STATUS.REJECTED) {
+        router.replace(checkoutHref);
         return;
       }
 
@@ -54,46 +63,34 @@ export function CheckoutPaymentWaitingPoller({
         nextCheckout.latestPaymentStatus === PAYMENT_STATUS.EXPIRED
       ) {
         router.replace(checkoutHref);
-        return;
       }
     },
-    [checkoutHref, router, successHref],
+    [checkoutHref, invoiceHref, router],
   );
 
-  useEffect(() => {
-    if (
-      checkout.hasPaidPayment ||
-      checkout.status === "CONFIRMED" ||
-      checkout.status === "CANCELLED" ||
-      checkout.latestPaymentStatus === PAYMENT_STATUS.EXPIRED
-    ) {
-      return;
+  const refreshCheckoutStatus = useCallback(async () => {
+    const response = await getPublicCheckoutStatusAction({
+      gorSlug,
+      bookingId,
+    });
+
+    if (response.success) {
+      handleCheckoutUpdate(response.data);
     }
+  }, [bookingId, gorSlug, handleCheckoutUpdate]);
 
-    const intervalId = window.setInterval(() => {
-      void (async () => {
-        const response = await getPublicCheckoutStatusAction({
-          gorSlug,
-          bookingId,
-        });
+  const shouldPoll =
+    !checkout.hasPaidPayment &&
+    checkout.status !== "CONFIRMED" &&
+    checkout.status !== "CANCELLED" &&
+    checkout.latestPaymentStatus !== PAYMENT_STATUS.EXPIRED &&
+    checkout.latestPaymentStatus !== PAYMENT_STATUS.REJECTED;
 
-        if (response.success) {
-          handleCheckoutUpdate(response.data);
-        }
-      })();
-    }, POLL_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [
-    bookingId,
-    checkout.hasPaidPayment,
-    checkout.latestPaymentStatus,
-    checkout.status,
-    gorSlug,
-    handleCheckoutUpdate,
-  ]);
+  usePolling(
+    refreshCheckoutStatus,
+    POLL_INTERVALS.CHECKOUT_STATUS_MS,
+    shouldPoll,
+  );
 
   const isFailed =
     checkout.latestPaymentStatus === PAYMENT_STATUS.FAILED &&

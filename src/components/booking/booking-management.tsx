@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 import { BookingDetailPanel } from "@/components/booking/booking-detail-panel";
 import {
@@ -47,9 +47,11 @@ import {
   formatMinuteOfDay,
 } from "@/domains/booking/utils/booking-display";
 import { UI_COPY } from "@/config/ui-copy";
+import { POLL_INTERVALS } from "@/config/polling-intervals";
 import { layout } from "@/lib/design-system";
 import { pageLayout } from "@/lib/layout-system";
 import { CalendarDays } from "lucide-react";
+import { usePolling } from "@/hooks/use-polling";
 
 type BookingFiltersState = {
   bookingDate: string;
@@ -85,6 +87,38 @@ export function BookingManagement() {
   const [detailError, setDetailError] = useState<string | null>(null);
   const [isLoadingList, startListTransition] = useTransition();
   const [isLoadingDetail, startDetailTransition] = useTransition();
+  const listQueryRef = useRef({ filters, page });
+
+  useEffect(() => {
+    listQueryRef.current = { filters, page };
+  }, [filters, page]);
+
+  const fetchBookings = useCallback(async () => {
+    const { filters: currentFilters, page: currentPage } = listQueryRef.current;
+
+    const response = await listBookingsAction({
+      page: currentPage,
+      pageSize: BOOKING_LIST_DEFAULT_PAGE_SIZE,
+      sort: currentFilters.sort,
+      courtId:
+        currentFilters.courtId === "all" ? undefined : currentFilters.courtId,
+      status:
+        currentFilters.status === "all"
+          ? undefined
+          : (currentFilters.status as "PENDING" | "CONFIRMED" | "CANCELLED"),
+      bookingDate: currentFilters.bookingDate || undefined,
+      bookingNumberSearch: currentFilters.bookingNumberSearch || undefined,
+    });
+
+    if (!response.success) {
+      setListError(response.error);
+      setListResult(null);
+      return;
+    }
+
+    setListError(null);
+    setListResult(response.data);
+  }, []);
 
   useEffect(() => {
     void getBookingFilterOptionsAction().then((response) => {
@@ -100,30 +134,13 @@ export function BookingManagement() {
 
   useEffect(() => {
     startListTransition(async () => {
-      setListError(null);
-
-      const response = await listBookingsAction({
-        page,
-        pageSize: BOOKING_LIST_DEFAULT_PAGE_SIZE,
-        sort: filters.sort,
-        courtId: filters.courtId === "all" ? undefined : filters.courtId,
-        status:
-          filters.status === "all"
-            ? undefined
-            : (filters.status as "PENDING" | "CONFIRMED" | "CANCELLED"),
-        bookingDate: filters.bookingDate || undefined,
-        bookingNumberSearch: filters.bookingNumberSearch || undefined,
-      });
-
-      if (!response.success) {
-        setListError(response.error);
-        setListResult(null);
-        return;
-      }
-
-      setListResult(response.data);
+      await fetchBookings();
     });
-  }, [filters, page]);
+  }, [fetchBookings, filters, page]);
+
+  usePolling(() => {
+    void fetchBookings();
+  }, POLL_INTERVALS.BOOKING_LIST_MS);
 
   const updateFilter = <TKey extends keyof BookingFiltersState>(
     key: TKey,
@@ -176,22 +193,7 @@ export function BookingManagement() {
     });
 
     startListTransition(async () => {
-      const response = await listBookingsAction({
-        page,
-        pageSize: BOOKING_LIST_DEFAULT_PAGE_SIZE,
-        sort: filters.sort,
-        courtId: filters.courtId === "all" ? undefined : filters.courtId,
-        status:
-          filters.status === "all"
-            ? undefined
-            : (filters.status as "PENDING" | "CONFIRMED" | "CANCELLED"),
-        bookingDate: filters.bookingDate || undefined,
-        bookingNumberSearch: filters.bookingNumberSearch || undefined,
-      });
-
-      if (response.success) {
-        setListResult(response.data);
-      }
+      await fetchBookings();
     });
   };
 

@@ -359,6 +359,8 @@ export class ManualPaymentService {
       note: reason,
     });
 
+    await this.bookingWriter.cancelIfPending(payment.bookingId);
+
     return updatedPayment;
   }
 

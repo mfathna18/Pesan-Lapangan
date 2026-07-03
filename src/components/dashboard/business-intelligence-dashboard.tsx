@@ -1,11 +1,11 @@
+import { BiKpiCardsPolling } from "@/components/dashboard/bi/bi-kpi-cards-polling";
 import { BiActivityTimeline } from "@/components/dashboard/bi/bi-activity-timeline";
-import { BiInsightCards } from "@/components/dashboard/bi/bi-insight-cards";
-import { BiKpiCards } from "@/components/dashboard/bi/bi-kpi-cards";
 import { BiMiniTrends } from "@/components/dashboard/bi/bi-mini-trends";
 import { BiQuickActions } from "@/components/dashboard/bi/bi-quick-actions";
 import { BiRecommendations } from "@/components/dashboard/bi/bi-recommendations";
 import { OwnerOnboardingEmptyState } from "@/components/dashboard/owner-onboarding-empty-state";
-import { OwnerPendingPaymentsWidget } from "@/components/dashboard/owner-pending-payments-widget";
+import { BiInsightCards } from "@/components/dashboard/bi/bi-insight-cards";
+import { OwnerPendingPaymentsPollingWidget } from "@/components/dashboard/owner-pending-payments-polling-widget";
 import { PageHeader } from "@/components/ui/page-header";
 import type { BusinessIntelligenceDashboardData } from "@/domains/analytics/analytics-types";
 import type { AwaitingConfirmationPaymentItem } from "@/domains/payment/types";
@@ -36,8 +36,8 @@ export function BusinessIntelligenceDashboard({
         />
       ) : (
         <div className="flex flex-col gap-10">
-          <OwnerPendingPaymentsWidget items={awaitingPayments} />
-          <BiKpiCards kpis={data.kpis} />
+          <OwnerPendingPaymentsPollingWidget initialItems={awaitingPayments} />
+          <BiKpiCardsPolling initialKpis={data.kpis} />
           <BiRecommendations recommendations={data.recommendations} />
           <BiInsightCards insights={data.insights} />
           <BiMiniTrends trends={data.trends} />
