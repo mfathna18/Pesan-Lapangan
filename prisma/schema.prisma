@@ -167,6 +167,10 @@ model Gor {
   timezone       String   @default("Asia/Jakarta")
   currency       String   @default("IDR")
   isActive       Boolean  @default(true)
+  bankName             String?
+  bankAccountNumber    String?
+  bankAccountHolder    String?
+  qrisImageUrl         String?
   courts         Court[]
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -309,14 +313,17 @@ model BookingContact {
 
 enum PaymentStatus {
   PENDING
+  AWAITING_CONFIRMATION
   PAID
   FAILED
   EXPIRED
   REFUNDED
+  REJECTED
 }
 
 enum PaymentMethod {
   MIDTRANS
+  MANUAL_TRANSFER
 }
 
 model Payment {
@@ -331,14 +338,46 @@ model Payment {
   snapToken         String?
   paidAt            DateTime?
   expiredAt         DateTime?
+  customerConfirmedAt DateTime?
+  approvedByUserId  String?
+  approvedAt        DateTime?
+  rejectedByUserId  String?
+  rejectedAt        DateTime?
+  rejectionReason   String?
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   invoice           Invoice?
+  auditLogs         PaymentConfirmationAuditLog[]
 
   @@index([bookingId])
   @@index([bookingId, status])
   @@index([externalReference])
+  @@index([status, customerConfirmedAt])
   @@map("payment")
+}
+
+enum PaymentConfirmationAction {
+  CREATED
+  CUSTOMER_CONFIRMED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model PaymentConfirmationAuditLog {
+  id              String                    @id @default(cuid())
+  paymentId       String
+  payment         Payment                   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  actorUserId     String?
+  action          PaymentConfirmationAction
+  fromStatus      PaymentStatus?
+  toStatus        PaymentStatus?
+  note            String?
+  createdAt       DateTime                  @default(now())
+
+  @@index([paymentId])
+  @@index([createdAt])
+  @@map("payment_confirmation_audit_log")
 }
 
 // Invoice foundation — immutable e-nota generated after successful payment.

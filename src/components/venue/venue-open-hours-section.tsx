@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { customerLayout } from "@/lib/customer-layout";
 import type { PublicVenueOpenHours } from "@/domains/venue/types";
 
 type VenueOpenHoursSectionProps = {
@@ -23,13 +24,13 @@ export function VenueOpenHoursSection({
   openHours,
 }: VenueOpenHoursSectionProps) {
   return (
-    <section className="px-4 py-12 sm:px-6">
-      <div className="mx-auto max-w-6xl">
+    <section className="px-4 py-12 sm:px-6 sm:py-14">
+      <div className={customerLayout.containerWide}>
         <Card>
-          <CardHeader>
-            <CardTitle>Jam Operasional</CardTitle>
+          <CardHeader className="space-y-2">
+            <CardTitle className="text-xl">Jam Operasional</CardTitle>
             <CardDescription>
-              Ringkasan jam buka berdasarkan lapangan aktif.
+              Ringkasan jam buka berdasarkan lapangan aktif di venue ini.
             </CardDescription>
           </CardHeader>
           <CardContent>

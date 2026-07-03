@@ -3,9 +3,11 @@ import type { InvoiceStatus, PaymentStatus } from "@/generated/prisma/client";
 export const INVOICE_PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   PAID: "Lunas",
   PENDING: "Menunggu",
+  AWAITING_CONFIRMATION: "Menunggu Konfirmasi",
   FAILED: "Gagal",
   EXPIRED: "Kadaluarsa",
   REFUNDED: "Dikembalikan",
+  REJECTED: "Ditolak",
 };
 
 export const INVOICE_RECORD_STATUS_LABELS: Record<InvoiceStatus, string> = {
@@ -47,6 +49,7 @@ export function getInvoiceDisplayStatusVariant(
     case "PAID":
       return "paid";
     case "PENDING":
+    case "AWAITING_CONFIRMATION":
       return "pending";
     case "FAILED":
       return "cancelled";
@@ -54,6 +57,8 @@ export function getInvoiceDisplayStatusVariant(
       return "expired";
     case "REFUNDED":
       return "outline";
+    case "REJECTED":
+      return "cancelled";
     default:
       return "outline";
   }

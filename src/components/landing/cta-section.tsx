@@ -1,22 +1,25 @@
 import { buttonVariants } from "@/components/ui/button";
 import { landingContent } from "@/config/landing";
 import { layout, typography } from "@/lib/design-system";
+import { landingLayout } from "@/lib/layout-system";
 import { cn } from "@/lib/utils";
 
 export function CtaSection() {
   const { cta } = landingContent;
 
   return (
-    <section className={layout.section}>
+    <section className={`${landingLayout.sectionDivider} ${layout.section}`}>
       <div className={layout.container}>
-        <div className="bg-primary text-primary-foreground rounded-[var(--radius-card-lg)] px-6 py-14 text-center shadow-[var(--shadow-elevated)] sm:px-12 sm:py-16">
-          <div className="mx-auto max-w-2xl space-y-8">
-            <h2 className={cn(typography.h2, "text-primary-foreground")}>
-              {cta.title}
-            </h2>
-            <p className="text-primary-foreground/85 text-base text-pretty sm:text-lg">
-              {cta.description}
-            </p>
+        <div className="bg-primary text-primary-foreground rounded-[var(--radius-card-lg)] px-8 py-16 text-center shadow-[var(--shadow-elevated)] sm:px-14 sm:py-20">
+          <div className="mx-auto max-w-2xl space-y-10">
+            <div className="space-y-4">
+              <h2 className={cn(typography.h2, "text-primary-foreground")}>
+                {cta.title}
+              </h2>
+              <p className="text-primary-foreground/85 mx-auto max-w-xl text-base text-pretty sm:text-lg">
+                {cta.description}
+              </p>
+            </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
               <a

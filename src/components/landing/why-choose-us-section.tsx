@@ -26,7 +26,7 @@ export function WhyChooseUsSection() {
       id="keunggulan"
       className={`${layout.section} bg-muted/40 scroll-mt-20`}
     >
-      <div className={`${layout.container} flex flex-col gap-12`}>
+      <div className={`${layout.container} flex flex-col gap-14`}>
         <SectionHeader
           title={whyChooseUs.title}
           description={whyChooseUs.description}

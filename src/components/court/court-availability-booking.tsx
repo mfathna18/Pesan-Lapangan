@@ -15,6 +15,7 @@ import {
   BookingRangeSummary,
   formatBookingDateLabel,
 } from "@/components/booking/booking-range-summary";
+import { CustomerFunnelHeader } from "@/components/customer/customer-funnel-header";
 import { getTodayDateInputValue } from "@/components/booking/booking-form.utils";
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { getCourtAvailabilityAction } from "@/domains/availability/actions/get-court-availability.action";
 import type { AvailabilitySlot } from "@/domains/availability/types";
 import {
@@ -34,6 +36,7 @@ import {
   resolveRangeLineItems,
   resolveRangeTotalPrice,
 } from "@/domains/booking/utils/booking-range";
+import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
 
 type CourtAvailabilityContext = {
@@ -48,8 +51,7 @@ type CourtAvailabilityBookingProps = {
   court: CourtAvailabilityContext;
 };
 
-const RANGE_UNAVAILABLE_MESSAGE =
-  "Rentang waktu tidak valid. Semua jam di antara mulai dan selesai harus tersedia.";
+const RANGE_UNAVAILABLE_MESSAGE = CUSTOMER_COPY.booking.rangeInvalid;
 
 export function CourtAvailabilityBooking({
   court,
@@ -173,7 +175,7 @@ export function CourtAvailabilityBooking({
     }
 
     if (slot.endMinute <= rangeStartMinute) {
-      setRangeError("Waktu selesai harus setelah waktu mulai.");
+      setRangeError(CUSTOMER_COPY.booking.endBeforeStart);
       return;
     }
 
@@ -203,19 +205,15 @@ export function CourtAvailabilityBooking({
   return (
     <div className="bg-background min-h-screen pb-40">
       <CourtDetailHeader gorSlug={court.gorSlug} gorName={court.gorName} />
-      <main className="px-4 py-8 sm:px-6 lg:py-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8">
-          <div className="space-y-2">
-            <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-              Pilih Waktu
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              {court.courtName}
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              {court.sportLabel} · {court.gorName}
-            </p>
-          </div>
+      <main className={customerLayout.pageWide}>
+        <div
+          className={`${customerLayout.containerWide} ${customerLayout.funnelStack}`}
+        >
+          <CustomerFunnelHeader
+            eyebrow={CUSTOMER_COPY.booking.pickTimeEyebrow}
+            title={court.courtName}
+            description={`${court.sportLabel} · ${court.gorName}`}
+          />
 
           <Card>
             <CardHeader>
@@ -258,7 +256,7 @@ export function CourtAvailabilityBooking({
                   disabled={isLoading}
                 >
                   <RefreshCw className={cn(isLoading && "animate-spin")} />
-                  Muat Ulang
+                  {CUSTOMER_COPY.booking.reloadSlots}
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -289,7 +287,7 @@ export function CourtAvailabilityBooking({
                   }
                   onSelectSlot={handleSelectSlot}
                   isLoading={isLoading}
-                  emptyMessage="Tidak ada slot untuk tanggal ini."
+                  emptyMessage={CUSTOMER_COPY.court.noSlotsDescription}
                 />
 
                 {rangeStartMinute !== null ? (
@@ -326,7 +324,7 @@ export function CourtAvailabilityBooking({
               rangeStartMinute !== null &&
               rangeEndMinute !== null
                 ? `${court.courtName} · ${bookingDateLabel}`
-                : "Pilih slot waktu untuk memulai"}
+                : CUSTOMER_COPY.booking.rangeEmpty}
             </p>
           </div>
 
@@ -335,11 +333,11 @@ export function CourtAvailabilityBooking({
               href={formHref}
               className={cn(buttonVariants({ size: "lg" }), "shrink-0")}
             >
-              Isi Data Booking
+              {CUSTOMER_COPY.booking.fillFormCta}
             </Link>
           ) : (
             <Button type="button" size="lg" disabled className="shrink-0">
-              Isi Data Booking
+              {CUSTOMER_COPY.booking.fillFormCta}
             </Button>
           )}
         </div>

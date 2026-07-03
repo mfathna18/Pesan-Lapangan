@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Download } from "lucide-react";
 
+import { CustomerDetailField } from "@/components/customer/customer-detail-field";
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import type { PublicInvoiceData } from "@/domains/invoice/types";
 import { getDurationMinutesFromSnapshot } from "@/domains/invoice/utils/invoice-display";
 import {
@@ -12,6 +13,7 @@ import {
   formatCurrency,
   formatTimeRange,
 } from "@/domains/booking/utils/booking-display";
+import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
 
 type PublicInvoiceViewProps = {
@@ -23,15 +25,6 @@ function formatGeneratedAt(generatedAt: string): string {
     dateStyle: "long",
     timeStyle: "short",
   }).format(new Date(generatedAt));
-}
-
-function DetailField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-muted-foreground text-sm">{label}</p>
-      <p className="font-medium">{value}</p>
-    </div>
-  );
 }
 
 export function PublicInvoiceView({ invoice }: PublicInvoiceViewProps) {
@@ -48,18 +41,22 @@ export function PublicInvoiceView({ invoice }: PublicInvoiceViewProps) {
         gorSlug={invoice.venueSlug}
         gorName={invoice.venueName}
       />
-      <main className="px-4 py-8 sm:px-6 lg:py-10">
-        <div className="mx-auto flex max-w-3xl flex-col gap-6">
+      <main className={customerLayout.page}>
+        <div
+          className={`${customerLayout.container} ${customerLayout.funnelStack}`}
+        >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-                Invoice
+                {CUSTOMER_COPY.invoice.eyebrow}
               </p>
-              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
                 {invoice.invoiceNumber}
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Diterbitkan {formatGeneratedAt(invoice.generatedAt)}
+                {CUSTOMER_COPY.invoice.issuedAt(
+                  formatGeneratedAt(invoice.generatedAt),
+                )}
               </p>
               <Badge variant="paid">Lunas</Badge>
             </div>
@@ -68,62 +65,89 @@ export function PublicInvoiceView({ invoice }: PublicInvoiceViewProps) {
               className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
             >
               <Download className="size-4" />
-              Unduh PDF
+              {CUSTOMER_COPY.invoice.downloadPdf}
             </a>
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Ringkasan</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <DetailField
+          <section className={customerLayout.checkoutSection}>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {CUSTOMER_COPY.invoice.summaryTitle}
+            </h2>
+            <div className={customerLayout.detailGrid}>
+              <CustomerDetailField
                 label="Nomor Invoice"
                 value={invoice.invoiceNumber}
               />
-              <DetailField
+              <CustomerDetailField
                 label="Nomor Booking"
                 value={invoice.bookingNumber}
               />
-              <DetailField label="Pelanggan" value={invoice.customerName} />
-              <DetailField label="Telepon" value={invoice.customerPhone} />
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Detail Booking</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
-              <DetailField label="GOR" value={invoice.venueName} />
-              <DetailField label="Lapangan" value={invoice.courtName} />
-              <DetailField
+          <section className={customerLayout.checkoutSection}>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {CUSTOMER_COPY.invoice.customerTitle}
+            </h2>
+            <div className={customerLayout.detailGrid}>
+              <CustomerDetailField label="Nama" value={invoice.customerName} />
+              <CustomerDetailField
+                label="Telepon"
+                value={invoice.customerPhone}
+              />
+            </div>
+          </section>
+
+          <section className={customerLayout.checkoutSection}>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {CUSTOMER_COPY.invoice.bookingTitle}
+            </h2>
+            <div className={customerLayout.detailGrid}>
+              <CustomerDetailField
                 label="Tanggal Main"
                 value={formatBookingDate(invoice.bookingDate)}
               />
-              <DetailField
+              <CustomerDetailField
                 label="Waktu"
                 value={formatTimeRange(invoice.startMinute, invoice.endMinute)}
               />
-              <DetailField label="Durasi" value={`${durationMinutes} menit`} />
-              <DetailField
-                label="Total"
-                value={formatCurrency(invoice.totalAmount)}
+              <CustomerDetailField
+                label="Durasi"
+                value={`${durationMinutes} menit`}
               />
-            </CardContent>
-          </Card>
+              <CustomerDetailField label="Lapangan" value={invoice.courtName} />
+            </div>
+          </section>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href={successHref}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "lg" }),
-                "flex-1 sm:flex-none",
-              )}
-            >
-              Kembali ke Konfirmasi
-            </Link>
-          </div>
+          <section className={customerLayout.checkoutSection}>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {CUSTOMER_COPY.invoice.venueTitle}
+            </h2>
+            <div className={customerLayout.detailGrid}>
+              <CustomerDetailField label="Venue" value={invoice.venueName} />
+            </div>
+          </section>
+
+          <section className={customerLayout.checkoutSection}>
+            <h2 className="text-lg font-semibold tracking-tight">
+              {CUSTOMER_COPY.invoice.paymentTitle}
+            </h2>
+            <CustomerDetailField
+              label="Total Dibayar"
+              value={formatCurrency(invoice.totalAmount)}
+              emphasis
+            />
+          </section>
+
+          <Link
+            href={successHref}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "lg" }),
+              "w-fit",
+            )}
+          >
+            {CUSTOMER_COPY.invoice.backToSuccess}
+          </Link>
         </div>
       </main>
     </div>

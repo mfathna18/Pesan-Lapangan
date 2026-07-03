@@ -2,6 +2,15 @@ export const BOOKING_DURATION_INTERVAL_MINUTES = 60 as const;
 
 export const BOOKING_PENDING_EXPIRY_MINUTES = 5 as const;
 
+/** Hold window for manual bank/QRIS transfer before customer confirms payment. */
+export const BOOKING_MANUAL_PAYMENT_EXPIRY_HOURS = 24 as const;
+
+/** Owner reminder threshold after customer confirms manual payment. */
+export const MANUAL_PAYMENT_OWNER_REMINDER_HOURS = 12 as const;
+
+/** Extended hold while owner reviews confirmed manual payment. */
+export const BOOKING_AWAITING_CONFIRMATION_EXPIRY_HOURS = 72 as const;
+
 export const BOOKING_SLOT_UNAVAILABLE_MESSAGE =
   "Slot waktu yang dipilih sudah tidak tersedia. Silakan pilih waktu lain." as const;
 

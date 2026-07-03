@@ -1,4 +1,4 @@
-import type { OwnerAnalyticsTopCourtRow } from "@/domains/analytics/types";
+import type { OwnerAnalyticsTopCourtRow } from "@/domains/analytics/analytics-types";
 
 import {
   Card,

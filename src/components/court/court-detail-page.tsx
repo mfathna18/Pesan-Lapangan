@@ -4,6 +4,7 @@ import { CourtFacilitiesSection } from "@/components/court/court-facilities-sect
 import { CourtImagesSection } from "@/components/court/court-images-section";
 import { CourtOperatingHoursSection } from "@/components/court/court-operating-hours-section";
 import { CourtPriceSection } from "@/components/court/court-price-section";
+import { CourtSummaryCard } from "@/components/customer/court-summary-card";
 import type { PublicCourtDetailData } from "@/domains/booking/types";
 
 type CourtDetailPageProps = {
@@ -11,34 +12,19 @@ type CourtDetailPageProps = {
 };
 
 export function CourtDetailPage({ court }: CourtDetailPageProps) {
+  const bookingHref = `/gor/${court.gor.slug}/court/${court.id}/booking`;
+
   return (
     <div className="bg-background min-h-screen">
       <CourtDetailHeader gorSlug={court.gor.slug} gorName={court.gor.name} />
-      <main>
-        <section className="px-4 pt-8 sm:px-6">
-          <div className="mx-auto max-w-6xl space-y-4">
-            <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-              Detail Lapangan
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-              {court.name}
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              {court.sportLabel}
-            </p>
-            {court.description ? (
-              <p className="text-muted-foreground max-w-3xl text-base leading-relaxed text-pretty sm:text-lg">
-                {court.description}
-              </p>
-            ) : null}
-          </div>
-        </section>
-
+      <main className="space-y-10 pb-4 sm:space-y-12">
         <CourtImagesSection
           courtName={court.name}
           sportLabel={court.sportLabel}
           imageUrls={court.imageUrls}
         />
+
+        <CourtSummaryCard court={court} bookingHref={bookingHref} />
 
         {court.startingPrice != null ? (
           <CourtPriceSection startingPrice={court.startingPrice} />
@@ -46,9 +32,7 @@ export function CourtDetailPage({ court }: CourtDetailPageProps) {
 
         <CourtOperatingHoursSection openHours={court.openHours} />
         <CourtFacilitiesSection facilities={court.facilities} />
-        <CourtBookingCta
-          bookingHref={`/gor/${court.gor.slug}/court/${court.id}/booking`}
-        />
+        <CourtBookingCta bookingHref={bookingHref} />
       </main>
     </div>
   );

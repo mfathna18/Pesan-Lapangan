@@ -56,10 +56,15 @@ export const SUBSCRIPTION_PLAN_PRICES = {
 
 export const SUBSCRIPTION_PLAN_ORDER = ["FREE", "STARTER", "PRO"] as const;
 
-export const SUBSCRIPTION_PAYMENT_STATUS_LABELS = {
+export const SUBSCRIPTION_PAYMENT_STATUS_LABELS: Record<
+  import("@/generated/prisma/client").PaymentStatus,
+  string
+> = {
   PENDING: "Pending",
+  AWAITING_CONFIRMATION: "Awaiting Confirmation",
   PAID: "Paid",
   FAILED: "Failed",
   EXPIRED: "Expired",
   REFUNDED: "Refunded",
-} as const;
+  REJECTED: "Rejected",
+};

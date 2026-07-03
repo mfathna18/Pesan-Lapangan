@@ -3,10 +3,13 @@
 import { useEffect, useState, useTransition } from "react";
 import { Download, FileText } from "lucide-react";
 
+import { ExportDropdown } from "@/components/export/export-dropdown";
 import { InvoiceDetailPanel } from "@/components/invoice/invoice-detail-panel";
 import { InvoiceStatusBadge } from "@/components/invoice/invoice-status-badge";
+import { TableSkeletonRows } from "@/components/layout/dashboard-page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -26,6 +29,7 @@ import type {
   OwnerInvoiceDetail,
 } from "@/domains/invoice/types";
 import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
 import {
   formatBookingDate,
   formatCurrency,
@@ -123,6 +127,16 @@ export function InvoiceManagement() {
         eyebrow="Tagihan"
         title="Invoice"
         description="Lihat dan unduh invoice dari booking yang sudah dibayar."
+        actions={
+          <ExportDropdown
+            endpoint="/api/owner/export/invoices"
+            params={{
+              invoiceNumberSearch: filters.invoiceNumberSearch || undefined,
+              bookingNumberSearch: filters.bookingNumberSearch || undefined,
+            }}
+            disabled={isAccountEmpty}
+          />
+        }
       />
 
       {listError ? (
@@ -133,30 +147,18 @@ export function InvoiceManagement() {
 
       {isLoadingList && !listResult ? (
         <Card>
-          <CardContent className="py-10">
-            <p className="text-muted-foreground text-center text-sm">
-              Memuat daftar invoice...
-            </p>
+          <CardContent className="py-6">
+            <TableSkeletonRows rows={5} columns={6} />
           </CardContent>
         </Card>
       ) : null}
 
       {isAccountEmpty ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-16 text-center">
-            <div className="bg-muted flex size-14 items-center justify-center rounded-full">
-              <FileText className="text-muted-foreground size-7" />
-            </div>
-            <div className="max-w-md space-y-2">
-              <h2 className="text-lg font-semibold">Belum ada invoice</h2>
-              <p className="text-muted-foreground text-sm">
-                Invoice akan muncul otomatis setelah pelanggan menyelesaikan
-                pembayaran booking. Anda bisa mengunduh PDF invoice kapan saja
-                dari halaman ini.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={FileText}
+          title="Belum ada invoice"
+          description="Invoice akan muncul otomatis setelah pelanggan menyelesaikan pembayaran booking. Anda bisa mengunduh PDF invoice kapan saja dari halaman ini."
+        />
       ) : null}
 
       {!isAccountEmpty && listResult ? (
@@ -165,7 +167,7 @@ export function InvoiceManagement() {
             <CardHeader>
               <CardTitle>Filter</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+            <CardContent className={pageLayout.filterGridTwoCol}>
               <div className="space-y-2">
                 <Label htmlFor="invoice-number-search">Nomor Invoice</Label>
                 <Input

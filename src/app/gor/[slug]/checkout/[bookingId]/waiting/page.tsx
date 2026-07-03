@@ -1,9 +1,12 @@
 import { notFound, redirect } from "next/navigation";
 
 import { CheckoutPaymentWaitingPoller } from "@/components/checkout/checkout-payment-waiting-poller";
+import { CustomerFunnelHeader } from "@/components/customer/customer-funnel-header";
 import { CourtDetailHeader } from "@/components/court/court-detail-header";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { getPublicCheckoutService } from "@/domains/payment/actions/get-public-checkout-service";
 import { PublicCheckoutNotFoundError } from "@/domains/payment/errors";
+import { customerLayout } from "@/lib/customer-layout";
 
 type WaitingPaymentPageProps = {
   params: Promise<{
@@ -44,20 +47,15 @@ export default async function WaitingPaymentPage({
         gorSlug={checkout.venueSlug}
         gorName={checkout.venueName}
       />
-      <main className="px-4 py-8 sm:px-6 lg:py-10">
-        <div className="mx-auto flex max-w-3xl flex-col gap-8">
-          <div className="space-y-2">
-            <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-              Menunggu Pembayaran
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Pembayaran Sedang Diproses
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Kami menunggu konfirmasi dari Midtrans. Halaman ini akan
-              diperbarui otomatis setelah pembayaran berhasil.
-            </p>
-          </div>
+      <main className={customerLayout.page}>
+        <div
+          className={`${customerLayout.container} ${customerLayout.funnelStack}`}
+        >
+          <CustomerFunnelHeader
+            eyebrow={CUSTOMER_COPY.checkout.eyebrow}
+            title={CUSTOMER_COPY.checkout.waitingTitle}
+            description={CUSTOMER_COPY.checkout.waitingDescription}
+          />
 
           <CheckoutPaymentWaitingPoller
             gorSlug={slug}

@@ -3,6 +3,7 @@ import { createPageMetadata } from "@/config/page-metadata";
 import { getGorProfileService } from "@/domains/owner/actions/get-gor-profile-service";
 import { OwnerNotFoundError } from "@/domains/owner/errors";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import { layout } from "@/lib/design-system";
 import { notFound } from "next/navigation";
 
 export const metadata = createPageMetadata(
@@ -26,7 +27,7 @@ export default async function DashboardSettingsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
+    <div className={layout.page}>
       <GorProfileForm initialProfile={initialProfile} />
     </div>
   );

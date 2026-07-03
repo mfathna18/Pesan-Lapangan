@@ -7,6 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -25,6 +27,9 @@ import {
   formatCurrency,
   formatDateTime,
 } from "@/domains/booking/utils/booking-display";
+import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
+import { Receipt } from "lucide-react";
 
 type SubscriptionDashboardProps = {
   subscription: CurrentSubscriptionData;
@@ -74,18 +79,12 @@ export function SubscriptionDashboard({
   subscription,
 }: SubscriptionDashboardProps) {
   return (
-    <div className="flex flex-1 flex-col gap-6">
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Langganan
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Paket Langganan
-        </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Kelola paket langganan venue kamu.
-        </p>
-      </div>
+    <div className={`${layout.page} ${pageLayout.cardStack}`}>
+      <PageHeader
+        eyebrow="Bisnis"
+        title="Paket Langganan"
+        description="Kelola paket langganan venue kamu."
+      />
 
       <Card>
         <CardHeader className="space-y-3">
@@ -164,9 +163,12 @@ export function SubscriptionDashboard({
         </CardHeader>
         <CardContent>
           {subscription.billingHistory.length === 0 ? (
-            <p className="text-muted-foreground text-sm">
-              Belum ada riwayat pembayaran langganan.
-            </p>
+            <EmptyState
+              variant="plain"
+              icon={Receipt}
+              title="Belum ada riwayat billing"
+              description="Riwayat pembayaran langganan akan muncul setelah transaksi pertama selesai."
+            />
           ) : (
             <Table>
               <TableHeader>

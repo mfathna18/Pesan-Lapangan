@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { MapPin } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
+import { CardContentSkeleton } from "@/components/layout/dashboard-page-skeleton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -21,7 +25,8 @@ import type { OwnerOperatingHoursDaySchedule } from "@/domains/availability/type
 import { listCourtsAction } from "@/domains/booking/actions/list-courts.action";
 import type { OwnerCourtListItem } from "@/domains/booking/types";
 import { UI_COPY } from "@/config/ui-copy";
-import { cn } from "@/lib/utils";
+import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
 
 type DayFormState = OwnerOperatingHoursDaySchedule;
 
@@ -144,21 +149,17 @@ export function OperatingHoursManagement() {
   const selectedCourt = courts.find((court) => court.id === selectedCourtId);
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Jam Operasional
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Atur jam operasional lapangan venue kamu.
-          </p>
-        </div>
-
-        <Button onClick={handleSave} disabled={!selectedCourtId || isBusy}>
-          {isSaving ? UI_COPY.saving : UI_COPY.save}
-        </Button>
-      </div>
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Venue"
+        title="Jam Operasional"
+        description="Atur jam operasional lapangan venue kamu."
+        actions={
+          <Button onClick={handleSave} disabled={!selectedCourtId || isBusy}>
+            {isSaving ? UI_COPY.saving : UI_COPY.save}
+          </Button>
+        }
+      />
 
       {courtsError ? (
         <p
@@ -170,22 +171,19 @@ export function OperatingHoursManagement() {
       ) : null}
 
       {courts.length === 0 && !isLoadingCourts ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-muted-foreground text-sm">
-              Minimal satu lapangan diperlukan sebelum mengatur jam operasional.
-            </p>
-            <Link
-              href="/dashboard/courts"
-              className={cn(buttonVariants({ variant: "default" }))}
-            >
+        <EmptyState
+          icon={MapPin}
+          title="Belum ada lapangan"
+          description="Minimal satu lapangan diperlukan sebelum mengatur jam operasional."
+          action={
+            <Link href="/dashboard/courts" className={buttonVariants()}>
               Ke Halaman Lapangan
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
-        <>
-          <Card className="mb-6">
+        <div className={pageLayout.cardStack}>
+          <Card>
             <CardHeader>
               <CardTitle>Pilih Lapangan</CardTitle>
             </CardHeader>
@@ -258,9 +256,7 @@ export function OperatingHoursManagement() {
             </CardHeader>
             <CardContent className="space-y-4">
               {isLoadingHours && days.every((day) => !day.enabled) ? (
-                <p className="text-muted-foreground text-sm">
-                  Memuat jam operasional...
-                </p>
+                <CardContentSkeleton lines={7} />
               ) : null}
 
               {days.map((day) => (
@@ -330,7 +326,7 @@ export function OperatingHoursManagement() {
               ))}
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
     </div>
   );

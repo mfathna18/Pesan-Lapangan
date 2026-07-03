@@ -124,6 +124,135 @@ export class PaymentRepository {
         ...(input.expiredAt !== undefined
           ? { expiredAt: input.expiredAt }
           : {}),
+        ...(input.customerConfirmedAt !== undefined
+          ? { customerConfirmedAt: input.customerConfirmedAt }
+          : {}),
+        ...(input.approvedByUserId !== undefined
+          ? { approvedByUserId: input.approvedByUserId }
+          : {}),
+        ...(input.approvedAt !== undefined
+          ? { approvedAt: input.approvedAt }
+          : {}),
+        ...(input.rejectedByUserId !== undefined
+          ? { rejectedByUserId: input.rejectedByUserId }
+          : {}),
+        ...(input.rejectedAt !== undefined
+          ? { rejectedAt: input.rejectedAt }
+          : {}),
+        ...(input.rejectionReason !== undefined
+          ? { rejectionReason: input.rejectionReason }
+          : {}),
+      },
+    });
+  }
+
+  async findActiveManualPaymentByBookingId(
+    bookingId: string,
+  ): Promise<Payment | null> {
+    return this.prisma.payment.findFirst({
+      where: {
+        bookingId,
+        method: "MANUAL_TRANSFER",
+        status: {
+          in: [PAYMENT_STATUS.PENDING, PAYMENT_STATUS.AWAITING_CONFIRMATION],
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findAwaitingConfirmationByOwnerId(ownerId: string) {
+    return this.prisma.payment.findMany({
+      where: {
+        status: PAYMENT_STATUS.AWAITING_CONFIRMATION,
+        booking: {
+          court: {
+            gor: {
+              ownerId,
+            },
+          },
+        },
+      },
+      orderBy: {
+        customerConfirmedAt: "asc",
+      },
+      select: {
+        id: true,
+        amount: true,
+        customerConfirmedAt: true,
+        booking: {
+          select: {
+            id: true,
+            bookingNumber: true,
+            courtNameSnapshot: true,
+            bookingDate: true,
+            startMinute: true,
+            endMinute: true,
+            durationMinute: true,
+            contact: {
+              select: {
+                customerName: true,
+                customerPhone: true,
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findManualPaymentDetailForOwner(input: {
+    ownerId: string;
+    bookingId: string;
+  }) {
+    return this.prisma.payment.findFirst({
+      where: {
+        bookingId: input.bookingId,
+        method: "MANUAL_TRANSFER",
+        booking: {
+          court: {
+            gor: {
+              ownerId: input.ownerId,
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        auditLogs: {
+          orderBy: { createdAt: "desc" },
+        },
+        booking: {
+          select: {
+            id: true,
+            bookingNumber: true,
+            courtNameSnapshot: true,
+            bookingDate: true,
+            startMinute: true,
+            endMinute: true,
+            durationMinute: true,
+            contact: {
+              select: {
+                customerName: true,
+                customerPhone: true,
+                note: true,
+              },
+            },
+            court: {
+              select: {
+                gor: {
+                  select: {
+                    name: true,
+                    bankName: true,
+                    bankAccountNumber: true,
+                    bankAccountHolder: true,
+                    qrisImageUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -132,7 +261,6 @@ export class PaymentRepository {
     input: RevenueDashboardQueryInput,
   ): Promise<RevenueSnapshotRecord> {
     const paidStatusFilter = { status: PAYMENT_STATUS.PAID } as const;
-    const pendingStatusFilter = { status: PAYMENT_STATUS.PENDING } as const;
     const ownerPaymentFilter = {
       booking: {
         court: {
@@ -185,7 +313,9 @@ export class PaymentRepository {
       }),
       this.prisma.payment.count({
         where: {
-          ...pendingStatusFilter,
+          status: {
+            in: [PAYMENT_STATUS.PENDING, PAYMENT_STATUS.AWAITING_CONFIRMATION],
+          },
           ...ownerPaymentFilter,
         },
       }),

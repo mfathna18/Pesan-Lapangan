@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 
 import { PublicCheckout } from "@/components/checkout/public-checkout";
 import { siteConfig } from "@/config/site";
-import { getPublicCheckoutService } from "@/domains/payment/actions/get-public-checkout-service";
+import { loadPublicCheckoutData } from "@/domains/payment/actions/load-public-checkout";
 import { PublicCheckoutNotFoundError } from "@/domains/payment/errors";
 
 type PublicCheckoutPageProps = {
@@ -17,10 +17,7 @@ type PublicCheckoutPageProps = {
 const getCachedCheckoutData = cache(
   async (gorSlug: string, bookingId: string) => {
     try {
-      return await getPublicCheckoutService().getCheckoutData(
-        gorSlug,
-        bookingId,
-      );
+      return await loadPublicCheckoutData(gorSlug, bookingId);
     } catch (error) {
       if (error instanceof PublicCheckoutNotFoundError) {
         notFound();

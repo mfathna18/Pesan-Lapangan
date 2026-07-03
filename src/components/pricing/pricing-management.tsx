@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Tags } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
@@ -8,10 +8,13 @@ import {
   PriceRuleFormPanel,
   type PriceRuleFormValues,
 } from "@/components/pricing/price-rule-form-panel";
+import { TableSkeletonRows } from "@/components/layout/dashboard-page-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -38,7 +41,8 @@ import type {
   OwnerPriceRuleListItem,
 } from "@/domains/booking/types";
 import { UI_COPY } from "@/config/ui-copy";
-import { cn } from "@/lib/utils";
+import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
 
 type FormMode = "create" | "edit";
 
@@ -243,23 +247,21 @@ export function PricingManagement() {
     isTogglingActive;
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Harga</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Atur aturan harga untuk setiap lapangan.
-          </p>
-        </div>
-
-        <Button
-          onClick={openCreateForm}
-          disabled={!selectedCourtId || isBusy || courts.length === 0}
-        >
-          <Plus />
-          Tambah Aturan Harga
-        </Button>
-      </div>
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Venue"
+        title="Harga"
+        description="Atur aturan harga untuk setiap lapangan."
+        actions={
+          <Button
+            onClick={openCreateForm}
+            disabled={!selectedCourtId || isBusy || courts.length === 0}
+          >
+            <Plus />
+            Tambah Aturan Harga
+          </Button>
+        }
+      />
 
       {courtsError ? (
         <p
@@ -271,21 +273,18 @@ export function PricingManagement() {
       ) : null}
 
       {courts.length === 0 && !isLoadingCourts ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-muted-foreground text-sm">
-              Minimal satu lapangan diperlukan sebelum mengatur aturan harga.
-            </p>
-            <Link
-              href="/dashboard/courts"
-              className={cn(buttonVariants({ variant: "default" }))}
-            >
+        <EmptyState
+          icon={Tags}
+          title="Belum ada lapangan"
+          description="Minimal satu lapangan diperlukan sebelum mengatur aturan harga."
+          action={
+            <Link href="/dashboard/courts" className={buttonVariants()}>
               Ke Halaman Lapangan
             </Link>
-          </CardContent>
-        </Card>
+          }
+        />
       ) : (
-        <>
+        <div className={pageLayout.cardStack}>
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Pilih Lapangan</CardTitle>
@@ -359,19 +358,23 @@ export function PricingManagement() {
             </CardHeader>
             <CardContent>
               {isLoadingRules && rules.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  Memuat aturan harga...
-                </p>
+                <TableSkeletonRows rows={4} columns={6} />
               ) : rules.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                  <p className="text-muted-foreground text-sm">
-                    Belum ada aturan harga.
-                  </p>
-                  <Button onClick={openCreateForm} disabled={!selectedCourtId}>
-                    <Plus />
-                    Tambah Aturan Harga
-                  </Button>
-                </div>
+                <EmptyState
+                  variant="plain"
+                  icon={Tags}
+                  title="Belum ada aturan harga"
+                  description="Tambahkan aturan harga pertama untuk lapangan yang dipilih agar slot booking dapat dihitung."
+                  action={
+                    <Button
+                      onClick={openCreateForm}
+                      disabled={!selectedCourtId}
+                    >
+                      <Plus />
+                      Tambah Aturan Harga
+                    </Button>
+                  }
+                />
               ) : (
                 <Table>
                   <TableHeader>
@@ -472,7 +475,7 @@ export function PricingManagement() {
             onClose={closeForm}
             onSubmit={handleFormSubmit}
           />
-        </>
+        </div>
       )}
     </div>
   );

@@ -29,6 +29,10 @@ export type GorProfileRecord = {
   timezone: string;
   currency: string;
   isActive: boolean;
+  bankName: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
+  qrisImageUrl: string | null;
 };
 
 export type GorProfileData = GorProfileRecord;
@@ -44,6 +48,10 @@ export type UpdateGorProfileInput = {
   logoUrl?: string | null;
   coverImageUrl?: string | null;
   timezone: string;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountHolder?: string | null;
+  qrisImageUrl?: string | null;
 };
 
 export type OwnerWithGorRecord = {

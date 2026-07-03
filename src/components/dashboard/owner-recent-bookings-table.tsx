@@ -1,5 +1,5 @@
 import { OwnerBookingDisplayStatusBadge } from "@/components/booking/booking-status-badges";
-import type { OwnerAnalyticsRecentBookingRow } from "@/domains/analytics/types";
+import type { OwnerAnalyticsRecentBookingRow } from "@/domains/analytics/analytics-types";
 import {
   formatBookingDate,
   formatTimeRange,
@@ -53,8 +53,12 @@ export function OwnerRecentBookingsTable({
           <TableBody>
             {bookings.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-muted-foreground">
-                  Belum ada booking terbaru.
+                <TableCell
+                  colSpan={6}
+                  className="text-muted-foreground py-10 text-center text-sm"
+                >
+                  Belum ada booking terbaru. Booking pertama akan muncul di
+                  sini.
                 </TableCell>
               </TableRow>
             ) : (

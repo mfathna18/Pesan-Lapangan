@@ -1,15 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { RefreshCw } from "lucide-react";
+import { MapPin, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
 import { AvailabilitySlotGrid } from "@/components/availability/availability-slot-grid";
 import { getTodayDateInputValue } from "@/components/booking/booking-form.utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -22,6 +24,8 @@ import type { AvailabilitySlot } from "@/domains/availability/types";
 import { listCourtsAction } from "@/domains/booking/actions/list-courts.action";
 import type { OwnerCourtListItem } from "@/domains/booking/types";
 import { UI_COPY } from "@/config/ui-copy";
+import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
 import { cn } from "@/lib/utils";
 
 type OwnerAvailabilityVerificationProps = {
@@ -107,40 +111,35 @@ export function OwnerAvailabilityVerification({
   const isBusy = isLoadingCourts || isLoadingSlots;
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Ketersediaan
-          </h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Verifikasi ketersediaan slot setelah mengatur jam operasional dan
-            harga.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={loadSlots}
-            disabled={!selectedCourtId || isBusy}
-          >
-            <RefreshCw className={cn(isLoadingSlots && "animate-spin")} />
-            {UI_COPY.refresh}
-          </Button>
-          {publicBookingHref ? (
-            <Link
-              href={publicBookingHref}
-              className={cn(buttonVariants({ variant: "default" }))}
-              target="_blank"
-              rel="noreferrer"
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Venue"
+        title="Ketersediaan"
+        description="Verifikasi ketersediaan slot setelah mengatur jam operasional dan harga."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={loadSlots}
+              disabled={!selectedCourtId || isBusy}
             >
-              Buka Booking Publik
-            </Link>
-          ) : null}
-        </div>
-      </div>
+              <RefreshCw className={cn(isLoadingSlots && "animate-spin")} />
+              {UI_COPY.refresh}
+            </Button>
+            {publicBookingHref ? (
+              <Link
+                href={publicBookingHref}
+                className={cn(buttonVariants({ variant: "default" }))}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Buka Booking Publik
+              </Link>
+            ) : null}
+          </div>
+        }
+      />
 
       {courtsError ? (
         <p
@@ -152,21 +151,23 @@ export function OwnerAvailabilityVerification({
       ) : null}
 
       {courts.length === 0 && !isLoadingCourts ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground text-sm">
-              Tambahkan lapangan, jam operasional, dan harga sebelum
-              memverifikasi ketersediaan.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={MapPin}
+          title="Belum siap diverifikasi"
+          description="Tambahkan lapangan, jam operasional, dan harga sebelum memverifikasi ketersediaan slot."
+          action={
+            <Link href="/dashboard/courts" className={buttonVariants()}>
+              Kelola Lapangan
+            </Link>
+          }
+        />
       ) : (
-        <>
-          <Card className="mb-6">
+        <div className={pageLayout.cardStack}>
+          <Card>
             <CardHeader>
               <CardTitle>Pilih Lapangan &amp; Tanggal</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
+            <CardContent className={`${pageLayout.filterGridTwoCol}`}>
               <div className="space-y-2">
                 <Label htmlFor="availability-court">{UI_COPY.court}</Label>
                 <Select
@@ -230,7 +231,7 @@ export function OwnerAvailabilityVerification({
               />
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
     </div>
   );

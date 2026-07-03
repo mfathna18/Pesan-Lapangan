@@ -140,6 +140,12 @@ export const landingContent = {
       { label: "Venue Populer", href: "#venue-populer" },
       { label: "Cara Kerja", href: "#cara-kerja" },
     ],
+    support: {
+      title: "Dukungan",
+      description: "Butuh bantuan mengelola venue atau booking?",
+      emailLabel: "support@pesanlapangan.online",
+      emailHref: "mailto:support@pesanlapangan.online",
+    },
     copyright: "Semua hak dilindungi.",
   },
 } as const;

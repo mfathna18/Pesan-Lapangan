@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { landingContent } from "@/config/landing";
 import { layout } from "@/lib/design-system";
+import { landingLayout } from "@/lib/layout-system";
 
 type LandingSearchSectionProps = {
   query: string;
@@ -22,9 +23,9 @@ export function LandingSearchSection({
   return (
     <section
       id="cari-lapangan"
-      className={`${layout.sectionCompact} scroll-mt-20 pt-0`}
+      className={`${landingLayout.sectionDivider} scroll-mt-20 ${layout.sectionCompact} pt-0`}
     >
-      <div className={`${layout.container} flex flex-col gap-10`}>
+      <div className={`${layout.container} flex flex-col gap-12`}>
         <SectionHeader
           eyebrow="Cari & Pesan"
           title="Temukan Lapangan Terdekat"
@@ -32,10 +33,12 @@ export function LandingSearchSection({
         />
 
         <div className="mx-auto w-full max-w-3xl">
-          <div className="surface-elevated flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:gap-2 sm:p-2">
+          <div
+            className={`${landingLayout.searchCard} flex flex-col gap-3 sm:flex-row sm:items-center`}
+          >
             <div className="relative flex flex-1 items-center">
               <Search
-                className="text-muted-foreground pointer-events-none absolute left-3 size-4"
+                className="text-muted-foreground pointer-events-none absolute left-4 size-4"
                 aria-hidden
               />
               <Input
@@ -44,7 +47,7 @@ export function LandingSearchSection({
                 aria-label="Cari lapangan olahraga"
                 value={query}
                 onChange={(event) => onQueryChange(event.target.value)}
-                className="h-12 border-0 bg-transparent pl-10 shadow-none focus-visible:ring-0"
+                className="h-12 border-0 bg-transparent pl-11 shadow-none focus-visible:ring-0"
               />
             </div>
             <Button type="button" size="lg" className="h-12 w-full sm:w-auto">

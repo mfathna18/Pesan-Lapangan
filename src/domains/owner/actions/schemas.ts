@@ -34,6 +34,10 @@ export const updateGorProfileSchema = z.object({
   logoUrl: optionalUrlField,
   coverImageUrl: optionalUrlField,
   timezone: z.enum(GOR_TIMEZONE_VALUES).default(GOR_DEFAULT_TIMEZONE),
+  bankName: z.string().trim().optional().nullable(),
+  bankAccountNumber: z.string().trim().optional().nullable(),
+  bankAccountHolder: z.string().trim().optional().nullable(),
+  qrisImageUrl: optionalUrlField,
 });
 
 export type UpdateGorProfileActionInput = z.infer<

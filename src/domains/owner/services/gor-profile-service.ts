@@ -61,6 +61,10 @@ export class GorProfileService {
       logoUrl: normalizeOptionalString(input.logoUrl),
       coverImageUrl: normalizeOptionalString(input.coverImageUrl),
       timezone: input.timezone,
+      bankName: normalizeOptionalString(input.bankName),
+      bankAccountNumber: normalizeOptionalString(input.bankAccountNumber),
+      bankAccountHolder: normalizeOptionalString(input.bankAccountHolder),
+      qrisImageUrl: normalizeOptionalString(input.qrisImageUrl),
     };
 
     if (!profileData.name) {

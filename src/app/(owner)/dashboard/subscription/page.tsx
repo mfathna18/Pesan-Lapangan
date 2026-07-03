@@ -18,11 +18,7 @@ export default async function DashboardSubscriptionPage() {
       session.user.id,
     );
 
-    return (
-      <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-        <SubscriptionDashboard subscription={subscription} />
-      </div>
-    );
+    return <SubscriptionDashboard subscription={subscription} />;
   } catch (error) {
     if (error instanceof OwnerSubscriptionNotFoundError) {
       notFound();

@@ -11,6 +11,7 @@ import { LandingSearchSection } from "@/components/landing/landing-search-sectio
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { VenueDiscoverySection } from "@/components/landing/venue-discovery-section";
 import { WhyChooseUsSection } from "@/components/landing/why-choose-us-section";
+import { landingLayout } from "@/lib/layout-system";
 import type { PublicVenueListItem } from "@/domains/venue/types";
 
 type LandingPageContentProps = {
@@ -23,17 +24,25 @@ export function LandingPageContent({ venues }: LandingPageContentProps) {
   return (
     <div className="bg-background min-h-screen">
       <LandingHeader />
-      <main>
+      <main className="flex flex-col">
         <HeroSection />
         <LandingSearchSection query={query} onQueryChange={setQuery} />
-        <WhyChooseUsSection />
-        <VenueDiscoverySection
-          venues={venues}
-          query={query}
-          onQueryChange={setQuery}
-        />
-        <HowItWorksSection />
-        <TestimonialsSection />
+        <div className={landingLayout.sectionDivider}>
+          <WhyChooseUsSection />
+        </div>
+        <div className={landingLayout.sectionDivider}>
+          <VenueDiscoverySection
+            venues={venues}
+            query={query}
+            onQueryChange={setQuery}
+          />
+        </div>
+        <div className={landingLayout.sectionDivider}>
+          <HowItWorksSection />
+        </div>
+        <div className={landingLayout.sectionDivider}>
+          <TestimonialsSection />
+        </div>
         <CtaSection />
       </main>
       <LandingFooter />

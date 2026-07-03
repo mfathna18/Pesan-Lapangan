@@ -1,4 +1,4 @@
-import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/types";
+import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/analytics-types";
 import { formatCurrency } from "@/domains/booking/utils/booking-display";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

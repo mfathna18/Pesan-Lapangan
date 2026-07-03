@@ -1,8 +1,20 @@
-import { BOOKING_PENDING_EXPIRY_MINUTES } from "@/domains/booking/constants";
+import {
+  BOOKING_AWAITING_CONFIRMATION_EXPIRY_HOURS,
+  BOOKING_MANUAL_PAYMENT_EXPIRY_HOURS,
+} from "@/domains/booking/constants";
 import type { BookingStatus, Prisma } from "@/generated/prisma/client";
 
 export function resolveBookingExpiresAt(from: Date): Date {
-  return new Date(from.getTime() + BOOKING_PENDING_EXPIRY_MINUTES * 60 * 1000);
+  return new Date(
+    from.getTime() + BOOKING_MANUAL_PAYMENT_EXPIRY_HOURS * 60 * 60 * 1000,
+  );
+}
+
+export function resolveAwaitingConfirmationExpiresAt(from: Date): Date {
+  return new Date(
+    from.getTime() +
+      BOOKING_AWAITING_CONFIRMATION_EXPIRY_HOURS * 60 * 60 * 1000,
+  );
 }
 
 export function isBookingSlotHoldActive(

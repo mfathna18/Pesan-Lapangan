@@ -4,16 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-import { CourtDetailHeader } from "@/components/court/court-detail-header";
 import {
   BookingRangeSummary,
   formatBookingDateLabel,
 } from "@/components/booking/booking-range-summary";
+import { CourtDetailHeader } from "@/components/court/court-detail-header";
+import { CustomerFunnelHeader } from "@/components/customer/customer-funnel-header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -21,8 +21,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { createPublicBookingAction } from "@/domains/booking/actions/create-public-booking.action";
 import type { BookingRangeLineItem } from "@/domains/booking/utils/booking-range";
+import { customerLayout } from "@/lib/customer-layout";
+import { cn } from "@/lib/utils";
 
 type PublicBookingSelection = {
   bookingDate: string;
@@ -53,6 +56,14 @@ type FormState = {
   note: string;
 };
 
+function RequiredMark() {
+  return (
+    <span className="text-destructive ml-1 text-xs font-medium" aria-hidden>
+      *
+    </span>
+  );
+}
+
 export function PublicBookingForm({ context }: PublicBookingFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>({
@@ -61,9 +72,7 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
     note: "",
   });
   const [error, setError] = useState<string | null>(
-    context.slotUnavailable
-      ? "Slot waktu yang dipilih sudah tidak tersedia. Silakan pilih waktu lain."
-      : null,
+    context.slotUnavailable ? CUSTOMER_COPY.booking.slotUnavailable : null,
   );
   const [isPending, startTransition] = useTransition();
 
@@ -111,19 +120,15 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
   return (
     <div className="bg-background min-h-screen">
       <CourtDetailHeader gorSlug={context.gorSlug} gorName={context.gorName} />
-      <main className="px-4 py-8 sm:px-6 lg:py-10">
-        <div className="mx-auto flex max-w-3xl flex-col gap-8">
-          <div className="space-y-2">
-            <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-              Data Booking
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Lengkapi Informasi
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Isi data kontak untuk melanjutkan ke checkout.
-            </p>
-          </div>
+      <main className={customerLayout.page}>
+        <div
+          className={`${customerLayout.container} ${customerLayout.funnelStack}`}
+        >
+          <CustomerFunnelHeader
+            eyebrow={CUSTOMER_COPY.booking.formEyebrow}
+            title={CUSTOMER_COPY.booking.formTitle}
+            description={CUSTOMER_COPY.booking.formDescription}
+          />
 
           <BookingRangeSummary
             courtName={context.courtName}
@@ -132,33 +137,50 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
             endMinute={context.selection.endMinute}
             lineItems={context.selection.lineItems}
             totalPrice={context.selection.price}
+            className="border-border bg-card rounded-[var(--radius-card-lg)] border p-6 shadow-[var(--shadow-sm)]"
           />
 
           <form onSubmit={handleSubmit}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Informasi Pelanggan</CardTitle>
-                <CardDescription>
-                  Nama dan nomor telepon wajib diisi.
-                </CardDescription>
+            <Card className="overflow-hidden">
+              <CardHeader className="space-y-2 border-b pb-6">
+                <CardTitle className="text-xl">
+                  {CUSTOMER_COPY.booking.customerSection}
+                </CardTitle>
+                <p className="text-muted-foreground text-sm">
+                  {CUSTOMER_COPY.booking.customerHint}
+                </p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="customer-name">Nama</Label>
+
+              <CardContent className={`${customerLayout.formSection} pt-6`}>
+                <div className={customerLayout.formField}>
+                  <Label htmlFor="customer-name" className="text-base">
+                    {CUSTOMER_COPY.booking.nameLabel}
+                    <RequiredMark />
+                    <span className="sr-only">
+                      {CUSTOMER_COPY.booking.nameRequired}
+                    </span>
+                  </Label>
                   <Input
                     id="customer-name"
                     value={form.customerName}
                     onChange={(event) =>
                       updateField("customerName", event.target.value)
                     }
-                    placeholder="Nama lengkap"
+                    placeholder="Contoh: Budi Santoso"
+                    className="h-12"
                     required
                     disabled={context.slotUnavailable}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="customer-phone">Nomor Telepon</Label>
+                <div className={customerLayout.formField}>
+                  <Label htmlFor="customer-phone" className="text-base">
+                    {CUSTOMER_COPY.booking.phoneLabel}
+                    <RequiredMark />
+                    <span className="sr-only">
+                      {CUSTOMER_COPY.booking.phoneRequired}
+                    </span>
+                  </Label>
                   <Input
                     id="customer-phone"
                     type="tel"
@@ -167,13 +189,19 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
                       updateField("customerPhone", event.target.value)
                     }
                     placeholder="081234567890"
+                    className="h-12"
                     required
                     disabled={context.slotUnavailable}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="customer-note">Catatan (opsional)</Label>
+                <div className={customerLayout.formField}>
+                  <Label htmlFor="customer-note" className="text-base">
+                    {CUSTOMER_COPY.booking.noteLabel}
+                    <span className="text-muted-foreground ml-2 text-xs font-normal">
+                      ({CUSTOMER_COPY.booking.noteOptional})
+                    </span>
+                  </Label>
                   <Textarea
                     id="customer-note"
                     value={form.note}
@@ -181,6 +209,7 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
                       updateField("note", event.target.value)
                     }
                     placeholder="Permintaan khusus atau catatan tambahan"
+                    className="min-h-28"
                     disabled={context.slotUnavailable}
                   />
                 </div>
@@ -194,24 +223,32 @@ export function PublicBookingForm({ context }: PublicBookingFormProps) {
                         href={bookingHref}
                         className={buttonVariants({ variant: "outline" })}
                       >
-                        Pilih Waktu Lain
+                        {CUSTOMER_COPY.booking.pickOtherTime}
                       </Link>
                     ) : null}
                   </div>
                 ) : null}
               </CardContent>
-              <CardFooter className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+
+              <CardFooter className="flex flex-col gap-3 border-t pt-6 sm:flex-row sm:justify-between">
                 <Link
                   href={bookingHref}
-                  className={buttonVariants({ variant: "outline" })}
+                  className={cn(
+                    buttonVariants({ variant: "outline", size: "lg" }),
+                    "w-full sm:w-auto",
+                  )}
                 >
-                  Kembali
+                  {CUSTOMER_COPY.booking.back}
                 </Link>
                 <Button
                   type="submit"
+                  size="lg"
+                  className="w-full sm:w-auto"
                   disabled={isPending || context.slotUnavailable}
                 >
-                  {isPending ? "Menyimpan..." : "Buat Booking"}
+                  {isPending
+                    ? CUSTOMER_COPY.booking.saving
+                    : CUSTOMER_COPY.booking.continueCta}
                 </Button>
               </CardFooter>
             </Card>

@@ -5,7 +5,7 @@ import { AnalyticsTopCourtsTable } from "@/components/analytics/analytics-top-co
 import { OwnerOnboardingEmptyState } from "@/components/dashboard/owner-onboarding-empty-state";
 import { OwnerRecentBookingsTable } from "@/components/dashboard/owner-recent-bookings-table";
 import { PageHeader } from "@/components/ui/page-header";
-import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/types";
+import type { OwnerAnalyticsDashboardData } from "@/domains/analytics/analytics-types";
 import { formatBookingDate } from "@/domains/booking/utils/booking-display";
 import { layout } from "@/lib/design-system";
 

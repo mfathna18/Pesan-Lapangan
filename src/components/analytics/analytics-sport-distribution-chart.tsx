@@ -1,4 +1,4 @@
-import type { OwnerAnalyticsSportDistributionRow } from "@/domains/analytics/types";
+import type { OwnerAnalyticsSportDistributionRow } from "@/domains/analytics/analytics-types";
 
 import {
   Card,

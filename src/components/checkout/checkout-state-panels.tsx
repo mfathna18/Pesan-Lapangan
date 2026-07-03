@@ -1,14 +1,9 @@
 import Link from "next/link";
+import { Clock } from "lucide-react";
 
+import { EmptyState } from "@/components/ui/empty-state";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { typography } from "@/lib/design-system";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { cn } from "@/lib/utils";
 
 type CheckoutExpiredStateProps = {
@@ -21,28 +16,19 @@ export function CheckoutExpiredState({
   venueName,
 }: CheckoutExpiredStateProps) {
   return (
-    <Card>
-      <CardHeader className="gap-3 text-center">
-        <CardTitle className={typography.h3}>
-          Booking Sudah Kedaluwarsa
-        </CardTitle>
-        <CardDescription className="text-base">
-          Slot ini sudah dilepas dan tidak lagi ditahan untukmu.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-6">
-        <p className="text-muted-foreground max-w-md text-center text-sm leading-relaxed">
-          Waktu pembayaran untuk booking ini sudah habis. Silakan pilih slot
-          baru di {venueName}.
-        </p>
+    <EmptyState
+      icon={Clock}
+      title={CUSTOMER_COPY.checkout.expiredTitle}
+      description={`${CUSTOMER_COPY.checkout.expiredDescription} Silakan pilih slot baru di ${venueName}.`}
+      action={
         <Link
           href={`/gor/${venueSlug}`}
           className={cn(buttonVariants({ size: "lg" }), "w-full sm:w-auto")}
         >
-          Booking Lagi
+          {CUSTOMER_COPY.checkout.expiredAction}
         </Link>
-      </CardContent>
-    </Card>
+      }
+    />
   );
 }
 
@@ -66,7 +52,7 @@ export function CheckoutStatusBanner({
   return (
     <div
       className={cn(
-        "rounded-[var(--radius-card)] border p-5 shadow-[var(--shadow-subtle)]",
+        "rounded-[var(--radius-card-lg)] border p-5 shadow-[var(--shadow-sm)]",
         toneClasses[tone],
       )}
     >

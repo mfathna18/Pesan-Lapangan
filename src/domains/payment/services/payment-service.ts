@@ -449,6 +449,10 @@ export class PaymentService {
     }
   }
 
+  async ensureInvoiceForPaidPaymentPublic(paymentId: string): Promise<void> {
+    await this.ensureInvoiceForPaidPayment(paymentId);
+  }
+
   private async ensureInvoiceForPaidPayment(paymentId: string): Promise<void> {
     try {
       await this.invoiceService.generateInvoice({ paymentId });

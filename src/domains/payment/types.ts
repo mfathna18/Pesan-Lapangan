@@ -31,6 +31,67 @@ export type UpdatePaymentInput = {
   snapToken?: string | null;
   paidAt?: Date | null;
   expiredAt?: Date | null;
+  customerConfirmedAt?: Date | null;
+  approvedByUserId?: string | null;
+  approvedAt?: Date | null;
+  rejectedByUserId?: string | null;
+  rejectedAt?: Date | null;
+  rejectionReason?: string | null;
+};
+
+export type OwnerPaymentInstructions = {
+  venueName: string;
+  bankName: string | null;
+  bankAccountNumber: string | null;
+  bankAccountHolder: string | null;
+  qrisImageUrl: string | null;
+};
+
+export type AwaitingConfirmationPaymentItem = {
+  paymentId: string;
+  bookingId: string;
+  bookingNumber: string;
+  customerName: string;
+  customerPhone: string;
+  courtName: string;
+  bookingDate: string;
+  startMinute: number;
+  endMinute: number;
+  durationMinute: number;
+  amount: number;
+  customerConfirmedAt: string | null;
+  showReminder: boolean;
+};
+
+export type ManualPaymentDetailData = {
+  paymentId: string;
+  bookingId: string;
+  bookingNumber: string;
+  customerName: string;
+  customerPhone: string;
+  customerNote: string | null;
+  venueName: string;
+  courtName: string;
+  bookingDate: string;
+  startMinute: number;
+  endMinute: number;
+  durationMinute: number;
+  amount: number;
+  status: PaymentStatus;
+  method: PaymentMethod;
+  customerConfirmedAt: string | null;
+  rejectionReason: string | null;
+  ownerPaymentInstructions: OwnerPaymentInstructions;
+  showReminder: boolean;
+  auditLogs: {
+    id: string;
+    action: string;
+    actorUserId: string | null;
+    fromStatus: PaymentStatus | null;
+    toStatus: PaymentStatus | null;
+    note: string | null;
+    createdAt: string;
+  }[];
 };
 
 export type FindPaymentsByBookingIdInput = {
@@ -68,6 +129,10 @@ export type PublicCheckoutData = {
   invoiceId: string | null;
   invoiceNumber: string | null;
   latestPaymentStatus: PaymentStatus | null;
+  customerPaymentStatus: string;
+  customerConfirmedAt: string | null;
+  rejectionReason: string | null;
+  ownerPaymentInstructions: OwnerPaymentInstructions;
   paymentSummary: PublicPaymentSummary | null;
 };
 

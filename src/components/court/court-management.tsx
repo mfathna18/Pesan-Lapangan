@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { MapPin, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState, useTransition } from "react";
 
@@ -8,9 +8,12 @@ import {
   CourtFormPanel,
   type CourtFormValues,
 } from "@/components/court/court-form-panel";
+import { TableSkeletonRows } from "@/components/layout/dashboard-page-skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Table,
   TableBody,
@@ -26,6 +29,7 @@ import { setCourtActiveAction } from "@/domains/booking/actions/set-court-active
 import { updateCourtAction } from "@/domains/booking/actions/update-court.action";
 import { UI_COPY } from "@/config/ui-copy";
 import type { OwnerCourtListItem } from "@/domains/booking/types";
+import { layout } from "@/lib/design-system";
 
 type FormMode = "create" | "edit";
 
@@ -144,20 +148,18 @@ export function CourtManagement() {
     isLoadingList || isSavingForm || isDeleting || isTogglingActive;
 
   return (
-    <div className="flex flex-1 flex-col p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Lapangan</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Kelola lapangan venue kamu dari halaman ini.
-          </p>
-        </div>
-
-        <Button onClick={openCreateForm} disabled={isBusy}>
-          <Plus />
-          Tambah Lapangan
-        </Button>
-      </div>
+    <div className={layout.page}>
+      <PageHeader
+        eyebrow="Venue"
+        title="Lapangan"
+        description="Kelola lapangan venue kamu dari halaman ini."
+        actions={
+          <Button onClick={openCreateForm} disabled={isBusy}>
+            <Plus />
+            Tambah Lapangan
+          </Button>
+        }
+      />
 
       {listError ? (
         <p
@@ -183,28 +185,32 @@ export function CourtManagement() {
         </CardHeader>
         <CardContent>
           {isLoadingList && courts.length === 0 ? (
-            <p className="text-muted-foreground text-sm">{UI_COPY.loading}</p>
+            <TableSkeletonRows rows={4} columns={4} />
           ) : courts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-              <p className="text-muted-foreground text-sm">
-                Belum ada lapangan.
-              </p>
-              <p className="text-muted-foreground max-w-md text-sm">
-                Tambahkan lapangan pertama Anda untuk melanjutkan onboarding.
-                Jika profil GOR belum diatur, lengkapi di{" "}
-                <Link
-                  href="/dashboard/settings"
-                  className="text-foreground underline"
-                >
-                  Pengaturan
-                </Link>{" "}
-                terlebih dahulu.
-              </p>
-              <Button onClick={openCreateForm}>
-                <Plus />
-                Tambah Lapangan
-              </Button>
-            </div>
+            <EmptyState
+              variant="plain"
+              icon={MapPin}
+              title="Belum ada lapangan"
+              description="Tambahkan lapangan pertama Anda untuk melanjutkan onboarding venue."
+              tips={
+                <p>
+                  Jika profil GOR belum diatur, lengkapi di{" "}
+                  <Link
+                    href="/dashboard/settings"
+                    className="text-foreground underline"
+                  >
+                    Pengaturan
+                  </Link>{" "}
+                  terlebih dahulu.
+                </p>
+              }
+              action={
+                <Button onClick={openCreateForm}>
+                  <Plus />
+                  Tambah Lapangan
+                </Button>
+              }
+            />
           ) : (
             <Table>
               <TableHeader>

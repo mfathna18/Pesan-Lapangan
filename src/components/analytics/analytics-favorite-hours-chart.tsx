@@ -1,4 +1,4 @@
-import type { OwnerAnalyticsCountPoint } from "@/domains/analytics/types";
+import type { OwnerAnalyticsCountPoint } from "@/domains/analytics/analytics-types";
 
 import {
   Card,

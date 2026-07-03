@@ -20,6 +20,10 @@ const gorProfileSelect = {
   timezone: true,
   currency: true,
   isActive: true,
+  bankName: true,
+  bankAccountNumber: true,
+  bankAccountHolder: true,
+  qrisImageUrl: true,
 } as const;
 
 const publicGorSelect = {
@@ -153,6 +157,10 @@ export class GorRepository {
         logoUrl: data.logoUrl,
         coverImageUrl: data.coverImageUrl,
         timezone: data.timezone,
+        bankName: data.bankName,
+        bankAccountNumber: data.bankAccountNumber,
+        bankAccountHolder: data.bankAccountHolder,
+        qrisImageUrl: data.qrisImageUrl,
       },
       select: gorProfileSelect,
     });

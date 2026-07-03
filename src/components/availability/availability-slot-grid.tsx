@@ -1,5 +1,10 @@
 "use client";
 
+import { CalendarClock } from "lucide-react";
+
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import {
   formatCurrency,
   formatTimeRange,
@@ -24,16 +29,32 @@ export function AvailabilitySlotGrid({
   isSlotInSelectedRange,
   onSelectSlot,
   isLoading = false,
-  emptyMessage = "Tidak ada slot untuk tanggal ini.",
+  emptyMessage = CUSTOMER_COPY.court.noSlotsDescription,
 }: AvailabilitySlotGridProps) {
   if (isLoading) {
     return (
-      <p className="text-muted-foreground text-sm">Memuat ketersediaan...</p>
+      <div
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6"
+        aria-busy="true"
+        aria-live="polite"
+      >
+        <span className="sr-only">Memuat ketersediaan...</span>
+        {Array.from({ length: 8 }).map((_, index) => (
+          <Skeleton key={index} className="h-24 rounded-xl" />
+        ))}
+      </div>
     );
   }
 
   if (slots.length === 0) {
-    return <p className="text-muted-foreground text-sm">{emptyMessage}</p>;
+    return (
+      <EmptyState
+        variant="plain"
+        icon={CalendarClock}
+        title={CUSTOMER_COPY.court.noSlotsTitle}
+        description={emptyMessage}
+      />
+    );
   }
 
   const sortedSlots = [...slots].sort(
@@ -60,7 +81,7 @@ export function AvailabilitySlotGrid({
               }
             }}
             className={cn(
-              "rounded-xl border p-4 text-left transition-colors",
+              "rounded-xl border p-4 text-left transition-colors duration-150 motion-reduce:transition-none",
               slot.available
                 ? onSelectSlot
                   ? "hover:border-primary/60 hover:bg-muted/40 cursor-pointer"

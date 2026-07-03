@@ -6,6 +6,7 @@ import {
   formatTimeRange,
 } from "@/domains/booking/utils/booking-display";
 import type { BookingRangeLineItem } from "@/domains/booking/utils/booking-range";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { cn } from "@/lib/utils";
 
 type BookingRangeSummaryProps = {
@@ -57,7 +58,7 @@ export function BookingRangeSummary({
 
       {!hasCompleteRange ? (
         <p className="text-muted-foreground mt-4 text-sm">
-          Pilih slot waktu untuk melihat ringkasan booking.
+          {CUSTOMER_COPY.booking.rangeEmpty}
         </p>
       ) : null}
 

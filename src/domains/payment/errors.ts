@@ -44,3 +44,17 @@ export class PaymentInvalidSignatureError extends Error {
     this.name = "PaymentInvalidSignatureError";
   }
 }
+
+export class ManualPaymentAccessDeniedError extends Error {
+  constructor(message = "Access denied for manual payment action.") {
+    super(message);
+    this.name = "ManualPaymentAccessDeniedError";
+  }
+}
+
+export class ManualPaymentNotFoundError extends Error {
+  constructor(message = "Manual payment not found.") {
+    super(message);
+    this.name = "ManualPaymentNotFoundError";
+  }
+}

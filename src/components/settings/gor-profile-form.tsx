@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Select,
   SelectContent,
@@ -21,6 +22,7 @@ import {
 } from "@/domains/owner/constants";
 import { updateGorProfileAction } from "@/domains/owner/actions/update-gor-profile.action";
 import type { GorProfileData } from "@/domains/owner/types";
+import { pageLayout } from "@/lib/layout-system";
 
 type GorProfileFormState = {
   name: string;
@@ -33,6 +35,10 @@ type GorProfileFormState = {
   logoUrl: string;
   coverImageUrl: string;
   timezone: string;
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountHolder: string;
+  qrisImageUrl: string;
 };
 
 type GorProfileFormProps = {
@@ -51,6 +57,10 @@ function createFormState(profile: GorProfileData | null): GorProfileFormState {
     logoUrl: profile?.logoUrl ?? "",
     coverImageUrl: profile?.coverImageUrl ?? "",
     timezone: profile?.timezone ?? GOR_DEFAULT_TIMEZONE,
+    bankName: profile?.bankName ?? "",
+    bankAccountNumber: profile?.bankAccountNumber ?? "",
+    bankAccountHolder: profile?.bankAccountHolder ?? "",
+    qrisImageUrl: profile?.qrisImageUrl ?? "",
   };
 }
 
@@ -88,6 +98,10 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
         logoUrl: form.logoUrl || null,
         coverImageUrl: form.coverImageUrl || null,
         timezone: form.timezone,
+        bankName: form.bankName || null,
+        bankAccountNumber: form.bankAccountNumber || null,
+        bankAccountHolder: form.bankAccountHolder || null,
+        qrisImageUrl: form.qrisImageUrl || null,
       });
 
       if (!response.success) {
@@ -102,17 +116,12 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-6">
-      <div className="space-y-1">
-        <p className="text-muted-foreground text-sm font-medium tracking-widest uppercase">
-          Pengaturan
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Profil GOR</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
-          Kelola informasi venue yang akan ditampilkan saat pelanggan melakukan
-          booking.
-        </p>
-      </div>
+    <form onSubmit={handleSubmit} className={pageLayout.cardStack}>
+      <PageHeader
+        eyebrow="Bisnis"
+        title="Profil GOR"
+        description="Kelola informasi venue yang akan ditampilkan saat pelanggan melakukan booking."
+      />
 
       <Card>
         <CardHeader>
@@ -273,6 +282,62 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
                 className="border-border mt-2 h-28 w-full rounded-lg border object-cover"
               />
             ) : null}
+          </div>
+
+          <div className="space-y-4 sm:col-span-2">
+            <div>
+              <h3 className="text-base font-semibold">Informasi Pembayaran</h3>
+              <p className="text-muted-foreground text-sm">
+                Ditampilkan ke pelanggan saat checkout transfer manual.
+              </p>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="gor-bank-name">Nama Bank</Label>
+                <Input
+                  id="gor-bank-name"
+                  value={form.bankName}
+                  onChange={(event) =>
+                    updateField("bankName", event.target.value)
+                  }
+                  placeholder="BCA"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gor-bank-number">Nomor Rekening</Label>
+                <Input
+                  id="gor-bank-number"
+                  value={form.bankAccountNumber}
+                  onChange={(event) =>
+                    updateField("bankAccountNumber", event.target.value)
+                  }
+                  placeholder="1234567890"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="gor-bank-holder">Atas Nama</Label>
+                <Input
+                  id="gor-bank-holder"
+                  value={form.bankAccountHolder}
+                  onChange={(event) =>
+                    updateField("bankAccountHolder", event.target.value)
+                  }
+                  placeholder="GOR ABC"
+                />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="gor-qris">URL QRIS</Label>
+                <Input
+                  id="gor-qris"
+                  type="url"
+                  value={form.qrisImageUrl}
+                  onChange={(event) =>
+                    updateField("qrisImageUrl", event.target.value)
+                  }
+                  placeholder="https://example.com/qris.png"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2 sm:col-span-2">

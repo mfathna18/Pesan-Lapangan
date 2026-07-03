@@ -16,7 +16,7 @@ export function LandingHeader() {
   return (
     <header className={layout.header}>
       <div className={layout.headerInner}>
-        <Link href="/" className="flex shrink-0 items-center gap-3">
+        <Link href="/" className="flex shrink-0 items-center gap-3.5">
           <Image
             src="/icon.png"
             alt=""
@@ -32,7 +32,7 @@ export function LandingHeader() {
         </Link>
 
         <nav
-          className="hidden items-center gap-8 md:flex"
+          className="hidden items-center gap-10 md:flex"
           aria-label="Navigasi utama"
         >
           {navLinks.map((link) => (

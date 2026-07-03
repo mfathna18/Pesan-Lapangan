@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, MapPin } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Card,
   CardContent,
@@ -10,6 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
+import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
 import type { PublicVenueCourt } from "@/domains/venue/types";
 
@@ -23,54 +26,70 @@ export function VenueCourtsSection({
   courts,
 }: VenueCourtsSectionProps) {
   return (
-    <section className="bg-muted/40 px-4 py-12 sm:px-6">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+    <section
+      id="daftar-lapangan"
+      className="bg-muted/30 scroll-mt-20 px-4 py-14 sm:px-6 sm:py-16"
+    >
+      <div className={`${customerLayout.containerWide} space-y-8`}>
+        <div className="space-y-3">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Daftar Lapangan
           </h2>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Semua lapangan di venue ini beserta status ketersediaannya.
+          <p className="text-muted-foreground max-w-2xl text-base">
+            Pilih lapangan yang ingin Anda booking. Setiap lapangan menampilkan
+            jenis olahraga dan status ketersediaannya.
           </p>
         </div>
 
         {courts.length === 0 ? (
-          <Card>
-            <CardContent className="text-muted-foreground pt-6 text-sm">
-              Belum ada lapangan di venue ini.
-            </CardContent>
-          </Card>
+          <EmptyState
+            icon={MapPin}
+            title={CUSTOMER_COPY.venue.noCourtsTitle}
+            description={CUSTOMER_COPY.venue.noCourtsDescription}
+          />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {courts.map((court) => (
               <Card
                 key={court.id}
-                className={cn("flex flex-col", !court.isActive && "opacity-75")}
+                className={cn("flex flex-col", !court.isActive && "opacity-80")}
               >
-                <CardHeader className="space-y-3">
+                <CardHeader className="space-y-4">
                   <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-lg">{court.name}</CardTitle>
+                    <CardTitle className="text-xl">{court.name}</CardTitle>
                     <Badge variant={court.isActive ? "confirmed" : "expired"}>
-                      {court.isActive ? "Aktif" : "Tidak Aktif"}
+                      {court.isActive
+                        ? CUSTOMER_COPY.venue.courtAvailable
+                        : CUSTOMER_COPY.venue.courtUnavailable}
                     </Badge>
                   </div>
-                  <CardDescription>{court.sportLabel}</CardDescription>
+                  <CardDescription className="text-base">
+                    {court.sportLabel}
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="mt-auto pt-0">
+                <CardContent className="mt-auto space-y-3 pt-0">
                   {court.isActive ? (
-                    <Link
-                      href={`/gor/${gorSlug}/court/${court.id}/booking`}
-                      className={cn(
-                        buttonVariants({ variant: "outline" }),
-                        "w-full",
-                      )}
-                    >
-                      <CalendarDays className="size-4" />
-                      Booking Sekarang
-                    </Link>
+                    <>
+                      <Link
+                        href={`/gor/${gorSlug}/court/${court.id}`}
+                        className={cn(
+                          buttonVariants({ variant: "outline" }),
+                          "w-full",
+                        )}
+                      >
+                        Lihat Detail
+                      </Link>
+                      <Link
+                        href={`/gor/${gorSlug}/court/${court.id}/booking`}
+                        className={cn(buttonVariants({ size: "lg" }), "w-full")}
+                      >
+                        <CalendarDays className="size-4" />
+                        {CUSTOMER_COPY.venue.bookCta}
+                      </Link>
+                    </>
                   ) : (
-                    <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-3 text-center text-sm">
-                      Lapangan ini tidak tersedia untuk booking.
+                    <p className="text-muted-foreground rounded-xl border border-dashed px-4 py-4 text-center text-sm">
+                      {CUSTOMER_COPY.venue.courtInactiveNote}
                     </p>
                   )}
                 </CardContent>

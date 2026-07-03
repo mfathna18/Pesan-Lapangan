@@ -78,6 +78,10 @@ export type PublicCheckoutBookingRecord = {
     gor: {
       slug: string;
       name: string;
+      bankName: string | null;
+      bankAccountNumber: string | null;
+      bankAccountHolder: string | null;
+      qrisImageUrl: string | null;
     };
   };
 };
@@ -163,6 +167,10 @@ export class BookingRepository {
               select: {
                 slug: true,
                 name: true,
+                bankName: true,
+                bankAccountNumber: true,
+                bankAccountHolder: true,
+                qrisImageUrl: true,
               },
             },
           },
@@ -335,6 +343,13 @@ export class BookingRepository {
         status: "PENDING",
         expiresAt: {
           lt: referenceDate,
+        },
+        NOT: {
+          payments: {
+            some: {
+              status: "AWAITING_CONFIRMATION",
+            },
+          },
         },
       },
       data: {

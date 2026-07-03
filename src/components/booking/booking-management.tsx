@@ -7,8 +7,11 @@ import {
   BookingStatusBadge,
   PaymentStatusBadge,
 } from "@/components/booking/booking-status-badges";
+import { ExportDropdown } from "@/components/export/export-dropdown";
+import { TableSkeletonRows } from "@/components/layout/dashboard-page-skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -45,6 +48,8 @@ import {
 } from "@/domains/booking/utils/booking-display";
 import { UI_COPY } from "@/config/ui-copy";
 import { layout } from "@/lib/design-system";
+import { pageLayout } from "@/lib/layout-system";
+import { CalendarDays } from "lucide-react";
 
 type BookingFiltersState = {
   bookingDate: string;
@@ -158,7 +163,36 @@ export function BookingManagement() {
   return (
     <>
       <div className={layout.page}>
-        <PageHeader eyebrow="Manajemen" title="Booking" />
+        <PageHeader
+          eyebrow="Manajemen"
+          title="Booking"
+          description="Kelola dan pantau seluruh booking venue Anda."
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <ExportDropdown
+                endpoint="/api/owner/export/bookings"
+                params={{
+                  sort: filters.sort,
+                  courtId: filters.courtId,
+                  status: filters.status,
+                  bookingDate: filters.bookingDate || undefined,
+                  bookingNumberSearch: filters.bookingNumberSearch || undefined,
+                }}
+              />
+              <ExportDropdown
+                label="Export Pelanggan"
+                endpoint="/api/owner/export/customers"
+                params={{
+                  sort: filters.sort,
+                  courtId: filters.courtId,
+                  status: filters.status,
+                  bookingDate: filters.bookingDate || undefined,
+                  bookingNumberSearch: filters.bookingNumberSearch || undefined,
+                }}
+              />
+            </div>
+          }
+        />
 
         <Card>
           <CardHeader>
@@ -170,7 +204,7 @@ export function BookingManagement() {
                 {filterOptionsError}
               </p>
             ) : null}
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+            <div className={pageLayout.filterGrid}>
               <div className="space-y-2">
                 <Label htmlFor="booking-date">Tanggal</Label>
                 <Input
@@ -289,8 +323,8 @@ export function BookingManagement() {
               <TableBody>
                 {isLoadingList && !listResult ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-muted-foreground">
-                      Memuat daftar booking...
+                    <TableCell colSpan={8} className="p-6">
+                      <TableSkeletonRows rows={5} columns={8} />
                     </TableCell>
                   </TableRow>
                 ) : null}
@@ -299,8 +333,13 @@ export function BookingManagement() {
                 listResult &&
                 listResult.items.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-muted-foreground">
-                      Tidak ada booking ditemukan.
+                    <TableCell colSpan={8} className="p-0">
+                      <EmptyState
+                        variant="plain"
+                        icon={CalendarDays}
+                        title="Belum ada booking"
+                        description="Booking dari pelanggan akan muncul di sini. Pastikan lapangan, jam operasional, dan harga sudah diatur."
+                      />
                     </TableCell>
                   </TableRow>
                 ) : null}

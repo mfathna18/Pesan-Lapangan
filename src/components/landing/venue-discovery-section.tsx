@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin } from "lucide-react";
+import { MapPin, Search } from "lucide-react";
 import { useMemo } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -13,7 +13,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SectionHeader } from "@/components/ui/section-header";
+import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { landingContent } from "@/config/landing";
 import type { PublicVenueListItem } from "@/domains/venue/types";
 import { layout } from "@/lib/design-system";
@@ -54,45 +56,39 @@ export function VenueDiscoverySection({
         />
 
         {venues.length === 0 ? (
-          <Card className="mx-auto w-full max-w-lg">
-            <CardHeader className="text-center">
-              <CardTitle>Belum Ada Venue Tersedia</CardTitle>
-              <CardDescription>
-                Saat ini belum ada gor aktif yang bisa dipesan. Coba kembali
-                lagi nanti atau daftarkan gor kamu di PesanLapangan.
-              </CardDescription>
-            </CardHeader>
-          </Card>
+          <EmptyState
+            icon={MapPin}
+            title={CUSTOMER_COPY.discovery.noVenuesTitle}
+            description={CUSTOMER_COPY.discovery.noVenuesDescription}
+          />
         ) : filteredVenues.length === 0 ? (
-          <Card className="mx-auto w-full max-w-lg">
-            <CardHeader className="text-center">
-              <CardTitle>Venue Tidak Ditemukan</CardTitle>
-              <CardDescription>
-                Tidak ada gor dengan nama &ldquo;{query.trim()}&rdquo;. Coba
-                kata kunci lain.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-center pb-6">
+          <EmptyState
+            icon={Search}
+            title={CUSTOMER_COPY.discovery.noSearchTitle}
+            description={CUSTOMER_COPY.discovery.noSearchDescription(
+              query.trim(),
+            )}
+            action={
               <Button
                 type="button"
-                variant="outline"
+                variant="default"
                 onClick={() => onQueryChange("")}
               >
-                Tampilkan Semua Venue
+                {CUSTOMER_COPY.discovery.clearSearch}
               </Button>
-            </CardContent>
-          </Card>
+            }
+          />
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredVenues.map((venue) => (
               <Card
                 key={venue.id}
-                className="group flex flex-col overflow-hidden transition-shadow duration-150 hover:shadow-[var(--shadow-elevated)]"
+                className="group flex flex-col overflow-hidden transition-shadow duration-150 hover:shadow-[var(--shadow-elevated)] motion-reduce:transition-none"
               >
                 <div className="bg-muted relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden">
                   {venue.coverImageUrl ? (
                     <div
-                      className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02]"
+                      className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
                       style={{ backgroundImage: `url(${venue.coverImageUrl})` }}
                       role="img"
                       aria-label={venue.name}
@@ -129,7 +125,7 @@ export function VenueDiscoverySection({
                     href={`/gor/${venue.slug}`}
                     className={cn(buttonVariants({ size: "lg" }), "w-full")}
                   >
-                    Lihat Venue
+                    {CUSTOMER_COPY.discovery.viewVenue}
                   </Link>
                 </CardContent>
               </Card>
