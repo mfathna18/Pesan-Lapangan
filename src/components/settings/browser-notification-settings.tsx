@@ -7,9 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { updateBrowserNotificationSettingsAction } from "@/domains/push/push-actions";
 import {
-  getBrowserNotificationPermission,
-  requestBrowserNotificationPermission,
-} from "@/domains/push/push-permission";
+  BROWSER_NOTIFICATION_DENIED_MESSAGE,
+  completeBrowserNotificationActivation,
+  isBrowserNotificationActive,
+  requestPermissionFromUserClick,
+} from "@/domains/push/browser-notification-activation";
+import { getBrowserNotificationPermission } from "@/domains/push/push-permission";
 import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 import {
   PUSH_PERMISSION_STATE,
@@ -94,11 +97,13 @@ export function BrowserNotificationSettings({
   const [permission, setPermission] = useState<PushPermissionState>(
     PUSH_PERMISSION_STATE.DEFAULT,
   );
+  const [isActivating, setIsActivating] = useState(false);
 
   useEffect(() => {
     setPermission(getBrowserNotificationPermission());
   }, []);
 
+  const isActive = isBrowserNotificationActive(permission);
   const permissionBlocked = permission === PUSH_PERMISSION_STATE.DENIED;
 
   function updateSetting(key: ToggleKey, value: boolean) {
@@ -108,9 +113,31 @@ export function BrowserNotificationSettings({
     }));
   }
 
-  async function handleEnablePermission() {
-    const nextPermission = await requestBrowserNotificationPermission();
-    setPermission(nextPermission);
+  function handleActivateClick() {
+    if (permission === PUSH_PERMISSION_STATE.DENIED) {
+      return;
+    }
+
+    setIsActivating(true);
+
+    const permissionPromise = requestPermissionFromUserClick();
+
+    void permissionPromise.then(async (nextPermission) => {
+      setPermission(nextPermission);
+
+      if (nextPermission === PUSH_PERMISSION_STATE.GRANTED) {
+        const result = await completeBrowserNotificationActivation(
+          nextPermission,
+          settings,
+        );
+
+        if (result.settings) {
+          setSettings(result.settings);
+        }
+      }
+
+      setIsActivating(false);
+    });
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -138,26 +165,26 @@ export function BrowserNotificationSettings({
           <CardTitle>Browser Notification</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="rounded-lg border p-4">
+            <p className="text-sm font-medium">Current Status</p>
+            <p className="mt-2 text-sm">
+              {isActive ? "🟢 Aktif" : "🔴 Belum Aktif"}
+            </p>
+          </div>
+
           {permissionBlocked ? (
             <p className="text-muted-foreground text-sm">
-              Notifikasi browser diblokir di perangkat ini. Aktifkan melalui
-              pengaturan browser, lalu muat ulang halaman. Notification Center
-              tetap tersedia sebagai fallback.
+              {BROWSER_NOTIFICATION_DENIED_MESSAGE}
             </p>
-          ) : permission !== PUSH_PERMISSION_STATE.GRANTED ? (
-            <div className="flex flex-col gap-3 rounded-lg border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-muted-foreground text-sm">
-                Izin notifikasi browser belum aktif.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void handleEnablePermission()}
-              >
-                Aktifkan Notifikasi
-              </Button>
-            </div>
+          ) : !isActive ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleActivateClick}
+              disabled={isActivating}
+            >
+              {isActivating ? "Memproses..." : "Aktifkan Sekarang"}
+            </Button>
           ) : null}
 
           <ToggleRow
@@ -165,6 +192,7 @@ export function BrowserNotificationSettings({
             label="Aktifkan Browser Notification"
             description="Tampilkan notifikasi langsung di browser saat ada event baru."
             checked={settings.enabled}
+            disabled={!isActive}
             onChange={(checked) => updateSetting("enabled", checked)}
           />
 
@@ -176,7 +204,7 @@ export function BrowserNotificationSettings({
                 label={item.label}
                 description={item.description}
                 checked={settings[item.key]}
-                disabled={!settings.enabled || permissionBlocked}
+                disabled={!settings.enabled || !isActive}
                 onChange={(checked) => updateSetting(item.key, checked)}
               />
             ))}
