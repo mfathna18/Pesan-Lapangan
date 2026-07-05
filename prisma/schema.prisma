@@ -81,14 +81,16 @@ model Verification {
 // Owner domain profile linked to Better Auth user (1:1).
 
 model Owner {
-  id            String               @id @default(cuid())
-  userId        String               @unique
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gor           Gor?
-  subscription  Subscription?
-  notifications OwnerNotification[]
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  id                 String                  @id @default(cuid())
+  userId             String                  @unique
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gor                Gor?
+  subscription       Subscription?
+  notifications      OwnerNotification[]
+  whatsappSettings   OwnerWhatsAppSettings?
+  whatsappMessageLogs WhatsAppMessageLog[]
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
 
   @@map("owner")
 }
@@ -444,4 +446,66 @@ model OwnerNotification {
   @@index([ownerId, createdAt(sort: Desc)])
   @@index([ownerId, readAt])
   @@map("owner_notification")
+}
+
+enum WhatsAppMessageStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRYING
+}
+
+enum WhatsAppRecipientType {
+  OWNER
+  CUSTOMER
+}
+
+enum WhatsAppMessageType {
+  OWNER_NEW_BOOKING
+  OWNER_PAYMENT_AWAITING
+  OWNER_BOOKING_CANCELLED
+  CUSTOMER_BOOKING_CREATED
+  CUSTOMER_PAYMENT_APPROVED
+  CUSTOMER_PAYMENT_REJECTED
+  CUSTOMER_BOOKING_REMINDER
+  OWNER_SUBSCRIPTION_ACTIVATED
+}
+
+model OwnerWhatsAppSettings {
+  id                 String   @id @default(cuid())
+  ownerId            String   @unique
+  owner              Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  enabled            Boolean  @default(true)
+  notifyBooking      Boolean  @default(true)
+  notifyPayment      Boolean  @default(true)
+  notifyReminder     Boolean  @default(true)
+  notifySubscription Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("owner_whatsapp_settings")
+}
+
+model WhatsAppMessageLog {
+  id               String                @id @default(cuid())
+  ownerId          String?
+  owner            Owner?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  bookingId        String?
+  recipientPhone   String
+  recipientType    WhatsAppRecipientType
+  messageType      WhatsAppMessageType
+  messageBody      String                @db.Text
+  status           WhatsAppMessageStatus @default(PENDING)
+  attemptCount     Int                   @default(0)
+  providerName     String?
+  providerResponse String?               @db.Text
+  errorMessage     String?
+  sentAt           DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([bookingId, messageType, status])
+  @@index([ownerId, createdAt(sort: Desc)])
+  @@index([status, attemptCount])
+  @@map("whatsapp_message_log")
 }

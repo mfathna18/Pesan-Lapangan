@@ -38,6 +38,16 @@ export const env = createEnv({
       .default("false")
       .transform((value) => value === "true"),
     CRON_SECRET: z.string().min(16),
+    WHATSAPP_ENABLED: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((value) => value === "true"),
+    WHATSAPP_PROVIDER: z
+      .enum(["fonnte", "wablas", "wa-gateway", "meta", "noop"])
+      .default("noop"),
+    WHATSAPP_API_TOKEN: z.string().min(1).optional(),
+    WHATSAPP_API_URL: z.string().url().optional(),
+    WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: publicAppUrl("NEXT_PUBLIC_APP_URL"),
@@ -51,6 +61,11 @@ export const env = createEnv({
     MIDTRANS_CLIENT_KEY: process.env.MIDTRANS_CLIENT_KEY,
     MIDTRANS_IS_PRODUCTION: process.env.MIDTRANS_IS_PRODUCTION,
     CRON_SECRET: process.env.CRON_SECRET,
+    WHATSAPP_ENABLED: process.env.WHATSAPP_ENABLED,
+    WHATSAPP_PROVIDER: process.env.WHATSAPP_PROVIDER,
+    WHATSAPP_API_TOKEN: process.env.WHATSAPP_API_TOKEN,
+    WHATSAPP_API_URL: process.env.WHATSAPP_API_URL,
+    WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,

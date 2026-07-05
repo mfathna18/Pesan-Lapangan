@@ -13,6 +13,10 @@ import {
   PaymentValidationError,
 } from "@/domains/payment/errors";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import {
+  dispatchOwnerBookingCancelled,
+  dispatchOwnerPaymentAwaiting,
+} from "@/domains/whatsapp/utils/whatsapp-dispatch";
 
 export async function submitManualPaymentConfirmationAction(input: unknown) {
   const parsed = createPublicPaymentSchema.safeParse(input);
@@ -27,6 +31,7 @@ export async function submitManualPaymentConfirmationAction(input: unknown) {
     await getNotificationEmitter().emitPaymentAwaitingConfirmation(
       parsed.data.bookingId,
     );
+    await dispatchOwnerPaymentAwaiting(parsed.data.bookingId);
 
     revalidatePath(
       `/gor/${parsed.data.gorSlug}/checkout/${parsed.data.bookingId}`,
@@ -57,6 +62,7 @@ export async function cancelManualBookingAction(input: unknown) {
     await getManualPaymentService().cancelBookingByCustomer(parsed.data);
 
     await getNotificationEmitter().emitBookingCancelled(parsed.data.bookingId);
+    await dispatchOwnerBookingCancelled(parsed.data.bookingId);
 
     revalidatePath(
       `/gor/${parsed.data.gorSlug}/checkout/${parsed.data.bookingId}`,

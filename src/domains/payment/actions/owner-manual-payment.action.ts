@@ -13,6 +13,10 @@ import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import { prisma } from "@/lib/db/prisma";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import {
+  dispatchCustomerPaymentApproved,
+  dispatchCustomerPaymentRejected,
+} from "@/domains/whatsapp/utils/whatsapp-dispatch";
 
 async function revalidatePublicCheckout(bookingId: string) {
   const booking = await prisma.booking.findUnique({
@@ -45,6 +49,7 @@ export async function approveManualPaymentAction(bookingId: string) {
     });
 
     await getNotificationEmitter().emitPaymentApproved(bookingId);
+    await dispatchCustomerPaymentApproved(bookingId);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");
@@ -84,6 +89,7 @@ export async function rejectManualPaymentAction(input: {
     });
 
     await getNotificationEmitter().emitPaymentRejected(input.bookingId);
+    await dispatchCustomerPaymentRejected(input.bookingId);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");

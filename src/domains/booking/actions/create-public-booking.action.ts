@@ -19,6 +19,10 @@ import {
 import type { BookingWithContact } from "@/domains/booking/repositories/booking-repository";
 import { parseVenueDateInput } from "@/domains/booking/utils/venue-date";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import {
+  dispatchCustomerBookingCreated,
+  dispatchOwnerNewBooking,
+} from "@/domains/whatsapp/utils/whatsapp-dispatch";
 import { SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE } from "@/domains/subscription/constants";
 import {
   createKnownActionError,
@@ -89,6 +93,8 @@ export async function createPublicBookingAction(
     });
 
     await getNotificationEmitter().emitBookingCreated(booking.id);
+    await dispatchOwnerNewBooking(booking.id);
+    await dispatchCustomerBookingCreated(booking.id);
 
     return actionSuccess(booking);
   } catch (error) {

@@ -22,6 +22,7 @@ import {
   handleServerActionError,
 } from "@/lib/server/actions";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import { dispatchOwnerNewBooking } from "@/domains/whatsapp/utils/whatsapp-dispatch";
 
 export async function createBookingAction(
   input: unknown,
@@ -51,6 +52,7 @@ export async function createBookingAction(
     const booking = await getBookingService().create(parsed.data);
 
     await getNotificationEmitter().emitBookingCreated(booking.id);
+    await dispatchOwnerNewBooking(booking.id);
 
     return actionSuccess(booking);
   } catch (error) {

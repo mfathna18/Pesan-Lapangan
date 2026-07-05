@@ -8,6 +8,7 @@ import {
 } from "@/domains/payment";
 import type { MidtransCallbackPayload } from "@/domains/payment/types";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import { dispatchOwnerSubscriptionActivated } from "@/domains/whatsapp/utils/whatsapp-dispatch";
 import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
 import { SUBSCRIPTION_PLAN_LABELS } from "@/domains/subscription/constants";
 import {
@@ -73,9 +74,16 @@ export async function POST(request: Request) {
           });
 
           if (subscription) {
+            const planLabel =
+              SUBSCRIPTION_PLAN_LABELS[updatedPayment.targetPlan];
+
             await getNotificationEmitter().emitSubscriptionActivated(
               subscription.ownerId,
-              SUBSCRIPTION_PLAN_LABELS[updatedPayment.targetPlan],
+              planLabel,
+            );
+            await dispatchOwnerSubscriptionActivated(
+              subscription.ownerId,
+              planLabel,
             );
           }
         }

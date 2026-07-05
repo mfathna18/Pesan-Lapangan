@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getBookingExpirationService } from "@/domains/booking/actions/get-booking-expiration-service";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
+import { dispatchOwnerBookingCancelled } from "@/domains/whatsapp/utils/whatsapp-dispatch";
 import { env } from "@/config/env";
 import { logError, logInfo } from "@/lib/server/logger";
 
@@ -23,6 +24,7 @@ export async function GET(request: Request) {
 
     for (const bookingId of result.bookingIds) {
       await getNotificationEmitter().emitBookingCancelled(bookingId);
+      await dispatchOwnerBookingCancelled(bookingId);
     }
 
     logInfo("Expired pending bookings cleanup completed", result);
