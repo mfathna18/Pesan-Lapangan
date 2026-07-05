@@ -1,6 +1,7 @@
 "use server";
 
 import { PaymentGatewayError } from "@/domains/payment/errors";
+import { SUBSCRIPTION_PAYMENT_UNAVAILABLE_MESSAGE } from "@/domains/subscription/constants";
 import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
 import {
   createSubscriptionPaymentSchema,
@@ -37,6 +38,7 @@ export async function createSubscriptionPaymentAction(
     const payment = await getSubscriptionService().createSubscriptionPayment({
       userId: session.user.id,
       billingAction: parsed.data.billingAction,
+      targetPlan: parsed.data.targetPlan,
     });
 
     return actionSuccess(payment);
@@ -51,7 +53,7 @@ export async function createSubscriptionPaymentAction(
         createKnownActionError(SubscriptionBillingValidationError),
         createKnownActionError(
           PaymentGatewayError,
-          "Gagal membuat pembayaran. Silakan coba lagi dalam beberapa saat.",
+          SUBSCRIPTION_PAYMENT_UNAVAILABLE_MESSAGE,
         ),
       ],
     });

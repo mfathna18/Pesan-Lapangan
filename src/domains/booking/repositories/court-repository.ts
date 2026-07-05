@@ -80,6 +80,16 @@ export class CourtRepository {
     });
   }
 
+  async countByOwnerId(ownerId: string): Promise<number> {
+    return this.prisma.court.count({
+      where: {
+        gor: {
+          ownerId,
+        },
+      },
+    });
+  }
+
   async isCourtOwnedByOwner(
     courtId: string,
     ownerId: string,

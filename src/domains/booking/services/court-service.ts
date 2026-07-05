@@ -19,6 +19,11 @@ import {
   mapPublicCourtDetail,
 } from "@/domains/booking/utils/court-display";
 import { GorRepository } from "@/domains/owner/repositories/gor-repository";
+import type { SubscriptionRepository } from "@/domains/subscription/repositories/subscription-repository";
+import {
+  canCreateCourt,
+  SUBSCRIPTION_COURT_LIMIT_REACHED_MESSAGE,
+} from "@/domains/subscription/utils/subscription-plan-limits";
 import type { SportType } from "@/generated/prisma/client";
 
 type CourtServiceDependencies = {
@@ -26,6 +31,7 @@ type CourtServiceDependencies = {
   operatingHoursRepository: ReturnType<typeof createOperatingHoursRepository>;
   priceRuleRepository: PriceRuleRepository;
   gorRepository: GorRepository;
+  subscriptionRepository: SubscriptionRepository;
 };
 
 export class CourtService {
@@ -35,17 +41,20 @@ export class CourtService {
   >;
   private readonly priceRuleRepository: PriceRuleRepository;
   private readonly gorRepository: GorRepository;
+  private readonly subscriptionRepository: SubscriptionRepository;
 
   constructor({
     courtRepository,
     operatingHoursRepository,
     priceRuleRepository,
     gorRepository,
+    subscriptionRepository,
   }: CourtServiceDependencies) {
     this.courtRepository = courtRepository;
     this.operatingHoursRepository = operatingHoursRepository;
     this.priceRuleRepository = priceRuleRepository;
     this.gorRepository = gorRepository;
+    this.subscriptionRepository = subscriptionRepository;
   }
 
   async getPublicCourtsForGor(gorId: string): Promise<PublicCourtRecord[]> {
@@ -96,6 +105,8 @@ export class CourtService {
     if (!name) {
       throw new CourtValidationError("Court name is required.");
     }
+
+    await this.assertCanCreateCourt(ownerId);
 
     const displayOrder =
       (await this.courtRepository.getMaxDisplayOrderForGor(gorId)) + 1;
@@ -157,6 +168,27 @@ export class CourtService {
 
     if (!deleted) {
       throw new CourtNotFoundError();
+    }
+  }
+
+  private async assertCanCreateCourt(ownerId: string): Promise<void> {
+    let subscription = await this.subscriptionRepository.findByOwnerId(ownerId);
+
+    if (!subscription) {
+      subscription =
+        await this.subscriptionRepository.createDefaultForOwner(ownerId);
+    }
+
+    const currentCourtCount =
+      await this.courtRepository.countByOwnerId(ownerId);
+
+    if (
+      !canCreateCourt({
+        plan: subscription.plan,
+        currentCourtCount,
+      })
+    ) {
+      throw new CourtValidationError(SUBSCRIPTION_COURT_LIMIT_REACHED_MESSAGE);
     }
   }
 

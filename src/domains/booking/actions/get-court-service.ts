@@ -3,6 +3,7 @@ import { createCourtRepository } from "@/domains/booking/repositories/court-repo
 import { createPriceRuleRepository } from "@/domains/booking/repositories/price-rule-repository";
 import { createCourtService } from "@/domains/booking/services/court-service";
 import { createGorRepository } from "@/domains/owner/repositories/gor-repository";
+import { createSubscriptionRepository } from "@/domains/subscription/repositories/subscription-repository";
 import { prisma } from "@/lib/db/prisma";
 
 export function getCourtService() {
@@ -11,5 +12,6 @@ export function getCourtService() {
     operatingHoursRepository: createOperatingHoursRepository(prisma),
     priceRuleRepository: createPriceRuleRepository(prisma),
     gorRepository: createGorRepository(prisma),
+    subscriptionRepository: createSubscriptionRepository(prisma),
   });
 }

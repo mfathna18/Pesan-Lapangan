@@ -1,9 +1,11 @@
 import {
   SUBSCRIPTION_BILLING_PERIOD_DAYS,
   SUBSCRIPTION_GRACE_PERIOD_DAYS,
+  SUBSCRIPTION_PAID_PLANS,
   SUBSCRIPTION_PLAN_ORDER,
   SUBSCRIPTION_PLAN_PRICES,
 } from "@/domains/subscription/constants";
+import { getPlanOrder } from "@/domains/subscription/utils/subscription-plan-limits";
 import type { SubscriptionPlan } from "@/generated/prisma/client";
 
 export function getNextUpgradePlan(
@@ -19,7 +21,23 @@ export function getNextUpgradePlan(
 }
 
 export function canRenewPlan(plan: SubscriptionPlan): boolean {
-  return plan === "STARTER" || plan === "PRO";
+  return SUBSCRIPTION_PAID_PLANS.includes(
+    plan as (typeof SUBSCRIPTION_PAID_PLANS)[number],
+  );
+}
+
+export function isPlanUpgrade(
+  currentPlan: SubscriptionPlan,
+  targetPlan: SubscriptionPlan,
+): boolean {
+  return getPlanOrder(targetPlan) > getPlanOrder(currentPlan);
+}
+
+export function isPlanDowngrade(
+  currentPlan: SubscriptionPlan,
+  targetPlan: SubscriptionPlan,
+): boolean {
+  return getPlanOrder(targetPlan) < getPlanOrder(currentPlan);
 }
 
 export function getPlanPrice(plan: SubscriptionPlan): number {

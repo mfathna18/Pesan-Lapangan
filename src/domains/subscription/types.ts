@@ -39,6 +39,37 @@ export type OwnerBillingProfile = {
   customerPhone: string;
 };
 
+export type SubscriptionBillingHistoryItem = {
+  id: string;
+  amount: number;
+  status: PaymentStatus;
+  statusLabel: string;
+  targetPlan: SubscriptionPlan;
+  targetPlanLabel: string;
+  billingAction: SubscriptionBillingAction;
+  billingActionLabel: string;
+  paidAt: string | null;
+  createdAt: string;
+};
+
+export type SubscriptionCourtCapacity = {
+  current: number;
+  limit: number | null;
+  label: string;
+  canCreateCourt: boolean;
+};
+
+export type SubscriptionPlanOption = {
+  plan: SubscriptionPlan;
+  label: string;
+  price: number;
+  courtLimitLabel: string;
+  isBestValue: boolean;
+  isCurrent: boolean;
+  canSelect: boolean;
+  action: "upgrade" | "renew" | "downgrade" | "current";
+};
+
 export type CurrentSubscriptionData = {
   id: string;
   ownerId: string;
@@ -54,20 +85,9 @@ export type CurrentSubscriptionData = {
   nextUpgradePlan: SubscriptionPlan | null;
   nextUpgradePlanLabel: string | null;
   canRenew: boolean;
+  courtCapacity: SubscriptionCourtCapacity;
+  planOptions: SubscriptionPlanOption[];
   billingHistory: SubscriptionBillingHistoryItem[];
-};
-
-export type SubscriptionBillingHistoryItem = {
-  id: string;
-  amount: number;
-  status: PaymentStatus;
-  statusLabel: string;
-  targetPlan: SubscriptionPlan;
-  targetPlanLabel: string;
-  billingAction: SubscriptionBillingAction;
-  billingActionLabel: string;
-  paidAt: string | null;
-  createdAt: string;
 };
 
 export type CreateSubscriptionPaymentInput = {

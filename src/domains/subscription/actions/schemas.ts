@@ -7,6 +7,7 @@ export const createSubscriptionPaymentSchema = z.object({
     SUBSCRIPTION_BILLING_ACTION.UPGRADE,
     SUBSCRIPTION_BILLING_ACTION.RENEW,
   ]),
+  targetPlan: z.enum(["STARTER", "PRO", "ELITE"]).optional(),
 });
 
 export function formatSubscriptionZodError(error: z.ZodError): string {

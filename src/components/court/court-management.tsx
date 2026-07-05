@@ -27,13 +27,19 @@ import { deleteCourtAction } from "@/domains/booking/actions/delete-court.action
 import { listCourtsAction } from "@/domains/booking/actions/list-courts.action";
 import { setCourtActiveAction } from "@/domains/booking/actions/set-court-active.action";
 import { updateCourtAction } from "@/domains/booking/actions/update-court.action";
+import { CourtUpgradeDialog } from "@/components/subscription/court-upgrade-dialog";
 import { UI_COPY } from "@/config/ui-copy";
 import type { OwnerCourtListItem } from "@/domains/booking/types";
+import type { SubscriptionCourtCapacity } from "@/domains/subscription/types";
 import { layout } from "@/lib/design-system";
 
 type FormMode = "create" | "edit";
 
-export function CourtManagement() {
+type CourtManagementProps = {
+  courtCapacity: SubscriptionCourtCapacity;
+};
+
+export function CourtManagement({ courtCapacity }: CourtManagementProps) {
   const [courts, setCourts] = useState<OwnerCourtListItem[]>([]);
   const [listError, setListError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -48,6 +54,9 @@ export function CourtManagement() {
   const [isSavingForm, startSaveTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isTogglingActive, startToggleTransition] = useTransition();
+  const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
+
+  const canAddCourt = courtCapacity.canCreateCourt;
 
   const loadCourts = useCallback(() => {
     startListTransition(async () => {
@@ -70,6 +79,11 @@ export function CourtManagement() {
   }, [loadCourts]);
 
   function openCreateForm() {
+    if (!canAddCourt) {
+      setUpgradeDialogOpen(true);
+      return;
+    }
+
     setFormMode("create");
     setSelectedCourt(null);
     setFormError(null);
@@ -160,6 +174,10 @@ export function CourtManagement() {
           </Button>
         }
       />
+
+      <p className="text-muted-foreground -mt-4 text-sm">
+        Kapasitas lapangan: {courtCapacity.label}
+      </p>
 
       {listError ? (
         <p
@@ -304,6 +322,11 @@ export function CourtManagement() {
         error={formError}
         onClose={closeForm}
         onSubmit={handleFormSubmit}
+      />
+
+      <CourtUpgradeDialog
+        open={upgradeDialogOpen}
+        onClose={() => setUpgradeDialogOpen(false)}
       />
     </div>
   );

@@ -7,10 +7,13 @@ import { BiRecommendations } from "@/components/dashboard/bi/bi-recommendations"
 import { OwnerOnboardingEmptyState } from "@/components/dashboard/owner-onboarding-empty-state";
 import { BiInsightCards } from "@/components/dashboard/bi/bi-insight-cards";
 import { OwnerPendingPaymentsPollingWidget } from "@/components/dashboard/owner-pending-payments-polling-widget";
+import { SubscriptionCourtCapacityCard } from "@/components/subscription/subscription-court-capacity-card";
 import { PageHeader } from "@/components/ui/page-header";
 import type { BusinessIntelligenceDashboardData } from "@/domains/analytics/analytics-types";
 import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
+import type { SubscriptionCourtCapacity } from "@/domains/subscription/types";
 import type { AwaitingConfirmationPaymentItem } from "@/domains/payment/types";
+import type { SubscriptionPlan } from "@/generated/prisma/client";
 import { formatBookingDate } from "@/domains/booking/utils/booking-display";
 import { layout } from "@/lib/design-system";
 
@@ -18,12 +21,16 @@ type BusinessIntelligenceDashboardProps = {
   data: BusinessIntelligenceDashboardData;
   awaitingPayments?: AwaitingConfirmationPaymentItem[];
   browserNotificationSettings: OwnerBrowserNotificationSettingsData;
+  subscriptionPlan: SubscriptionPlan;
+  courtCapacity: SubscriptionCourtCapacity;
 };
 
 export function BusinessIntelligenceDashboard({
   data,
   awaitingPayments = [],
   browserNotificationSettings,
+  subscriptionPlan,
+  courtCapacity,
 }: BusinessIntelligenceDashboardProps) {
   return (
     <div className={layout.page}>
@@ -31,6 +38,11 @@ export function BusinessIntelligenceDashboard({
         eyebrow="Intelligence"
         title="Dasbor Bisnis"
         description={`Ringkasan performa venue untuk ${formatBookingDate(data.period.from)} – ${formatBookingDate(data.period.to)}. Dibandingkan dengan periode ${formatBookingDate(data.period.comparisonFrom)} – ${formatBookingDate(data.period.comparisonTo)}.`}
+      />
+
+      <SubscriptionCourtCapacityCard
+        plan={subscriptionPlan}
+        courtCapacity={courtCapacity}
       />
 
       <BrowserNotificationActivationCard

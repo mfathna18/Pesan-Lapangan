@@ -1,11 +1,13 @@
 import { BrowserNotificationSettings } from "@/components/settings/browser-notification-settings";
 import { GorProfileForm } from "@/components/settings/gor-profile-form";
 import { WhatsAppNotificationSettings } from "@/components/settings/whatsapp-notification-settings";
+import { SubscriptionSettingsSummary } from "@/components/subscription/subscription-settings-summary";
 import { createPageMetadata } from "@/config/page-metadata";
 import { isWhatsAppFeatureEnabled } from "@/config/features";
 import { getGorProfileService } from "@/domains/owner/actions/get-gor-profile-service";
 import { OwnerNotFoundError } from "@/domains/owner/errors";
 import { getPushService } from "@/domains/push/actions/get-push-service";
+import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
 import { getWhatsAppService } from "@/domains/whatsapp/actions/get-whatsapp-service";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
@@ -37,6 +39,8 @@ export default async function DashboardSettingsPage() {
     notifySubscription: true,
   };
 
+  let subscription = null;
+
   try {
     initialProfile = await getGorProfileService().getForUser(session.user.id);
     const ownerId = await requireOwnerId(session.user.id);
@@ -46,6 +50,9 @@ export default async function DashboardSettingsPage() {
     }
     initialBrowserNotificationSettings =
       await getPushService().getSettingsForOwner(ownerId);
+    subscription = await getSubscriptionService().getCurrentSubscription(
+      session.user.id,
+    );
   } catch (error) {
     if (error instanceof OwnerNotFoundError) {
       notFound();
@@ -57,6 +64,9 @@ export default async function DashboardSettingsPage() {
   return (
     <div className={layout.page}>
       <GorProfileForm initialProfile={initialProfile} />
+      {subscription ? (
+        <SubscriptionSettingsSummary subscription={subscription} />
+      ) : null}
       <BrowserNotificationSettings
         initialSettings={initialBrowserNotificationSettings}
       />

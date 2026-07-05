@@ -13,6 +13,7 @@ import { createPriceRuleRepository } from "@/domains/booking/repositories/price-
 import { createCourtService } from "@/domains/booking/services/court-service";
 import { createGorRepository } from "@/domains/owner/repositories/gor-repository";
 import { createGorService } from "@/domains/owner/services/gor-service";
+import { createSubscriptionRepository } from "@/domains/subscription/repositories/subscription-repository";
 import type { PrismaClient } from "@/generated/prisma/client";
 
 type VenueServiceDependencies = {
@@ -71,6 +72,7 @@ export function createVenueService(prisma: PrismaClient): VenueService {
       operatingHoursRepository: createOperatingHoursRepository(prisma),
       priceRuleRepository: createPriceRuleRepository(prisma),
       gorRepository,
+      subscriptionRepository: createSubscriptionRepository(prisma),
     }),
   });
 }

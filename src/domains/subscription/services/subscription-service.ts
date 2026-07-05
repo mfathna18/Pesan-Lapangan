@@ -11,10 +11,15 @@ import {
   resolveMidtransCallbackStatus,
 } from "@/domains/payment/utils/midtrans-callback-status";
 import {
+  createCourtRepository,
+  CourtRepository,
+} from "@/domains/booking/repositories/court-repository";
+import {
   SUBSCRIPTION_BILLING_ACTION,
   SUBSCRIPTION_BILLING_ACTION_LABELS,
   SUBSCRIPTION_ACCESS_DENIED_MESSAGE,
   SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE,
+  SUBSCRIPTION_PAYMENT_UNAVAILABLE_MESSAGE,
   SUBSCRIPTION_PLAN_LABELS,
   SUBSCRIPTION_STATUS_LABELS,
   SUBSCRIPTION_PAYMENT_STATUS_LABELS,
@@ -48,6 +53,10 @@ import {
   canUseOwnerFeatures,
 } from "@/domains/subscription/utils/subscription-access";
 import {
+  buildSubscriptionPlanOptions,
+  resolveBillingActionForPlan,
+} from "@/domains/subscription/utils/subscription-plan-options";
+import {
   canRenewPlan,
   getNextUpgradePlan,
   getPlanPrice,
@@ -55,6 +64,14 @@ import {
   resolveRenewedExpiresAt,
   resolveUpgradeExpiresAt,
 } from "@/domains/subscription/utils/subscription-billing";
+import {
+  canChangeToPlan,
+  canCreateCourt,
+  formatCourtCapacityLabel,
+  getCourtLimitForPlan,
+  isPaidSubscriptionPlan,
+  SUBSCRIPTION_DOWNGRADE_COURT_VALIDATION_MESSAGE,
+} from "@/domains/subscription/utils/subscription-plan-limits";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { logInfo } from "@/lib/server/logger";
 
@@ -65,6 +82,7 @@ type SubscriptionServiceDependencies = {
   subscriptionRepository: SubscriptionRepository;
   subscriptionPaymentRepository: SubscriptionPaymentRepository;
   paymentGateway: PaymentGateway;
+  courtRepository: CourtRepository;
 };
 
 export class SubscriptionService {
@@ -72,17 +90,20 @@ export class SubscriptionService {
   private readonly subscriptionRepository: SubscriptionRepository;
   private readonly subscriptionPaymentRepository: SubscriptionPaymentRepository;
   private readonly paymentGateway: PaymentGateway;
+  private readonly courtRepository: CourtRepository;
 
   constructor({
     prisma,
     subscriptionRepository,
     subscriptionPaymentRepository,
     paymentGateway,
+    courtRepository,
   }: SubscriptionServiceDependencies) {
     this.prisma = prisma;
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;
     this.paymentGateway = paymentGateway;
+    this.courtRepository = courtRepository;
   }
 
   async getCurrentSubscription(
@@ -108,8 +129,15 @@ export class SubscriptionService {
       await this.subscriptionPaymentRepository.listBySubscriptionId(
         subscription.id,
       );
+    const currentCourtCount = await this.courtRepository.countByOwnerId(
+      subscription.ownerId,
+    );
 
-    return this.toCurrentSubscriptionData(subscription, billingHistory);
+    return this.toCurrentSubscriptionData(
+      subscription,
+      billingHistory,
+      currentCourtCount,
+    );
   }
 
   async getSubscriptionAccess(
@@ -181,10 +209,15 @@ export class SubscriptionService {
 
     subscription = await this.expireSubscription(subscription.id);
 
+    const currentCourtCount = await this.courtRepository.countByOwnerId(
+      billingProfile.ownerId,
+    );
+
     const targetPlan = this.resolveTargetPlan(
       subscription,
       input.billingAction,
       input.targetPlan,
+      currentCourtCount,
     );
     const amount = getPlanPrice(targetPlan);
 
@@ -249,7 +282,9 @@ export class SubscriptionService {
       });
 
       if (error instanceof PaymentGatewayError) {
-        throw error;
+        throw new SubscriptionBillingValidationError(
+          SUBSCRIPTION_PAYMENT_UNAVAILABLE_MESSAGE,
+        );
       }
 
       throw error;
@@ -540,38 +575,84 @@ export class SubscriptionService {
     subscription: SubscriptionRecord,
     billingAction: CreateSubscriptionPaymentInput["billingAction"],
     requestedPlan?: CreateSubscriptionPaymentInput["targetPlan"],
+    currentCourtCount = 0,
   ) {
-    if (billingAction === SUBSCRIPTION_BILLING_ACTION.UPGRADE) {
-      const nextPlan = getNextUpgradePlan(subscription.plan);
+    if (!requestedPlan) {
+      if (billingAction === SUBSCRIPTION_BILLING_ACTION.UPGRADE) {
+        const nextPlan = getNextUpgradePlan(subscription.plan);
 
-      if (!nextPlan) {
+        if (!nextPlan) {
+          throw new SubscriptionBillingValidationError(
+            "Tidak ada paket upgrade yang tersedia.",
+          );
+        }
+
+        return nextPlan;
+      }
+
+      if (!canRenewPlan(subscription.plan)) {
         throw new SubscriptionBillingValidationError(
-          "Tidak ada paket upgrade yang tersedia.",
+          "Paket saat ini tidak dapat diperpanjang.",
         );
       }
 
-      if (requestedPlan && requestedPlan !== nextPlan) {
-        throw new SubscriptionBillingValidationError(
-          "Paket upgrade tidak valid.",
-        );
-      }
-
-      return nextPlan;
+      return subscription.plan;
     }
 
-    if (!canRenewPlan(subscription.plan)) {
+    if (!requestedPlan || !isPaidSubscriptionPlan(requestedPlan)) {
       throw new SubscriptionBillingValidationError(
-        "Paket saat ini tidak dapat diperpanjang.",
+        "Paket langganan tidak valid.",
       );
     }
 
-    if (requestedPlan && requestedPlan !== subscription.plan) {
+    if (
+      !canChangeToPlan({
+        currentPlan: subscription.plan,
+        targetPlan: requestedPlan,
+        currentCourtCount,
+      })
+    ) {
+      throw new SubscriptionBillingValidationError(
+        SUBSCRIPTION_DOWNGRADE_COURT_VALIDATION_MESSAGE,
+      );
+    }
+
+    const resolvedAction = resolveBillingActionForPlan({
+      currentPlan: subscription.plan,
+      targetPlan: requestedPlan,
+    });
+
+    if (!resolvedAction) {
+      throw new SubscriptionBillingValidationError(
+        "Paket langganan tidak dapat dipilih saat ini.",
+      );
+    }
+
+    if (billingAction !== resolvedAction) {
+      throw new SubscriptionBillingValidationError(
+        "Aksi billing tidak sesuai dengan paket yang dipilih.",
+      );
+    }
+
+    if (
+      billingAction === SUBSCRIPTION_BILLING_ACTION.RENEW &&
+      requestedPlan !== subscription.plan
+    ) {
       throw new SubscriptionBillingValidationError(
         "Perpanjangan harus menggunakan paket yang sama.",
       );
     }
 
-    return subscription.plan;
+    if (
+      billingAction === SUBSCRIPTION_BILLING_ACTION.UPGRADE &&
+      requestedPlan === subscription.plan
+    ) {
+      throw new SubscriptionBillingValidationError(
+        "Pilih paket yang berbeda untuk upgrade.",
+      );
+    }
+
+    return requestedPlan;
   }
 
   private async requireSubscription(
@@ -590,9 +671,11 @@ export class SubscriptionService {
   private toCurrentSubscriptionData(
     subscription: SubscriptionRecord,
     billingHistory: SubscriptionPaymentRecord[],
+    currentCourtCount: number,
   ): CurrentSubscriptionData {
     const isWithinGracePeriod = this.isWithinGracePeriod(subscription);
     const nextUpgradePlan = getNextUpgradePlan(subscription.plan);
+    const courtLimit = getCourtLimitForPlan(subscription.plan);
 
     return {
       id: subscription.id,
@@ -611,6 +694,22 @@ export class SubscriptionService {
         ? SUBSCRIPTION_PLAN_LABELS[nextUpgradePlan]
         : null,
       canRenew: canRenewPlan(subscription.plan),
+      courtCapacity: {
+        current: currentCourtCount,
+        limit: courtLimit,
+        label: formatCourtCapacityLabel({
+          current: currentCourtCount,
+          limit: courtLimit,
+        }),
+        canCreateCourt: canCreateCourt({
+          plan: subscription.plan,
+          currentCourtCount,
+        }),
+      },
+      planOptions: buildSubscriptionPlanOptions({
+        currentPlan: subscription.plan,
+        currentCourtCount,
+      }),
       billingHistory: billingHistory.map((payment) =>
         this.toBillingHistoryItem(payment),
       ),
@@ -644,5 +743,6 @@ export function createSubscriptionService(
     subscriptionRepository: createSubscriptionRepository(prisma),
     subscriptionPaymentRepository: createSubscriptionPaymentRepository(prisma),
     paymentGateway: createMidtransGateway(),
+    courtRepository: createCourtRepository(prisma),
   });
 }

@@ -1,4 +1,4 @@
-import { SubscriptionBillingActions } from "@/components/subscription/subscription-billing-actions";
+import { SubscriptionPlanCards } from "@/components/subscription/subscription-plan-cards";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -95,13 +95,17 @@ export function SubscriptionDashboard({
             </Badge>
           </div>
           <CardDescription>
-            Status langganan saat ini untuk akun owner kamu.
+            Status langganan dan kapasitas lapangan venue Anda.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <p className="text-muted-foreground text-sm">Paket</p>
             <p className="font-medium">{subscription.planLabel}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-sm">Kapasitas Lapangan</p>
+            <p className="font-medium">{subscription.courtCapacity.label}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Harga Bulanan</p>
@@ -116,11 +120,13 @@ export function SubscriptionDashboard({
             </p>
           </div>
           <div>
-            <p className="text-muted-foreground text-sm">Tanggal Kedaluwarsa</p>
+            <p className="text-muted-foreground text-sm">
+              Tanggal Perpanjangan
+            </p>
             <p className="font-medium">
               {subscription.expiresAt
                 ? formatBookingDate(subscription.expiresAt)
-                : "Tidak ditetapkan"}
+                : "Belum ditetapkan"}
             </p>
           </div>
           <div>
@@ -131,28 +137,10 @@ export function SubscriptionDashboard({
                 : `${SUBSCRIPTION_GRACE_PERIOD_DAYS} hari setelah kedaluwarsa`}
             </p>
           </div>
-          <div>
-            <p className="text-muted-foreground text-sm">Akses Aktif</p>
-            <p className="font-medium">
-              {subscription.isActive ? "Ya" : "Tidak"}
-            </p>
-          </div>
         </CardContent>
       </Card>
 
-      {subscription.nextUpgradePlan || subscription.canRenew ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>Upgrade & Perpanjang</CardTitle>
-            <CardDescription>
-              Tingkatkan paket atau perpanjang langganan aktif melalui Midtrans.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SubscriptionBillingActions subscription={subscription} />
-          </CardContent>
-        </Card>
-      ) : null}
+      <SubscriptionPlanCards subscription={subscription} />
 
       <Card>
         <CardHeader>
