@@ -48,8 +48,8 @@ export const env = createEnv({
     WHATSAPP_API_TOKEN: z.string().min(1).optional(),
     WHATSAPP_API_URL: z.string().url().optional(),
     WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
-    SUPABASE_URL: z.string().url(),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    SUPABASE_URL: z.string().url().optional(),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_APP_URL: publicAppUrl("NEXT_PUBLIC_APP_URL"),

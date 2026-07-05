@@ -1,5 +1,5 @@
-import { env } from "@/config/env";
 import type { MediaBucket } from "@/domains/media/constants";
+import { getSupabaseConfig } from "@/lib/supabase/admin";
 
 const PUBLIC_OBJECT_MARKER = "/storage/v1/object/public/";
 
@@ -7,7 +7,7 @@ export function buildPublicStorageUrl(
   bucket: MediaBucket,
   storagePath: string,
 ): string {
-  const baseUrl = env.SUPABASE_URL.replace(/\/$/, "");
+  const baseUrl = getSupabaseConfig().url.replace(/\/$/, "");
 
   return `${baseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
 }
@@ -51,7 +51,7 @@ export function isOwnerStoragePath(
 export function isSupabasePublicUrl(publicUrl: string): boolean {
   try {
     const url = new URL(publicUrl);
-    const supabaseHost = new URL(env.SUPABASE_URL).host;
+    const supabaseHost = new URL(getSupabaseConfig().url).host;
 
     return url.host === supabaseHost;
   } catch {
