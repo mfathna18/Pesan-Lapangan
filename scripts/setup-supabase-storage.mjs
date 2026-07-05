@@ -30,14 +30,14 @@ const BUCKETS = [
   },
 ];
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL?.trim();
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error(
-    "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.",
+  console.warn(
+    "Skipping Supabase Storage setup: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not set.",
   );
-  process.exit(1);
+  process.exit(0);
 }
 
 const supabase = createClient(supabaseUrl, serviceRoleKey, {

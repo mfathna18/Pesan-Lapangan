@@ -44,7 +44,8 @@ export const MEDIA_ERROR_MESSAGE = {
     `Ukuran file terlalu besar. Maksimum ${maxMb} MB.`,
   UPLOAD_FAILED: "Gagal mengunggah gambar. Coba lagi.",
   DELETE_FAILED: "Gagal menghapus gambar. Coba lagi.",
-  STORAGE_UNAVAILABLE: "Penyimpanan gambar tidak tersedia saat ini.",
+  STORAGE_UNAVAILABLE:
+    "Penyimpanan gambar tidak tersedia. Pastikan SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY sudah diisi di Vercel, lalu deploy ulang.",
   COVER_LIMIT: `Maksimum ${GOR_COVER_MAX_IMAGES} foto sampul.`,
   GOR_REQUIRED: "Simpan profil GOR terlebih dahulu sebelum mengunggah gambar.",
   UNAUTHORIZED: "Anda tidak memiliki akses untuk mengelola gambar ini.",

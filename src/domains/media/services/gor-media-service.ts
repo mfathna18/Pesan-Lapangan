@@ -56,7 +56,7 @@ export class MediaStorageService {
       throw new MediaStorageError(
         error.message.includes("Bucket not found")
           ? MEDIA_ERROR_MESSAGE.STORAGE_UNAVAILABLE
-          : MEDIA_ERROR_MESSAGE.UPLOAD_FAILED,
+          : `${MEDIA_ERROR_MESSAGE.UPLOAD_FAILED} (${error.message})`,
       );
     }
 

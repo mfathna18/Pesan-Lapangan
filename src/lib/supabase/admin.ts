@@ -5,8 +5,8 @@ import { MEDIA_ERROR_MESSAGE } from "@/domains/media/constants";
 import { MediaStorageError } from "@/domains/media/errors";
 
 export function getSupabaseConfig() {
-  const url = env.SUPABASE_URL;
-  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = env.SUPABASE_URL?.trim();
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 
   if (!url || !serviceRoleKey) {
     throw new MediaStorageError(MEDIA_ERROR_MESSAGE.STORAGE_UNAVAILABLE);

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "vercel-build": "node scripts/prisma-migrate-deploy.mjs && next build --turbopack",
+    "vercel-build": "node scripts/prisma-migrate-deploy.mjs && node scripts/setup-supabase-storage.mjs && next build --turbopack",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
