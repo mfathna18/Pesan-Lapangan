@@ -13,6 +13,7 @@ import {
 import type { AvailabilitySlot } from "@/domains/availability/types";
 import { getCourtService } from "@/domains/booking/actions/get-court-service";
 import { CourtNotFoundError } from "@/domains/booking/errors";
+import { parseVenueDateInput } from "@/domains/booking/utils/venue-date";
 import {
   createKnownActionError,
   handleServerActionError,
@@ -48,9 +49,11 @@ export async function getCourtAvailabilityAction(
     );
   }
 
-  const bookingDate = new Date(`${parsed.data.bookingDate}T00:00:00`);
+  let bookingDate: Date;
 
-  if (Number.isNaN(bookingDate.getTime())) {
+  try {
+    bookingDate = parseVenueDateInput(parsed.data.bookingDate);
+  } catch {
     return actionFailure("Tanggal booking tidak valid.");
   }
 

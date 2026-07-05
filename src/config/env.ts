@@ -37,7 +37,7 @@ export const env = createEnv({
       .enum(["true", "false"])
       .default("false")
       .transform((value) => value === "true"),
-    CRON_SECRET: z.string().min(1),
+    CRON_SECRET: z.string().min(16),
   },
   client: {
     NEXT_PUBLIC_APP_URL: publicAppUrl("NEXT_PUBLIC_APP_URL"),

@@ -6,6 +6,7 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
 import { dashboardLayout } from "@/lib/layout-system";
 import { cn } from "@/lib/utils";
+import type { OwnerNotificationListResult } from "@/domains/notification/types";
 
 const SIDEBAR_COLLAPSED_KEY = "dashboard-sidebar-collapsed";
 
@@ -17,10 +18,15 @@ type DashboardShellUser = {
 
 type DashboardShellProps = {
   user: DashboardShellUser;
+  initialNotifications: OwnerNotificationListResult;
   children: React.ReactNode;
 };
 
-export function DashboardShell({ user, children }: DashboardShellProps) {
+export function DashboardShell({
+  user,
+  initialNotifications,
+  children,
+}: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -58,7 +64,11 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             : dashboardLayout.mainOffsetExpanded,
         )}
       >
-        <DashboardTopbar user={user} onMenuClick={() => setMobileOpen(true)} />
+        <DashboardTopbar
+          user={user}
+          initialNotifications={initialNotifications}
+          onMenuClick={() => setMobileOpen(true)}
+        />
 
         <main className="flex flex-1 flex-col">{children}</main>
       </div>

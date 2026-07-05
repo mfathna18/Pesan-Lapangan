@@ -7,7 +7,9 @@ import {
   PaymentValidationError,
 } from "@/domains/payment";
 import type { MidtransCallbackPayload } from "@/domains/payment/types";
+import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 import { getSubscriptionService } from "@/domains/subscription/actions/get-subscription-service";
+import { SUBSCRIPTION_PLAN_LABELS } from "@/domains/subscription/constants";
 import {
   SubscriptionBillingValidationError,
   SubscriptionPaymentNotFoundError,
@@ -61,7 +63,22 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof PaymentNotFoundError) {
       try {
-        await subscriptionService.handleMidtransCallback(body);
+        const updatedPayment =
+          await subscriptionService.handleMidtransCallback(body);
+
+        if (updatedPayment?.status === "PAID") {
+          const subscription = await prisma.subscription.findUnique({
+            where: { id: updatedPayment.subscriptionId },
+            select: { ownerId: true },
+          });
+
+          if (subscription) {
+            await getNotificationEmitter().emitSubscriptionActivated(
+              subscription.ownerId,
+              SUBSCRIPTION_PLAN_LABELS[updatedPayment.targetPlan],
+            );
+          }
+        }
 
         return NextResponse.json({ ok: true });
       } catch (subscriptionError) {

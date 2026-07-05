@@ -17,6 +17,8 @@ import {
   CourtNotFoundError,
 } from "@/domains/booking/errors";
 import type { BookingWithContact } from "@/domains/booking/repositories/booking-repository";
+import { parseVenueDateInput } from "@/domains/booking/utils/venue-date";
+import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 import { SUBSCRIPTION_BOOKING_RECEIVING_DENIED_MESSAGE } from "@/domains/subscription/constants";
 import {
   createKnownActionError,
@@ -65,9 +67,11 @@ export async function createPublicBookingAction(
     );
   }
 
-  const bookingDate = new Date(`${parsed.data.bookingDate}T00:00:00`);
+  let bookingDate: Date;
 
-  if (Number.isNaN(bookingDate.getTime())) {
+  try {
+    bookingDate = parseVenueDateInput(parsed.data.bookingDate);
+  } catch {
     return actionFailure("Tanggal booking tidak valid.");
   }
 
@@ -83,6 +87,8 @@ export async function createPublicBookingAction(
         note: parsed.data.contact.note ?? null,
       },
     });
+
+    await getNotificationEmitter().emitBookingCreated(booking.id);
 
     return actionSuccess(booking);
   } catch (error) {

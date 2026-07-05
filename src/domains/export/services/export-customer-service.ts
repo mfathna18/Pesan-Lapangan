@@ -17,12 +17,25 @@ type CustomerAggregate = {
   lastBookingAt: Date;
 };
 
+function sumPaidAmount(
+  booking: Awaited<ReturnType<typeof findBookingsForExport>>[number],
+): number {
+  return booking.payments
+    .filter((payment) => payment.status === "PAID")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+}
+
 function aggregateCustomers(
   bookings: Awaited<ReturnType<typeof findBookingsForExport>>,
 ): CustomerAggregate[] {
   const customers = new Map<string, CustomerAggregate>();
 
   for (const booking of bookings) {
+    if (booking.status === "CANCELLED") {
+      continue;
+    }
+
+    const paidAmount = sumPaidAmount(booking);
     const phoneKey =
       booking.customerPhone.trim() || booking.customerName.trim();
     const existing = customers.get(phoneKey);
@@ -32,7 +45,7 @@ function aggregateCustomers(
         customerName: booking.customerName,
         customerPhone: booking.customerPhone,
         bookingCount: 1,
-        totalSpent: booking.totalPrice,
+        totalSpent: paidAmount,
         lastBookingDate: booking.bookingDate,
         lastBookingAt: booking.createdAt,
       });
@@ -40,7 +53,7 @@ function aggregateCustomers(
     }
 
     existing.bookingCount += 1;
-    existing.totalSpent += booking.totalPrice;
+    existing.totalSpent += paidAmount;
 
     if (booking.bookingDate > existing.lastBookingDate) {
       existing.lastBookingDate = booking.bookingDate;

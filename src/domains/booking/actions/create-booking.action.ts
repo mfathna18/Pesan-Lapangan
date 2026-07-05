@@ -21,6 +21,7 @@ import {
   createKnownActionError,
   handleServerActionError,
 } from "@/lib/server/actions";
+import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 
 export async function createBookingAction(
   input: unknown,
@@ -48,6 +49,8 @@ export async function createBookingAction(
     }
 
     const booking = await getBookingService().create(parsed.data);
+
+    await getNotificationEmitter().emitBookingCreated(booking.id);
 
     return actionSuccess(booking);
   } catch (error) {

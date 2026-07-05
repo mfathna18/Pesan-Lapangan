@@ -3,7 +3,9 @@
 import { Menu } from "lucide-react";
 
 import { DashboardProfileMenu } from "@/components/dashboard/dashboard-profile-menu";
+import { NotificationBell } from "@/components/notification/notification-bell";
 import { Button } from "@/components/ui/button";
+import type { OwnerNotificationListResult } from "@/domains/notification/types";
 import { layout } from "@/lib/design-system";
 
 type DashboardTopbarUser = {
@@ -14,10 +16,15 @@ type DashboardTopbarUser = {
 
 type DashboardTopbarProps = {
   user: DashboardTopbarUser;
+  initialNotifications: OwnerNotificationListResult;
   onMenuClick: () => void;
 };
 
-export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
+export function DashboardTopbar({
+  user,
+  initialNotifications,
+  onMenuClick,
+}: DashboardTopbarProps) {
   return (
     <header className={`${layout.header} z-30`}>
       <div className="flex h-[4.5rem] items-center gap-4 px-4 lg:px-8">
@@ -33,7 +40,10 @@ export function DashboardTopbar({ user, onMenuClick }: DashboardTopbarProps) {
 
         <div className="flex-1" />
 
-        <DashboardProfileMenu user={user} />
+        <div className="flex items-center gap-2">
+          <NotificationBell initialData={initialNotifications} />
+          <DashboardProfileMenu user={user} />
+        </div>
       </div>
     </header>
   );

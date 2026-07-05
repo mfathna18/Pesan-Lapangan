@@ -61,21 +61,25 @@ import { logInfo } from "@/lib/server/logger";
 const SUBSCRIPTION_PAYMENT_PENDING_HOURS = 24;
 
 type SubscriptionServiceDependencies = {
+  prisma: PrismaClient;
   subscriptionRepository: SubscriptionRepository;
   subscriptionPaymentRepository: SubscriptionPaymentRepository;
   paymentGateway: PaymentGateway;
 };
 
 export class SubscriptionService {
+  private readonly prisma: PrismaClient;
   private readonly subscriptionRepository: SubscriptionRepository;
   private readonly subscriptionPaymentRepository: SubscriptionPaymentRepository;
   private readonly paymentGateway: PaymentGateway;
 
   constructor({
+    prisma,
     subscriptionRepository,
     subscriptionPaymentRepository,
     paymentGateway,
   }: SubscriptionServiceDependencies) {
+    this.prisma = prisma;
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;
     this.paymentGateway = paymentGateway;
@@ -275,27 +279,44 @@ export class SubscriptionService {
     const subscription = await this.requireSubscription(payment.subscriptionId);
     const paidAt = input.paidAt ?? new Date();
 
-    await this.subscriptionPaymentRepository.update({
-      id: payment.id,
-      status: PAYMENT_STATUS.PAID,
-      paidAt,
-      externalReference: payment.externalReference ?? payment.id,
-    });
-
-    if (payment.billingAction === SUBSCRIPTION_BILLING_ACTION.UPGRADE) {
-      return this.subscriptionRepository.update(subscription.id, {
-        plan: payment.targetPlan,
-        status: "ACTIVE",
-        expiresAt: resolveUpgradeExpiresAt(paidAt),
-        graceUntil: null,
+    return this.prisma.$transaction(async (tx) => {
+      const paymentUpdate = await tx.subscriptionPayment.updateMany({
+        where: {
+          id: payment.id,
+          status: PAYMENT_STATUS.PENDING,
+        },
+        data: {
+          status: PAYMENT_STATUS.PAID,
+          paidAt,
+          externalReference: payment.externalReference ?? payment.id,
+        },
       });
-    }
 
-    return this.subscriptionRepository.update(subscription.id, {
-      plan: payment.targetPlan,
-      status: "ACTIVE",
-      expiresAt: resolveRenewedExpiresAt(subscription.expiresAt, paidAt),
-      graceUntil: null,
+      if (paymentUpdate.count === 0) {
+        return this.requireSubscription(payment.subscriptionId);
+      }
+
+      if (payment.billingAction === SUBSCRIPTION_BILLING_ACTION.UPGRADE) {
+        return tx.subscription.update({
+          where: { id: subscription.id },
+          data: {
+            plan: payment.targetPlan,
+            status: "ACTIVE",
+            expiresAt: resolveUpgradeExpiresAt(paidAt),
+            graceUntil: null,
+          },
+        });
+      }
+
+      return tx.subscription.update({
+        where: { id: subscription.id },
+        data: {
+          plan: payment.targetPlan,
+          status: "ACTIVE",
+          expiresAt: resolveRenewedExpiresAt(subscription.expiresAt, paidAt),
+          graceUntil: null,
+        },
+      });
     });
   }
 
@@ -395,11 +416,37 @@ export class SubscriptionService {
         return this.subscriptionPaymentRepository.findById(payment.id);
       }
       case "expired":
+        if (payment.status === PAYMENT_STATUS.PAID) {
+          logInfo(
+            "Midtrans expired callback ignored for already paid subscription payment",
+            {
+              subscriptionPaymentId: payment.id,
+              subscriptionId: payment.subscriptionId,
+              orderId: payload.order_id,
+            },
+          );
+
+          return payment;
+        }
+
         return this.subscriptionPaymentRepository.update({
           id: payment.id,
           status: PAYMENT_STATUS.EXPIRED,
         });
       case "failed":
+        if (payment.status === PAYMENT_STATUS.PAID) {
+          logInfo(
+            "Midtrans failed callback ignored for already paid subscription payment",
+            {
+              subscriptionPaymentId: payment.id,
+              subscriptionId: payment.subscriptionId,
+              orderId: payload.order_id,
+            },
+          );
+
+          return payment;
+        }
+
         return this.subscriptionPaymentRepository.update({
           id: payment.id,
           status: PAYMENT_STATUS.FAILED,
@@ -593,6 +640,7 @@ export function createSubscriptionService(
   prisma: PrismaClient,
 ): SubscriptionService {
   return new SubscriptionService({
+    prisma,
     subscriptionRepository: createSubscriptionRepository(prisma),
     subscriptionPaymentRepository: createSubscriptionPaymentRepository(prisma),
     paymentGateway: createMidtransGateway(),

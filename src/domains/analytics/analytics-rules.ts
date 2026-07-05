@@ -16,7 +16,7 @@ const RECOMMENDATION_RULES: RecommendationRule[] = [
     priority: "high",
     matches: (context) => context.occupancyPercent < 40,
     buildMessage: () =>
-      "Banyak slot kosong minggu ini. Pertimbangkan membuat promo weekday.",
+      "Banyak slot kosong bulan ini. Pertimbangkan membuat promo weekday.",
   },
   {
     id: "high-saturday-demand",
@@ -36,9 +36,9 @@ const RECOMMENDATION_RULES: RecommendationRule[] = [
   {
     id: "pending-payments",
     priority: "high",
-    matches: (context) => context.pendingBookings > 5,
+    matches: (context) => context.pendingPayments > 5,
     buildMessage: () =>
-      "Terdapat beberapa pembayaran yang belum selesai. Tindaklanjuti booking pending segera.",
+      "Terdapat beberapa pembayaran yang belum selesai. Tindaklanjuti konfirmasi pembayaran segera.",
   },
   {
     id: "revenue-increase",

@@ -21,7 +21,7 @@ export type ExportBookingRecord = {
   createdAt: Date;
   customerName: string;
   customerPhone: string;
-  payments: { status: string }[];
+  payments: { status: string; amount: number }[];
 };
 
 function buildBookingWhere(
@@ -82,6 +82,7 @@ export async function findBookingsForExport(
       payments: {
         select: {
           status: true,
+          amount: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -125,6 +126,7 @@ export async function findInvoicesForExport(
 ): Promise<ExportInvoiceRecord[]> {
   const invoices = await prisma.invoice.findMany({
     where: {
+      status: "GENERATED",
       payment: {
         booking: {
           court: {
@@ -209,13 +211,27 @@ export async function findRevenuePaymentsForExport(
           },
         },
       },
-      createdAt: {
-        gte: rangeFrom,
-        lte: rangeTo,
-      },
+      OR: [
+        {
+          status: "PAID",
+          paidAt: {
+            gte: rangeFrom,
+            lte: rangeTo,
+          },
+        },
+        {
+          status: {
+            not: "PAID",
+          },
+          createdAt: {
+            gte: rangeFrom,
+            lte: rangeTo,
+          },
+        },
+      ],
     },
     orderBy: {
-      createdAt: "desc",
+      paidAt: "desc",
     },
     take: EXPORT_MAX_ROWS,
     select: {

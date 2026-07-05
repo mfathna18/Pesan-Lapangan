@@ -16,6 +16,14 @@ import {
   formatExportTimeRange,
 } from "@/domains/export/utils/export-labels";
 
+function sumPaidAmount(
+  booking: Awaited<ReturnType<typeof findBookingsForExport>>[number],
+): number {
+  return booking.payments
+    .filter((payment) => payment.status === "PAID")
+    .reduce((sum, payment) => sum + payment.amount, 0);
+}
+
 function buildBookingExportTable(
   bookings: Awaited<ReturnType<typeof findBookingsForExport>>,
 ): ExportTable {
@@ -56,7 +64,7 @@ function buildBookingExportTable(
   });
 
   const totalRevenue = bookings.reduce(
-    (sum, booking) => sum + booking.totalPrice,
+    (sum, booking) => sum + sumPaidAmount(booking),
     0,
   );
   const paidCount = bookings.filter((booking) =>
@@ -82,7 +90,7 @@ function buildBookingExportTable(
         value: bookings.filter((b) => b.status === "CANCELLED").length,
       },
       { label: "Sudah Dibayar", value: paidCount },
-      { label: "Total Nilai Booking (IDR)", value: totalRevenue },
+      { label: "Total Pendapatan Lunas (IDR)", value: totalRevenue },
     ],
   };
 }

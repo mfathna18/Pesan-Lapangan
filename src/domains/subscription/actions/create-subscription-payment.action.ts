@@ -31,8 +31,9 @@ export async function createSubscriptionPaymentAction(
     return actionFailure(formatSubscriptionZodError(parsed.error));
   }
 
+  const session = await requireOwnerSession();
+
   try {
-    const session = await requireOwnerSession();
     const payment = await getSubscriptionService().createSubscriptionPayment({
       userId: session.user.id,
       billingAction: parsed.data.billingAction,

@@ -87,25 +87,42 @@ export class InvoiceService {
     }
 
     const generatedAt = payment.paidAt ?? new Date();
-    const invoiceNumber = await generateInvoiceNumber(
-      generatedAt,
-      this.invoiceRepository,
-    );
 
-    return this.invoiceRepository.create({
-      paymentId: payment.id,
-      invoiceNumber,
-      bookingNumberSnapshot: booking.bookingNumber,
-      customerNameSnapshot: booking.contact.customerName,
-      customerPhoneSnapshot: booking.contact.customerPhone,
-      gorNameSnapshot: booking.gorNameSnapshot,
-      courtNameSnapshot: booking.courtNameSnapshot,
-      bookingDateSnapshot: booking.bookingDate,
-      startMinuteSnapshot: booking.startMinute,
-      endMinuteSnapshot: booking.endMinute,
-      totalAmountSnapshot: payment.amount,
-      generatedAt,
-    });
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const invoiceNumber = await generateInvoiceNumber(
+        generatedAt,
+        this.invoiceRepository,
+      );
+
+      try {
+        return await this.invoiceRepository.create({
+          paymentId: payment.id,
+          invoiceNumber,
+          bookingNumberSnapshot: booking.bookingNumber,
+          customerNameSnapshot: booking.contact.customerName,
+          customerPhoneSnapshot: booking.contact.customerPhone,
+          gorNameSnapshot: booking.gorNameSnapshot,
+          courtNameSnapshot: booking.courtNameSnapshot,
+          bookingDateSnapshot: booking.bookingDate,
+          startMinuteSnapshot: booking.startMinute,
+          endMinuteSnapshot: booking.endMinute,
+          totalAmountSnapshot: payment.amount,
+          generatedAt,
+        });
+      } catch (error) {
+        const isUniqueViolation =
+          typeof error === "object" &&
+          error !== null &&
+          "code" in error &&
+          error.code === "P2002";
+
+        if (!isUniqueViolation || attempt === 2) {
+          throw error;
+        }
+      }
+    }
+
+    throw new InvoiceValidationError("Unable to generate a unique invoice.");
   }
 
   async voidInvoice(input: VoidInvoiceInput): Promise<Invoice> {

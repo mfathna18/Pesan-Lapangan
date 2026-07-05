@@ -13,9 +13,10 @@ import { handleServerActionError } from "@/lib/server/actions";
 export async function getBusinessIntelligenceDashboardAction(): Promise<
   ActionResponse<BusinessIntelligenceDashboardData>
 > {
+  const session = await requireOwnerSession();
+  const ownerId = await requireOwnerId(session.user.id);
+
   try {
-    const session = await requireOwnerSession();
-    const ownerId = await requireOwnerId(session.user.id);
     const data =
       await getAnalyticsService().getBusinessIntelligenceDashboard(ownerId);
 

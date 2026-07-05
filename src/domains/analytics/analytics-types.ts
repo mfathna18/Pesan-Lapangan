@@ -309,6 +309,7 @@ export type RecommendationContext = {
   lowestCourtUtilization: number;
   lowestCourtName: string;
   pendingBookings: number;
+  pendingPayments: number;
   revenueChangePercent: number | null;
   revenueIncreased: boolean;
 };

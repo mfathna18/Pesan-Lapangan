@@ -337,27 +337,55 @@ export class BookingRepository {
 
   async expirePendingBookings(
     referenceDate: Date = new Date(),
-  ): Promise<number> {
-    const result = await this.prisma.booking.updateMany({
+  ): Promise<{ count: number; bookingIds: string[] }> {
+    const expiredBookings = await this.prisma.booking.findMany({
       where: {
         status: "PENDING",
         expiresAt: {
           lt: referenceDate,
         },
-        NOT: {
-          payments: {
-            some: {
-              status: "AWAITING_CONFIRMATION",
-            },
-          },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (expiredBookings.length === 0) {
+      return { count: 0, bookingIds: [] };
+    }
+
+    const bookingIds = expiredBookings.map((booking) => booking.id);
+
+    await this.prisma.payment.updateMany({
+      where: {
+        bookingId: {
+          in: bookingIds,
         },
+        status: {
+          in: ["PENDING", "AWAITING_CONFIRMATION"],
+        },
+      },
+      data: {
+        status: "EXPIRED",
+      },
+    });
+
+    const result = await this.prisma.booking.updateMany({
+      where: {
+        id: {
+          in: bookingIds,
+        },
+        status: "PENDING",
       },
       data: {
         status: "CANCELLED",
       },
     });
 
-    return result.count;
+    return {
+      count: result.count,
+      bookingIds,
+    };
   }
 
   async updateStatus(

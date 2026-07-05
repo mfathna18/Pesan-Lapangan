@@ -12,6 +12,7 @@ import {
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import { prisma } from "@/lib/db/prisma";
+import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 
 async function revalidatePublicCheckout(bookingId: string) {
   const booking = await prisma.booking.findUnique({
@@ -33,15 +34,17 @@ async function revalidatePublicCheckout(bookingId: string) {
 }
 
 export async function approveManualPaymentAction(bookingId: string) {
-  try {
-    const session = await requireOwnerSession();
-    const ownerId = await requireOwnerId(session.user.id);
+  const session = await requireOwnerSession();
+  const ownerId = await requireOwnerId(session.user.id);
 
+  try {
     await getManualPaymentService().approvePayment({
       ownerId,
       ownerUserId: session.user.id,
       bookingId,
     });
+
+    await getNotificationEmitter().emitPaymentApproved(bookingId);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");
@@ -69,16 +72,18 @@ export async function rejectManualPaymentAction(input: {
   bookingId: string;
   reason: string;
 }) {
-  try {
-    const session = await requireOwnerSession();
-    const ownerId = await requireOwnerId(session.user.id);
+  const session = await requireOwnerSession();
+  const ownerId = await requireOwnerId(session.user.id);
 
+  try {
     await getManualPaymentService().rejectPayment({
       ownerId,
       ownerUserId: session.user.id,
       bookingId: input.bookingId,
       reason: input.reason,
     });
+
+    await getNotificationEmitter().emitPaymentRejected(input.bookingId);
 
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/bookings");

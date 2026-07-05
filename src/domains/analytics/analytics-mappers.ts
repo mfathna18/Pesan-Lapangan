@@ -244,6 +244,7 @@ function buildInsightCards(
   const dayCounts = new Map<number, number>();
   const revenueByCourt = new Map<string, { name: string; revenue: number }>();
   let totalDuration = 0;
+  let durationBookingCount = 0;
   let totalPaidRevenue = 0;
   let paidBookingCount = 0;
   let cancelledCount = 0;
@@ -265,6 +266,7 @@ function buildInsightCards(
     dayCounts.set(day, (dayCounts.get(day) ?? 0) + 1);
 
     totalDuration += booking.durationMinute;
+    durationBookingCount += 1;
 
     const paidAmount = sumPaidRevenue(booking);
 
@@ -330,9 +332,10 @@ function buildInsightCards(
     }
   }
 
-  const bookingCount = currentMonthBookings.length;
   const avgDuration =
-    bookingCount > 0 ? Math.round(totalDuration / bookingCount) : 0;
+    durationBookingCount > 0
+      ? Math.round(totalDuration / durationBookingCount)
+      : 0;
   const avgRevenue =
     paidBookingCount > 0 ? Math.round(totalPaidRevenue / paidBookingCount) : 0;
 
@@ -505,6 +508,7 @@ export function buildBusinessIntelligenceDashboard(
     lowestCourtUtilization,
     lowestCourtName,
     pendingBookings: snapshot.pendingBookings,
+    pendingPayments: snapshot.pendingPayments,
     revenueChangePercent,
     revenueIncreased: revenueChangePercent !== null && revenueChangePercent > 0,
   });

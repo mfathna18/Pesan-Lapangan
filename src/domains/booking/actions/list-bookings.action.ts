@@ -14,6 +14,7 @@ import type {
   BookingFilterOptions,
   ListBookingsResult,
 } from "@/domains/booking/types";
+import { parseVenueDateInput } from "@/domains/booking/utils/venue-date";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import { handleServerActionError } from "@/lib/server/actions";
@@ -39,7 +40,7 @@ export async function listBookingsAction(
       courtId: parsed.data.courtId || undefined,
       status: parsed.data.status,
       bookingDate: parsed.data.bookingDate
-        ? new Date(parsed.data.bookingDate)
+        ? parseVenueDateInput(parsed.data.bookingDate)
         : undefined,
       bookingNumberSearch: parsed.data.bookingNumberSearch || undefined,
     });

@@ -4,6 +4,7 @@ import { BookingRepository } from "@/domains/booking/repositories/booking-reposi
 
 export type ExpirePendingBookingsResult = {
   expiredCount: number;
+  bookingIds: string[];
 };
 
 export class BookingExpirationService {
@@ -12,10 +13,13 @@ export class BookingExpirationService {
   async expirePendingBookings(
     referenceDate: Date = new Date(),
   ): Promise<ExpirePendingBookingsResult> {
-    const expiredCount =
+    const result =
       await this.bookingRepository.expirePendingBookings(referenceDate);
 
-    return { expiredCount };
+    return {
+      expiredCount: result.count,
+      bookingIds: result.bookingIds,
+    };
   }
 }
 

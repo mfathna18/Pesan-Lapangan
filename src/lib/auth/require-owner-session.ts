@@ -10,11 +10,11 @@ export async function requireOwnerSession() {
   });
 
   if (!session?.user) {
-    redirect("/");
+    redirect("/login");
   }
 
   if (session.user.role !== OWNER_ROLE) {
-    redirect("/");
+    redirect("/login");
   }
 
   return session;

@@ -81,13 +81,14 @@ model Verification {
 // Owner domain profile linked to Better Auth user (1:1).
 
 model Owner {
-  id           String        @id @default(cuid())
-  userId       String        @unique
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  gor          Gor?
-  subscription Subscription?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id            String               @id @default(cuid())
+  userId        String               @unique
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gor           Gor?
+  subscription  Subscription?
+  notifications OwnerNotification[]
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@map("owner")
 }
@@ -409,4 +410,38 @@ model Invoice {
   @@index([status])
   @@index([generatedAt])
   @@map("invoice")
+}
+
+enum NotificationType {
+  BOOKING_CREATED
+  PAYMENT_AWAITING_CONFIRMATION
+  PAYMENT_APPROVED
+  PAYMENT_REJECTED
+  BOOKING_CANCELLED
+  SUBSCRIPTION_EXPIRING
+  SUBSCRIPTION_ACTIVATED
+}
+
+enum NotificationCategory {
+  BOOKING
+  PAYMENT
+  SYSTEM
+}
+
+model OwnerNotification {
+  id          String               @id @default(cuid())
+  ownerId     String
+  owner       Owner                @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  category    NotificationCategory
+  title       String
+  description String
+  href        String?
+  bookingId   String?
+  readAt      DateTime?
+  createdAt   DateTime             @default(now())
+
+  @@index([ownerId, createdAt(sort: Desc)])
+  @@index([ownerId, readAt])
+  @@map("owner_notification")
 }

@@ -43,6 +43,14 @@ export function buildAvailabilityBlockingBookingWhere(
           gte: referenceDate,
         },
       },
+      {
+        status: "PENDING",
+        payments: {
+          some: {
+            status: "AWAITING_CONFIRMATION",
+          },
+        },
+      },
     ],
   };
 }

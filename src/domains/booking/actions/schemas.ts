@@ -85,6 +85,14 @@ export const createPublicBookingSchema = z
         path: ["endMinute"],
       });
     }
+
+    if (value.startMinute % BOOKING_DURATION_INTERVAL_MINUTES !== 0) {
+      context.addIssue({
+        code: "custom",
+        message: `Waktu mulai harus kelipatan ${BOOKING_DURATION_INTERVAL_MINUTES} menit.`,
+        path: ["startMinute"],
+      });
+    }
   });
 
 export type CreatePublicBookingActionInput = z.infer<
@@ -126,6 +134,14 @@ export const createBookingSchema = z
         code: "custom",
         message: `Booking range must use ${BOOKING_DURATION_INTERVAL_MINUTES}-minute intervals.`,
         path: ["endMinute"],
+      });
+    }
+
+    if (value.startMinute % BOOKING_DURATION_INTERVAL_MINUTES !== 0) {
+      context.addIssue({
+        code: "custom",
+        message: `Start time must align to ${BOOKING_DURATION_INTERVAL_MINUTES}-minute intervals.`,
+        path: ["startMinute"],
       });
     }
   });

@@ -28,12 +28,12 @@ export function resolveCustomerPaymentDisplayStatus(input: {
 }): CustomerPaymentDisplayStatus {
   const referenceDate = input.referenceDate ?? new Date();
 
-  if (input.bookingStatus === "CANCELLED") {
-    return "CANCELLED";
-  }
-
   if (input.paymentStatus === "REJECTED") {
     return "PAYMENT_REJECTED";
+  }
+
+  if (input.bookingStatus === "CANCELLED") {
+    return "CANCELLED";
   }
 
   if (input.paymentStatus === "PAID" && input.bookingStatus === "CONFIRMED") {

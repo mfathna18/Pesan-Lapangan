@@ -9,16 +9,16 @@ import {
   createExportUnauthorizedResponse,
   parseSearchParams,
 } from "@/domains/export/utils/export-http";
+import { requireOwnerExportSession } from "@/domains/export/utils/require-owner-export-session";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
-import { getOwnerApiSession } from "@/lib/auth/get-owner-api-session";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  const session = await getOwnerApiSession();
+  const { session, errorResponse } = await requireOwnerExportSession();
 
   if (!session) {
-    return createExportUnauthorizedResponse();
+    return errorResponse ?? createExportUnauthorizedResponse();
   }
 
   const searchParams = parseSearchParams(request);

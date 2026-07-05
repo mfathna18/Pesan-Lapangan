@@ -3,24 +3,34 @@
 import { revalidatePath } from "next/cache";
 
 import { getManualPaymentService } from "@/domains/payment/actions/get-manual-payment-service";
+import {
+  createPublicPaymentSchema,
+  formatPaymentZodError,
+} from "@/domains/payment/actions/schemas";
 import { actionFailure, actionSuccess } from "@/domains/payment/actions/types";
 import {
   ManualPaymentNotFoundError,
   PaymentValidationError,
 } from "@/domains/payment/errors";
+import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 
-type SubmitManualPaymentInput = {
-  gorSlug: string;
-  bookingId: string;
-};
+export async function submitManualPaymentConfirmationAction(input: unknown) {
+  const parsed = createPublicPaymentSchema.safeParse(input);
 
-export async function submitManualPaymentConfirmationAction(
-  input: SubmitManualPaymentInput,
-) {
+  if (!parsed.success) {
+    return actionFailure(formatPaymentZodError(parsed.error));
+  }
+
   try {
-    await getManualPaymentService().submitCustomerConfirmation(input);
+    await getManualPaymentService().submitCustomerConfirmation(parsed.data);
 
-    revalidatePath(`/gor/${input.gorSlug}/checkout/${input.bookingId}`);
+    await getNotificationEmitter().emitPaymentAwaitingConfirmation(
+      parsed.data.bookingId,
+    );
+
+    revalidatePath(
+      `/gor/${parsed.data.gorSlug}/checkout/${parsed.data.bookingId}`,
+    );
 
     return actionSuccess({ submitted: true });
   } catch (error) {
@@ -36,13 +46,21 @@ export async function submitManualPaymentConfirmationAction(
   }
 }
 
-export async function cancelManualBookingAction(
-  input: SubmitManualPaymentInput,
-) {
-  try {
-    await getManualPaymentService().cancelBookingByCustomer(input);
+export async function cancelManualBookingAction(input: unknown) {
+  const parsed = createPublicPaymentSchema.safeParse(input);
 
-    revalidatePath(`/gor/${input.gorSlug}/checkout/${input.bookingId}`);
+  if (!parsed.success) {
+    return actionFailure(formatPaymentZodError(parsed.error));
+  }
+
+  try {
+    await getManualPaymentService().cancelBookingByCustomer(parsed.data);
+
+    await getNotificationEmitter().emitBookingCancelled(parsed.data.bookingId);
+
+    revalidatePath(
+      `/gor/${parsed.data.gorSlug}/checkout/${parsed.data.bookingId}`,
+    );
 
     return actionSuccess({ cancelled: true });
   } catch (error) {
