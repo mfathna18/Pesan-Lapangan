@@ -8,6 +8,7 @@ export type CourtForBooking = {
   isActive: boolean;
   gor: {
     name: string;
+    timezone: string;
   };
 };
 
@@ -278,6 +279,7 @@ export class CourtRepository {
         gor: {
           select: {
             name: true,
+            timezone: true,
           },
         },
       },

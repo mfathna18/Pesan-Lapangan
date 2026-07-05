@@ -69,12 +69,27 @@ export function AvailabilitySlotGrid({
           selectedEndMinute !== null && selectedEndMinute === slot.endMinute;
         const isInRange = isSlotInSelectedRange?.(slot) ?? false;
         const isInteractive = Boolean(onSelectSlot) && slot.available;
+        const isPastCutoff = slot.unavailableReason === "past_cutoff";
+        const statusLabel = isStartSelected
+          ? isEndSelected
+            ? "Dipilih"
+            : "Mulai"
+          : isEndSelected
+            ? "Selesai"
+            : slot.available
+              ? "Tersedia"
+              : isPastCutoff
+                ? CUSTOMER_COPY.booking.slotPastCutoff
+                : "Terisi";
 
         return (
           <button
             key={`${slot.startMinute}-${slot.endMinute}`}
             type="button"
             disabled={!slot.available || !onSelectSlot}
+            title={
+              isPastCutoff ? CUSTOMER_COPY.booking.slotPastCutoff : undefined
+            }
             onClick={() => {
               if (slot.available && onSelectSlot) {
                 onSelectSlot(slot);
@@ -107,15 +122,7 @@ export function AvailabilitySlotGrid({
                   : "text-muted-foreground",
               )}
             >
-              {isStartSelected && isEndSelected
-                ? "Dipilih"
-                : isStartSelected
-                  ? "Mulai"
-                  : isEndSelected
-                    ? "Selesai"
-                    : slot.available
-                      ? "Tersedia"
-                      : "Terisi"}
+              {statusLabel}
             </p>
           </button>
         );

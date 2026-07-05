@@ -3,11 +3,14 @@ export type TimeInterval = {
   endMinute: number;
 };
 
+export type AvailabilitySlotUnavailableReason = "booked" | "past_cutoff";
+
 export type AvailabilitySlot = {
   startMinute: number;
   endMinute: number;
   price: number;
   available: boolean;
+  unavailableReason?: AvailabilitySlotUnavailableReason;
 };
 
 export type AvailableSlot = AvailabilitySlot;

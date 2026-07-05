@@ -1,5 +1,11 @@
 export const BOOKING_DURATION_INTERVAL_MINUTES = 60 as const;
 
+/** Minimum lead time before a same-day slot can be booked. */
+export const BOOKING_CUTOFF_MINUTES = 30 as const;
+
+export const BOOKING_CUTOFF_PASSED_MESSAGE =
+  "Waktu booking telah terlewat." as const;
+
 export const BOOKING_PENDING_EXPIRY_MINUTES = 5 as const;
 
 /** Owner reminder threshold after customer confirms manual payment. */

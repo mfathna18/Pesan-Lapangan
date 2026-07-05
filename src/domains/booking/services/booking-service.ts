@@ -1,5 +1,6 @@
 import {
   ANALYTICS_TOP_COURTS_LIMIT,
+  BOOKING_CUTOFF_PASSED_MESSAGE,
   BOOKING_SLOT_UNAVAILABLE_MESSAGE,
 } from "@/domains/booking/constants";
 import {
@@ -36,7 +37,9 @@ import {
 import { resolveBookingPaymentDisplayStatus } from "@/domains/booking/utils/booking-display";
 import { acquireCourtBookingDateLock } from "@/domains/booking/utils/court-booking-lock";
 import { slotConflictsWithBookings } from "@/domains/booking/utils/slot-availability";
+import { isSlotPastBookingCutoff } from "@/domains/booking/utils/booking-cutoff";
 import { validateCreateBookingRequest } from "@/domains/booking/utils/validation";
+import { GOR_DEFAULT_TIMEZONE } from "@/domains/owner/constants";
 import {
   AvailabilityService,
   createAvailabilityService,
@@ -93,6 +96,18 @@ export class BookingService {
     );
 
     this.ensureCourtAndGorAreActive(court, input.courtId);
+
+    const venueTimezone = court.gor.timezone || GOR_DEFAULT_TIMEZONE;
+
+    if (
+      isSlotPastBookingCutoff({
+        bookingDate: input.bookingDate,
+        startMinute: input.startMinute,
+        timezone: venueTimezone,
+      })
+    ) {
+      throw new BookingValidationError(BOOKING_CUTOFF_PASSED_MESSAGE);
+    }
 
     try {
       await this.subscriptionAccessReader.assertCanReceiveBookings(

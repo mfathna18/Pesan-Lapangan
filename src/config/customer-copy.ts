@@ -65,6 +65,7 @@ export const CUSTOMER_COPY = {
     endBeforeStart: "Waktu selesai harus setelah waktu mulai.",
     slotUnavailable:
       "Slot waktu yang dipilih sudah tidak tersedia. Silakan pilih waktu lain.",
+    slotPastCutoff: "Waktu booking telah terlewat.",
   },
   checkout: {
     eyebrow: "Pembayaran",

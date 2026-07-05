@@ -12,8 +12,9 @@ import {
   mapActivePriceRulesForDay,
   mapOperatingHoursForDay,
 } from "@/domains/availability/utils/operating-hours";
-import { buildAvailabilitySlotGrid } from "@/domains/availability/utils/slots";
+import { buildAvailabilitySlotGridForDate } from "@/domains/availability/utils/slots";
 import { getDayOfWeek } from "@/domains/availability/utils/time-interval";
+import { GOR_DEFAULT_TIMEZONE } from "@/domains/owner/constants";
 import {
   CourtRepository,
   createCourtRepository,
@@ -77,10 +78,14 @@ export class AvailabilityService {
     const operatingWindows = mapOperatingHoursForDay(operatingHours, dayOfWeek);
     const pricedWindows = mapActivePriceRulesForDay(priceRules, dayOfWeek);
 
-    return buildAvailabilitySlotGrid(
+    return buildAvailabilitySlotGridForDate(
       operatingWindows,
       pricedWindows,
       existingBookings,
+      {
+        bookingDate: params.date,
+        timezone: court.gor.timezone || GOR_DEFAULT_TIMEZONE,
+      },
     );
   }
 

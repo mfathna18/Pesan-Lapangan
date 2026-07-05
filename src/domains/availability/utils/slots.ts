@@ -11,6 +11,7 @@ import {
   generateFixedIntervalSlots,
   intervalsOverlap,
 } from "@/domains/availability/utils/time-interval";
+import { applyBookingCutoffToSlots } from "@/domains/availability/utils/booking-cutoff-slots";
 
 export function buildAvailabilitySlotGrid(
   operatingHours: OperatingHoursWindow[],
@@ -38,9 +39,29 @@ export function buildAvailabilitySlotGrid(
         endMinute: slot.endMinute,
         price,
         available: !isBooked,
+        unavailableReason: isBooked ? "booked" : undefined,
       },
     ];
   });
+}
+
+export function buildAvailabilitySlotGridForDate(
+  operatingHours: OperatingHoursWindow[],
+  priceRules: PriceRuleWindow[],
+  existingBookings: TimeInterval[],
+  options: {
+    bookingDate: Date;
+    timezone: string;
+    now?: Date;
+  },
+): AvailabilitySlot[] {
+  const slots = buildAvailabilitySlotGrid(
+    operatingHours,
+    priceRules,
+    existingBookings,
+  );
+
+  return applyBookingCutoffToSlots(slots, options);
 }
 
 export function buildAvailabilitySlots(
