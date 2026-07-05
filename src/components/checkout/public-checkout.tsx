@@ -37,6 +37,7 @@ import {
 import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
 import { usePolling } from "@/hooks/use-polling";
+import { CustomerCheckoutBrowserNotifier } from "@/components/pwa/customer-browser-notification-listener";
 
 type PublicCheckoutProps = {
   checkout: PublicCheckoutData;
@@ -51,6 +52,12 @@ function CheckoutShell({
 }) {
   return (
     <div className="bg-background min-h-screen">
+      <CustomerCheckoutBrowserNotifier
+        gorSlug={checkout.venueSlug}
+        bookingId={checkout.bookingId}
+        latestPaymentStatus={checkout.latestPaymentStatus}
+        bookingStatus={checkout.status}
+      />
       <CourtDetailHeader
         gorSlug={checkout.venueSlug}
         gorName={checkout.venueName}

@@ -4,7 +4,9 @@ import { Menu } from "lucide-react";
 
 import { DashboardProfileMenu } from "@/components/dashboard/dashboard-profile-menu";
 import { NotificationBell } from "@/components/notification/notification-bell";
+import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 import { Button } from "@/components/ui/button";
+import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 import type { OwnerNotificationListResult } from "@/domains/notification/types";
 import { layout } from "@/lib/design-system";
 
@@ -17,12 +19,14 @@ type DashboardTopbarUser = {
 type DashboardTopbarProps = {
   user: DashboardTopbarUser;
   initialNotifications: OwnerNotificationListResult;
+  browserNotificationSettings: OwnerBrowserNotificationSettingsData;
   onMenuClick: () => void;
 };
 
 export function DashboardTopbar({
   user,
   initialNotifications,
+  browserNotificationSettings,
   onMenuClick,
 }: DashboardTopbarProps) {
   return (
@@ -41,7 +45,11 @@ export function DashboardTopbar({
         <div className="flex-1" />
 
         <div className="flex items-center gap-2">
-          <NotificationBell initialData={initialNotifications} />
+          <PwaInstallButton />
+          <NotificationBell
+            initialData={initialNotifications}
+            browserNotificationSettings={browserNotificationSettings}
+          />
           <DashboardProfileMenu user={user} />
         </div>
       </div>

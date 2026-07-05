@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { PublicInvoiceUnavailable } from "@/components/checkout/public-invoice-unavailable";
 import { PublicInvoiceView } from "@/components/checkout/public-invoice-view";
+import { CustomerBookingReminderNotifier } from "@/components/pwa/customer-browser-notification-listener";
 import { getPublicInvoiceService } from "@/domains/invoice/actions/get-public-invoice-service";
 import { getPublicCheckoutService } from "@/domains/payment/actions/get-public-checkout-service";
 import { PublicCheckoutNotFoundError } from "@/domains/payment/errors";
@@ -71,5 +72,16 @@ export default async function PublicInvoicePage({
     );
   }
 
-  return <PublicInvoiceView invoice={invoice} />;
+  return (
+    <>
+      <PublicInvoiceView invoice={invoice} />
+      <CustomerBookingReminderNotifier
+        gorSlug={invoice.venueSlug}
+        bookingId={invoice.bookingId}
+        bookingDate={invoice.bookingDate}
+        startMinute={invoice.startMinute}
+        courtName={invoice.courtName}
+      />
+    </>
+  );
 }

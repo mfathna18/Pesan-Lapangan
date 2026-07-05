@@ -1,5 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { PwaProvider } from "@/components/pwa/pwa-provider";
+import { PwaNotificationNavigateListener } from "@/components/pwa/pwa-notification-navigate-listener";
 import { siteConfig } from "@/config/site";
 import "./globals.css";
 
@@ -48,6 +50,16 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
     shortcut: ["/favicon.ico"],
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.name,
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#15803d",
 };
 
 export default function RootLayout({
@@ -58,6 +70,8 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${inter.variable} ${geistMono.variable}`}>
+        <PwaProvider />
+        <PwaNotificationNavigateListener />
         {children}
       </body>
     </html>

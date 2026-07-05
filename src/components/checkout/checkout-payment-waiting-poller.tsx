@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { BookingExpirationCountdown } from "@/components/checkout/booking-expiration-countdown";
 import { CheckoutStatusBanner } from "@/components/checkout/checkout-state-panels";
+import { CustomerCheckoutBrowserNotifier } from "@/components/pwa/customer-browser-notification-listener";
 import { CustomerDetailField } from "@/components/customer/customer-detail-field";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -98,6 +99,12 @@ export function CheckoutPaymentWaitingPoller({
 
   return (
     <div className={customerLayout.funnelStack}>
+      <CustomerCheckoutBrowserNotifier
+        gorSlug={gorSlug}
+        bookingId={bookingId}
+        latestPaymentStatus={checkout.latestPaymentStatus}
+        bookingStatus={checkout.status}
+      />
       <CheckoutStatusBanner
         label="Menunggu Pembayaran"
         description={CUSTOMER_COPY.checkout.waitingBanner}

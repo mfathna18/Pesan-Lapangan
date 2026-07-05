@@ -15,12 +15,18 @@ import type { OwnerNotificationListResult } from "@/domains/notification/types";
 import { focusRing, transition } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 import { usePolling } from "@/hooks/use-polling";
+import { useOwnerBrowserNotificationSync } from "@/hooks/use-owner-browser-notification-sync";
+import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 
 type NotificationBellProps = {
   initialData: OwnerNotificationListResult;
+  browserNotificationSettings: OwnerBrowserNotificationSettingsData;
 };
 
-export function NotificationBell({ initialData }: NotificationBellProps) {
+export function NotificationBell({
+  initialData,
+  browserNotificationSettings,
+}: NotificationBellProps) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(initialData);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -60,6 +66,7 @@ export function NotificationBell({ initialData }: NotificationBellProps) {
   }, []);
 
   usePolling(refreshNotifications, POLL_INTERVALS.NOTIFICATIONS_MS);
+  useOwnerBrowserNotificationSync(data.items, browserNotificationSettings);
 
   async function handleMarkRead(notificationId: string) {
     const response = await markNotificationReadAction(notificationId);

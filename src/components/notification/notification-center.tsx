@@ -18,6 +18,8 @@ import type { OwnerNotificationListResult } from "@/domains/notification/types";
 import { layout } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 import { usePolling } from "@/hooks/use-polling";
+import { useOwnerBrowserNotificationSync } from "@/hooks/use-owner-browser-notification-sync";
+import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 
 const filters: { id: NotificationFilter; label: string }[] = [
   { id: "all", label: "Semua" },
@@ -30,11 +32,13 @@ const filters: { id: NotificationFilter; label: string }[] = [
 type NotificationCenterProps = {
   initialData: OwnerNotificationListResult;
   initialFilter?: NotificationFilter;
+  browserNotificationSettings: OwnerBrowserNotificationSettingsData;
 };
 
 export function NotificationCenter({
   initialData,
   initialFilter = "all",
+  browserNotificationSettings,
 }: NotificationCenterProps) {
   const [filter, setFilter] = useState<NotificationFilter>(initialFilter);
   const [data, setData] = useState(initialData);
@@ -53,6 +57,7 @@ export function NotificationCenter({
   }, [filter]);
 
   usePolling(refreshNotifications, POLL_INTERVALS.NOTIFICATIONS_MS);
+  useOwnerBrowserNotificationSync(data.items, browserNotificationSettings);
 
   useEffect(() => {
     startTransition(async () => {

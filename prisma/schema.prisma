@@ -87,9 +87,10 @@ model Owner {
   gor                Gor?
   subscription       Subscription?
   notifications      OwnerNotification[]
-  whatsappSettings   OwnerWhatsAppSettings?
-  whatsappMessageLogs WhatsAppMessageLog[]
-  createdAt          DateTime                @default(now())
+  whatsappSettings              OwnerWhatsAppSettings?
+  whatsappMessageLogs           WhatsAppMessageLog[]
+  browserNotificationSettings   OwnerBrowserNotificationSettings?
+  createdAt                     DateTime                @default(now())
   updatedAt          DateTime                @updatedAt
 
   @@map("owner")
@@ -508,4 +509,19 @@ model WhatsAppMessageLog {
   @@index([ownerId, createdAt(sort: Desc)])
   @@index([status, attemptCount])
   @@map("whatsapp_message_log")
+}
+
+model OwnerBrowserNotificationSettings {
+  id                 String   @id @default(cuid())
+  ownerId            String   @unique
+  owner              Owner    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  enabled            Boolean  @default(true)
+  notifyBooking      Boolean  @default(true)
+  notifyPayment      Boolean  @default(true)
+  notifyReminder     Boolean  @default(true)
+  notifySubscription Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("owner_browser_notification_settings")
 }

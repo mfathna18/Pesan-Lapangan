@@ -1,0 +1,26 @@
+{
+  "name": "PesanLapangan",
+  "short_name": "PesanLapangan",
+  "description": "Pesan lapangan olahraga online — badminton, futsal, basket, dan lainnya.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#15803d",
+  "background_color": "#ffffff",
+  "lang": "id",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

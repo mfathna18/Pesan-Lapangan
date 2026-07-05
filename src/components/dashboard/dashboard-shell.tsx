@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardTopbar } from "@/components/dashboard/dashboard-topbar";
+import { PushPermissionDialog } from "@/components/pwa/push-permission-dialog";
+import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 import { dashboardLayout } from "@/lib/layout-system";
 import { cn } from "@/lib/utils";
 import type { OwnerNotificationListResult } from "@/domains/notification/types";
@@ -19,12 +21,14 @@ type DashboardShellUser = {
 type DashboardShellProps = {
   user: DashboardShellUser;
   initialNotifications: OwnerNotificationListResult;
+  browserNotificationSettings: OwnerBrowserNotificationSettingsData;
   children: React.ReactNode;
 };
 
 export function DashboardShell({
   user,
   initialNotifications,
+  browserNotificationSettings,
   children,
 }: DashboardShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -67,8 +71,11 @@ export function DashboardShell({
         <DashboardTopbar
           user={user}
           initialNotifications={initialNotifications}
+          browserNotificationSettings={browserNotificationSettings}
           onMenuClick={() => setMobileOpen(true)}
         />
+
+        <PushPermissionDialog settings={browserNotificationSettings} />
 
         <main className="flex flex-1 flex-col">{children}</main>
       </div>
