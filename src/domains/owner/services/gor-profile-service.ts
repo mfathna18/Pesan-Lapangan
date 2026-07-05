@@ -58,13 +58,10 @@ export class GorProfileService {
       city: input.city.trim(),
       province: input.province.trim(),
       description: normalizeOptionalString(input.description),
-      logoUrl: normalizeOptionalString(input.logoUrl),
-      coverImageUrl: normalizeOptionalString(input.coverImageUrl),
       timezone: input.timezone,
       bankName: normalizeOptionalString(input.bankName),
       bankAccountNumber: normalizeOptionalString(input.bankAccountNumber),
       bankAccountHolder: normalizeOptionalString(input.bankAccountHolder),
-      qrisImageUrl: normalizeOptionalString(input.qrisImageUrl),
     };
 
     if (!profileData.name) {
@@ -85,6 +82,9 @@ export class GorProfileService {
 
       return await this.gorRepository.createGorProfile(owner.id, {
         ...profileData,
+        logoUrl: null,
+        coverImages: [],
+        qrisImageUrl: null,
         currency: GOR_DEFAULT_CURRENCY,
         isActive: true,
         timezone: profileData.timezone || GOR_DEFAULT_TIMEZONE,

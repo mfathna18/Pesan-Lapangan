@@ -168,7 +168,7 @@ model Gor {
   province       String   @default("")
   description    String?
   logoUrl        String?
-  coverImageUrl  String?
+  coverImages    String[] @default([])
   timezone       String   @default("Asia/Jakarta")
   currency       String   @default("IDR")
   isActive       Boolean  @default(true)

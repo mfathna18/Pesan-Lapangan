@@ -10,7 +10,7 @@ export type PublicGorRecord = {
   city: string;
   description: string | null;
   logoUrl: string | null;
-  coverImageUrl: string | null;
+  coverImages: string[];
   isActive: boolean;
 };
 
@@ -25,7 +25,7 @@ export type GorProfileRecord = {
   province: string;
   description: string | null;
   logoUrl: string | null;
-  coverImageUrl: string | null;
+  coverImages: string[];
   timezone: string;
   currency: string;
   isActive: boolean;
@@ -45,13 +45,10 @@ export type UpdateGorProfileInput = {
   city: string;
   province: string;
   description?: string | null;
-  logoUrl?: string | null;
-  coverImageUrl?: string | null;
   timezone: string;
   bankName?: string | null;
   bankAccountNumber?: string | null;
   bankAccountHolder?: string | null;
-  qrisImageUrl?: string | null;
 };
 
 export type OwnerWithGorRecord = {

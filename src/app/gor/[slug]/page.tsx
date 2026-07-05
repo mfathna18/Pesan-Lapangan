@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { VenuePage } from "@/components/venue/venue-page";
 import { siteConfig } from "@/config/site";
 import { getVenueService } from "@/domains/venue/actions/get-venue-service";
+import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
 import { VenueNotFoundError } from "@/domains/venue/errors";
 
 type VenueRoutePageProps = {
@@ -44,6 +45,7 @@ export async function generateMetadata({
     const venue = await getCachedPublicVenue(slug);
     const description = buildVenueDescription(venue);
     const pageUrl = `${siteConfig.url}/gor/${venue.slug}`;
+    const primaryCover = getPrimaryCoverImage(venue.coverImages);
 
     return {
       title: venue.name,
@@ -58,11 +60,11 @@ export async function generateMetadata({
         siteName: siteConfig.name,
         locale: "id_ID",
         type: "website",
-        ...(venue.coverImageUrl
+        ...(primaryCover
           ? {
               images: [
                 {
-                  url: venue.coverImageUrl,
+                  url: primaryCover,
                   alt: `${venue.name} cover`,
                 },
               ],
@@ -70,10 +72,10 @@ export async function generateMetadata({
           : {}),
       },
       twitter: {
-        card: venue.coverImageUrl ? "summary_large_image" : "summary",
+        card: primaryCover ? "summary_large_image" : "summary",
         title: venue.name,
         description,
-        ...(venue.coverImageUrl ? { images: [venue.coverImageUrl] } : {}),
+        ...(primaryCover ? { images: [primaryCover] } : {}),
       },
     };
   } catch {

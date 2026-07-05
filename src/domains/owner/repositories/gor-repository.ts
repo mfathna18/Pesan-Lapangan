@@ -16,7 +16,7 @@ const gorProfileSelect = {
   province: true,
   description: true,
   logoUrl: true,
-  coverImageUrl: true,
+  coverImages: true,
   timezone: true,
   currency: true,
   isActive: true,
@@ -34,7 +34,7 @@ const publicGorSelect = {
   city: true,
   description: true,
   logoUrl: true,
-  coverImageUrl: true,
+  coverImages: true,
   isActive: true,
 } as const;
 
@@ -107,7 +107,7 @@ export class GorRepository {
 
   async createGorProfile(
     ownerId: string,
-    data: Omit<GorProfileRecord, "id" | "currency" | "isActive"> & {
+    data: Omit<GorProfileRecord, "id"> & {
       currency?: string;
       isActive?: boolean;
     },
@@ -124,10 +124,14 @@ export class GorRepository {
         province: data.province,
         description: data.description,
         logoUrl: data.logoUrl,
-        coverImageUrl: data.coverImageUrl,
+        coverImages: data.coverImages,
         timezone: data.timezone,
-        currency: data.currency,
-        isActive: data.isActive,
+        currency: data.currency ?? "IDR",
+        isActive: data.isActive ?? true,
+        bankName: data.bankName,
+        bankAccountNumber: data.bankAccountNumber,
+        bankAccountHolder: data.bankAccountHolder,
+        qrisImageUrl: data.qrisImageUrl,
       },
       select: gorProfileSelect,
     });
@@ -135,12 +139,19 @@ export class GorRepository {
 
   async updateGorProfile(
     gorId: string,
-    data: Omit<
-      GorProfileRecord,
-      "id" | "currency" | "isActive" | "slug" | "name"
-    > & {
+    data: {
       name: string;
       slug: string;
+      phone: string | null;
+      email: string | null;
+      address: string;
+      city: string;
+      province: string;
+      description: string | null;
+      timezone: string;
+      bankName: string | null;
+      bankAccountNumber: string | null;
+      bankAccountHolder: string | null;
     },
   ): Promise<GorProfileRecord> {
     return this.prisma.gor.update({
@@ -154,15 +165,39 @@ export class GorRepository {
         city: data.city,
         province: data.province,
         description: data.description,
-        logoUrl: data.logoUrl,
-        coverImageUrl: data.coverImageUrl,
         timezone: data.timezone,
         bankName: data.bankName,
         bankAccountNumber: data.bankAccountNumber,
         bankAccountHolder: data.bankAccountHolder,
-        qrisImageUrl: data.qrisImageUrl,
       },
       select: gorProfileSelect,
+    });
+  }
+
+  async updateGorLogo(gorId: string, logoUrl: string | null): Promise<void> {
+    await this.prisma.gor.update({
+      where: { id: gorId },
+      data: { logoUrl },
+    });
+  }
+
+  async updateGorQris(
+    gorId: string,
+    qrisImageUrl: string | null,
+  ): Promise<void> {
+    await this.prisma.gor.update({
+      where: { id: gorId },
+      data: { qrisImageUrl },
+    });
+  }
+
+  async updateGorCoverImages(
+    gorId: string,
+    coverImages: string[],
+  ): Promise<void> {
+    await this.prisma.gor.update({
+      where: { id: gorId },
+      data: { coverImages },
     });
   }
 }

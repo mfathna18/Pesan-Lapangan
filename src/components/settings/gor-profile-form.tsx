@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 
+import { GorMediaSettings } from "@/components/settings/gor-media-settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,13 +33,10 @@ type GorProfileFormState = {
   city: string;
   province: string;
   description: string;
-  logoUrl: string;
-  coverImageUrl: string;
   timezone: string;
   bankName: string;
   bankAccountNumber: string;
   bankAccountHolder: string;
-  qrisImageUrl: string;
 };
 
 type GorProfileFormProps = {
@@ -54,13 +52,10 @@ function createFormState(profile: GorProfileData | null): GorProfileFormState {
     city: profile?.city ?? "",
     province: profile?.province ?? "",
     description: profile?.description ?? "",
-    logoUrl: profile?.logoUrl ?? "",
-    coverImageUrl: profile?.coverImageUrl ?? "",
     timezone: profile?.timezone ?? GOR_DEFAULT_TIMEZONE,
     bankName: profile?.bankName ?? "",
     bankAccountNumber: profile?.bankAccountNumber ?? "",
     bankAccountHolder: profile?.bankAccountHolder ?? "",
-    qrisImageUrl: profile?.qrisImageUrl ?? "",
   };
 }
 
@@ -95,13 +90,10 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
         city: form.city,
         province: form.province,
         description: form.description || null,
-        logoUrl: form.logoUrl || null,
-        coverImageUrl: form.coverImageUrl || null,
         timezone: form.timezone,
         bankName: form.bankName || null,
         bankAccountNumber: form.bankAccountNumber || null,
         bankAccountHolder: form.bankAccountHolder || null,
-        qrisImageUrl: form.qrisImageUrl || null,
       });
 
       if (!response.success) {
@@ -231,7 +223,7 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
         <CardHeader>
           <CardTitle>Identitas &amp; Detail</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
+        <CardContent className="grid gap-6 sm:grid-cols-2">
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="gor-description">Deskripsi</Label>
             <Textarea
@@ -244,51 +236,20 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="gor-logo">Logo</Label>
-            <Input
-              id="gor-logo"
-              type="url"
-              value={form.logoUrl}
-              onChange={(event) => updateField("logoUrl", event.target.value)}
-              placeholder="https://example.com/logo.png"
+          <div className="sm:col-span-2">
+            <GorMediaSettings
+              key={savedProfile?.id ?? "new"}
+              profile={savedProfile}
+              disabled={isPending}
             />
-            {form.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.logoUrl}
-                alt="Pratinjau logo"
-                className="border-border mt-2 h-16 w-16 rounded-lg border object-cover"
-              />
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="gor-cover">Gambar Sampul</Label>
-            <Input
-              id="gor-cover"
-              type="url"
-              value={form.coverImageUrl}
-              onChange={(event) =>
-                updateField("coverImageUrl", event.target.value)
-              }
-              placeholder="https://example.com/cover.jpg"
-            />
-            {form.coverImageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={form.coverImageUrl}
-                alt="Pratinjau sampul"
-                className="border-border mt-2 h-28 w-full rounded-lg border object-cover"
-              />
-            ) : null}
           </div>
 
           <div className="space-y-4 sm:col-span-2">
             <div>
               <h3 className="text-base font-semibold">Informasi Pembayaran</h3>
               <p className="text-muted-foreground text-sm">
-                Ditampilkan ke pelanggan saat checkout transfer manual.
+                Rekening bank ditampilkan ke pelanggan saat checkout transfer
+                manual.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
@@ -323,18 +284,6 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
                     updateField("bankAccountHolder", event.target.value)
                   }
                   placeholder="GOR ABC"
-                />
-              </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="gor-qris">URL QRIS</Label>
-                <Input
-                  id="gor-qris"
-                  type="url"
-                  value={form.qrisImageUrl}
-                  onChange={(event) =>
-                    updateField("qrisImageUrl", event.target.value)
-                  }
-                  placeholder="https://example.com/qris.png"
                 />
               </div>
             </div>

@@ -18,6 +18,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { landingContent } from "@/config/landing";
 import type { PublicVenueListItem } from "@/domains/venue/types";
+import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
 import { layout } from "@/lib/design-system";
 import { cn } from "@/lib/utils";
 
@@ -80,56 +81,63 @@ export function VenueDiscoverySection({
           />
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredVenues.map((venue) => (
-              <Card
-                key={venue.id}
-                className="group flex flex-col overflow-hidden transition-shadow duration-150 hover:shadow-[var(--shadow-elevated)] motion-reduce:transition-none"
-              >
-                <div className="bg-muted relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden">
-                  {venue.coverImageUrl ? (
-                    <div
-                      className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
-                      style={{ backgroundImage: `url(${venue.coverImageUrl})` }}
-                      role="img"
-                      aria-label={venue.name}
-                    />
-                  ) : (
-                    <span className="text-muted-foreground px-4 text-center text-sm">
-                      {venue.name}
-                    </span>
-                  )}
-                </div>
-                <CardHeader className="gap-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-lg leading-snug">
-                      {venue.name}
-                    </CardTitle>
-                    <Badge variant="success" className="shrink-0">
-                      {venue.city}
-                    </Badge>
+            {filteredVenues.map((venue) => {
+              const coverImage = getPrimaryCoverImage(venue.coverImages);
+
+              return (
+                <Card
+                  key={venue.id}
+                  className="group flex flex-col overflow-hidden transition-shadow duration-150 hover:shadow-[var(--shadow-elevated)] motion-reduce:transition-none"
+                >
+                  <div className="bg-muted relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden">
+                    {coverImage ? (
+                      <div
+                        className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
+                        style={{ backgroundImage: `url(${coverImage})` }}
+                        role="img"
+                        aria-label={venue.name}
+                      />
+                    ) : (
+                      <span className="text-muted-foreground px-4 text-center text-sm">
+                        {venue.name}
+                      </span>
+                    )}
                   </div>
-                  {venue.address ? (
-                    <CardDescription className="flex items-start gap-1.5">
-                      <MapPin className="mt-0.5 size-4 shrink-0" aria-hidden />
-                      <span>{venue.address}</span>
-                    </CardDescription>
-                  ) : null}
-                </CardHeader>
-                <CardContent className="mt-auto pt-0">
-                  {venue.description ? (
-                    <p className="text-muted-foreground mb-5 line-clamp-2 text-sm leading-relaxed">
-                      {venue.description}
-                    </p>
-                  ) : null}
-                  <Link
-                    href={`/gor/${venue.slug}`}
-                    className={cn(buttonVariants({ size: "lg" }), "w-full")}
-                  >
-                    {CUSTOMER_COPY.discovery.viewVenue}
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader className="gap-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <CardTitle className="text-lg leading-snug">
+                        {venue.name}
+                      </CardTitle>
+                      <Badge variant="success" className="shrink-0">
+                        {venue.city}
+                      </Badge>
+                    </div>
+                    {venue.address ? (
+                      <CardDescription className="flex items-start gap-1.5">
+                        <MapPin
+                          className="mt-0.5 size-4 shrink-0"
+                          aria-hidden
+                        />
+                        <span>{venue.address}</span>
+                      </CardDescription>
+                    ) : null}
+                  </CardHeader>
+                  <CardContent className="mt-auto pt-0">
+                    {venue.description ? (
+                      <p className="text-muted-foreground mb-5 line-clamp-2 text-sm leading-relaxed">
+                        {venue.description}
+                      </p>
+                    ) : null}
+                    <Link
+                      href={`/gor/${venue.slug}`}
+                      className={cn(buttonVariants({ size: "lg" }), "w-full")}
+                    >
+                      {CUSTOMER_COPY.discovery.viewVenue}
+                    </Link>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

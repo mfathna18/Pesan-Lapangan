@@ -30,11 +30,36 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+function getSupabaseStorageHostname(): string | null {
+  const supabaseUrl = process.env.SUPABASE_URL;
+
+  if (!supabaseUrl) {
+    return null;
+  }
+
+  try {
+    return new URL(supabaseUrl).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const supabaseStorageHostname = getSupabaseStorageHostname();
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  serverExternalPackages: ["pdfkit"],
-  // Public venue images use native <img> tags with owner-provided URLs.
-  // Add remotePatterns here when migrating to next/image.
+  serverExternalPackages: ["pdfkit", "sharp"],
+  images: supabaseStorageHostname
+    ? {
+        remotePatterns: [
+          {
+            protocol: "https",
+            hostname: supabaseStorageHostname,
+            pathname: "/storage/v1/object/public/**",
+          },
+        ],
+      }
+    : undefined,
   async headers() {
     return [
       {
