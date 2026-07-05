@@ -1,4 +1,5 @@
-const STATIC_CACHE = "pesan-lapangan-static-v1";
+const SW_VERSION = "v2";
+const STATIC_CACHE = `pesan-lapangan-static-${SW_VERSION}`;
 
 const STATIC_ASSETS = [
   "/",
@@ -7,6 +8,12 @@ const STATIC_ASSETS = [
   "/apple-icon.png",
   "/favicon.ico",
 ];
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
