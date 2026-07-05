@@ -26,7 +26,22 @@ import {
   getMimeTypeFromFileName,
   MEDIA_ACCEPT_ATTRIBUTE,
 } from "@/domains/media/utils/validate-media-file";
+import { optimizeImageFile } from "@/domains/media/utils/client-image-optimizer";
 import { cn } from "@/lib/utils";
+
+function mapOptimizeError(error: unknown): string {
+  if (error instanceof Error) {
+    if (error.message === "INVALID_IMAGE") {
+      return MEDIA_ERROR_MESSAGE.INVALID_FORMAT;
+    }
+
+    if (error.message === "OPTIMIZE_FAILED") {
+      return MEDIA_ERROR_MESSAGE.UPLOAD_FAILED;
+    }
+  }
+
+  return MEDIA_ERROR_MESSAGE.UPLOAD_FAILED;
+}
 
 type ImageUploadFieldProps = {
   label: string;
@@ -91,7 +106,8 @@ export function ImageUploadField({
 
     startTransition(async () => {
       try {
-        const url = await onUploadFile(file);
+        const optimizedFile = await optimizeImageFile({ file, kind });
+        const url = await onUploadFile(optimizedFile);
         onUploaded(url);
       } catch (uploadError) {
         setError(
@@ -237,7 +253,7 @@ export function CoverGalleryManager({
         setError(
           actionError instanceof Error
             ? actionError.message
-            : MEDIA_ERROR_MESSAGE.UPLOAD_FAILED,
+            : mapOptimizeError(actionError),
         );
       } finally {
         setPendingKey(null);
@@ -261,7 +277,13 @@ export function CoverGalleryManager({
       return;
     }
 
-    runAction("add", () => onAdd(file));
+    runAction("add", async () => {
+      const optimizedFile = await optimizeImageFile({
+        file,
+        kind: MEDIA_KIND.COVER,
+      });
+      return onAdd(optimizedFile);
+    });
   }
 
   function handleReplaceFile(event: React.ChangeEvent<HTMLInputElement>) {
@@ -280,7 +302,13 @@ export function CoverGalleryManager({
     }
 
     const index = replaceIndex;
-    runAction(`replace-${index}`, () => onReplace(file, index));
+    runAction(`replace-${index}`, async () => {
+      const optimizedFile = await optimizeImageFile({
+        file,
+        kind: MEDIA_KIND.COVER,
+      });
+      return onReplace(optimizedFile, index);
+    });
   }
 
   function moveImage(index: number, direction: -1 | 1) {

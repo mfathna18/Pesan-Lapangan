@@ -1,12 +1,13 @@
 "use server";
 
+import { getGorMediaService } from "@/domains/media/actions/get-gor-media-service";
 import { MEDIA_KIND } from "@/domains/media/constants";
 import {
   MediaAuthorizationError,
   MediaStorageError,
   MediaValidationError,
 } from "@/domains/media/errors";
-import { getGorMediaService } from "@/domains/media/actions/get-gor-media-service";
+import { getUploadFileFromFormData } from "@/domains/media/utils/form-data-file";
 import {
   actionFailure,
   actionSuccess,
@@ -28,9 +29,9 @@ export async function uploadGorLogoAction(
   formData: FormData,
 ): Promise<ActionResponse<{ logoUrl: string }>> {
   const session = await requireOwnerSession();
-  const file = formData.get("file");
+  const file = getUploadFileFromFormData(formData);
 
-  if (!(file instanceof File)) {
+  if (!file) {
     return actionFailure("Pilih gambar logo terlebih dahulu.");
   }
 
@@ -53,9 +54,9 @@ export async function uploadGorQrisAction(
   formData: FormData,
 ): Promise<ActionResponse<{ qrisImageUrl: string }>> {
   const session = await requireOwnerSession();
-  const file = formData.get("file");
+  const file = getUploadFileFromFormData(formData);
 
-  if (!(file instanceof File)) {
+  if (!file) {
     return actionFailure("Pilih gambar QRIS terlebih dahulu.");
   }
 
@@ -78,9 +79,9 @@ export async function uploadGorCoverAction(
   formData: FormData,
 ): Promise<ActionResponse<{ coverImages: string[] }>> {
   const session = await requireOwnerSession();
-  const file = formData.get("file");
+  const file = getUploadFileFromFormData(formData);
 
-  if (!(file instanceof File)) {
+  if (!file) {
     return actionFailure("Pilih foto sampul terlebih dahulu.");
   }
 
@@ -103,10 +104,10 @@ export async function replaceGorCoverAction(
   formData: FormData,
 ): Promise<ActionResponse<{ coverImages: string[] }>> {
   const session = await requireOwnerSession();
-  const file = formData.get("file");
+  const file = getUploadFileFromFormData(formData);
   const indexValue = formData.get("index");
 
-  if (!(file instanceof File)) {
+  if (!file) {
     return actionFailure("Pilih foto sampul terlebih dahulu.");
   }
 

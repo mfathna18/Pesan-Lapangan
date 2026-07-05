@@ -10,7 +10,7 @@ import {
   MediaStorageError,
   MediaValidationError,
 } from "@/domains/media/errors";
-import { optimizeImageBuffer } from "@/domains/media/services/image-optimizer";
+import { prepareUploadBuffer } from "@/domains/media/services/image-optimizer";
 import type { MediaUploadResult } from "@/domains/media/types";
 import { buildMediaStoragePath } from "@/domains/media/utils/storage-path";
 import {
@@ -38,7 +38,7 @@ export class MediaStorageService {
 
     validateMediaBuffer(inputBuffer, kind);
 
-    const optimizedBuffer = await optimizeImageBuffer(inputBuffer, kind);
+    const optimizedBuffer = await prepareUploadBuffer(inputBuffer, kind);
     const bucket = getMediaBucket(kind);
     const fileId = crypto.randomUUID();
     const storagePath = buildMediaStoragePath(ownerId, kind, fileId);

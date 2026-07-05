@@ -48,7 +48,12 @@ const supabaseStorageHostname = getSupabaseStorageHostname();
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  serverExternalPackages: ["pdfkit", "sharp"],
+  serverExternalPackages: ["pdfkit"],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   images: supabaseStorageHostname
     ? {
         remotePatterns: [

@@ -11,9 +11,9 @@ Server Action (auth + ownership)
         ↓
 Validate MIME / size
         ↓
-sharp resize + WebP compress
+Browser resize + WebP compress
         ↓
-Supabase Storage upload
+Server validates + uploads to Supabase Storage
         ↓
 Public URL saved in Gor record
         ↓
@@ -63,8 +63,8 @@ Add both to Vercel production and local `.env.local`.
 1. Owner chooses an image in **Dashboard → Settings**.
 2. Client validates format (PNG/JPG/WEBP) and max size.
 3. Server action verifies owner session and GOR ownership.
-4. `sharp` rotates, resizes (keeping aspect ratio), strips metadata, outputs WebP.
-5. File uploads to `{ownerId}/{kind}/{uuid}.webp`.
+4. Browser optimizes to WebP (resize + compress) before upload.
+5. Server validates file signature and uploads to Supabase Storage.
 6. Public URL is written to `gor.logoUrl`, `gor.coverImages`, or `gor.qrisImageUrl`.
 7. UI updates immediately without a full page reload.
 
@@ -80,7 +80,7 @@ Cover gallery: **maximum 5 images**.
 
 ## Optimization
 
-All uploads are converted to **WebP** (quality 85) before storage. Large originals are downscaled server-side so 10 MB+ camera photos are never stored as-is.
+All uploads are converted to **WebP** in the browser before upload (quality 85). Large originals are downscaled client-side so heavy server image libraries are not required on Vercel.
 
 ## Replacement strategy
 
