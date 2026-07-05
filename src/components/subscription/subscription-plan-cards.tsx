@@ -93,20 +93,19 @@ export function SubscriptionPlanCards({
             <Card
               key={plan.plan}
               className={cn(
-                "relative flex flex-col",
+                "flex flex-col",
                 plan.isBestValue && "border-primary shadow-md",
                 plan.isCurrent && "ring-primary/30 ring-2",
               )}
             >
-              {plan.isBestValue ? (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground">
-                    BEST VALUE
-                  </Badge>
-                </div>
-              ) : null}
-
               <CardHeader className="space-y-3">
+                {plan.isBestValue ? (
+                  <div className="flex justify-center">
+                    <Badge className="bg-primary text-primary-foreground">
+                      BEST VALUE
+                    </Badge>
+                  </div>
+                ) : null}
                 <div className="flex items-center justify-between gap-2">
                   <CardTitle>{plan.label}</CardTitle>
                   {plan.isCurrent ? (
