@@ -2,6 +2,7 @@ import { BrowserNotificationSettings } from "@/components/settings/browser-notif
 import { GorProfileForm } from "@/components/settings/gor-profile-form";
 import { WhatsAppNotificationSettings } from "@/components/settings/whatsapp-notification-settings";
 import { createPageMetadata } from "@/config/page-metadata";
+import { isWhatsAppFeatureEnabled } from "@/config/features";
 import { getGorProfileService } from "@/domains/owner/actions/get-gor-profile-service";
 import { OwnerNotFoundError } from "@/domains/owner/errors";
 import { getPushService } from "@/domains/push/actions/get-push-service";
@@ -39,8 +40,10 @@ export default async function DashboardSettingsPage() {
   try {
     initialProfile = await getGorProfileService().getForUser(session.user.id);
     const ownerId = await requireOwnerId(session.user.id);
-    initialWhatsAppSettings =
-      await getWhatsAppService().getSettingsForOwner(ownerId);
+    if (isWhatsAppFeatureEnabled()) {
+      initialWhatsAppSettings =
+        await getWhatsAppService().getSettingsForOwner(ownerId);
+    }
     initialBrowserNotificationSettings =
       await getPushService().getSettingsForOwner(ownerId);
   } catch (error) {
@@ -57,7 +60,11 @@ export default async function DashboardSettingsPage() {
       <BrowserNotificationSettings
         initialSettings={initialBrowserNotificationSettings}
       />
-      <WhatsAppNotificationSettings initialSettings={initialWhatsAppSettings} />
+      {isWhatsAppFeatureEnabled() ? (
+        <WhatsAppNotificationSettings
+          initialSettings={initialWhatsAppSettings}
+        />
+      ) : null}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { isWhatsAppFeatureEnabled } from "@/config/features";
 import { updateWhatsAppSettingsAction } from "@/domains/whatsapp/whatsapp-actions";
 import type { OwnerWhatsAppSettingsData } from "@/domains/whatsapp/whatsapp-types";
 
@@ -83,6 +84,10 @@ export function WhatsAppNotificationSettings({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  if (!isWhatsAppFeatureEnabled()) {
+    return null;
+  }
 
   function updateSetting(key: ToggleKey, value: boolean) {
     setSettings((current) => ({

@@ -51,6 +51,10 @@ export const env = createEnv({
   },
   client: {
     NEXT_PUBLIC_APP_URL: publicAppUrl("NEXT_PUBLIC_APP_URL"),
+    NEXT_PUBLIC_FEATURE_WHATSAPP: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -67,6 +71,7 @@ export const env = createEnv({
     WHATSAPP_API_URL: process.env.WHATSAPP_API_URL,
     WHATSAPP_PHONE_NUMBER_ID: process.env.WHATSAPP_PHONE_NUMBER_ID,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_FEATURE_WHATSAPP: process.env.NEXT_PUBLIC_FEATURE_WHATSAPP,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,
