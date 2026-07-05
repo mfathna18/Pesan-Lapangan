@@ -1,5 +1,6 @@
 import {
   PUSH_PERMISSION_DISMISS_KEY,
+  PUSH_PERMISSION_ONBOARDING_COMPLETED_KEY,
   PUSH_PERMISSION_STATE,
   type PushPermissionState,
 } from "@/domains/push/push-types";
@@ -69,20 +70,41 @@ export function markPermissionDismissedNow(): void {
   window.localStorage.setItem(PUSH_PERMISSION_DISMISS_KEY, String(Date.now()));
 }
 
-export function shouldShowPermissionPrompt(
-  dismissDays: number,
-  settingsEnabled: boolean,
-): boolean {
-  if (!settingsEnabled) {
+export function markOnboardingCompleted(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(PUSH_PERMISSION_ONBOARDING_COMPLETED_KEY, "true");
+}
+
+export function hasCompletedOnboarding(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return (
+    window.localStorage.getItem(PUSH_PERMISSION_ONBOARDING_COMPLETED_KEY) ===
+    "true"
+  );
+}
+
+export function shouldShowOnboardingPrompt(dismissDays: number): boolean {
+  if (!isBrowserNotificationSupported()) {
     return false;
   }
 
   const permission = getBrowserNotificationPermission();
 
-  if (
-    permission !== PUSH_PERMISSION_STATE.DEFAULT ||
-    !isBrowserNotificationSupported()
-  ) {
+  if (permission === PUSH_PERMISSION_STATE.GRANTED) {
+    return false;
+  }
+
+  if (permission === PUSH_PERMISSION_STATE.DENIED) {
+    return false;
+  }
+
+  if (hasCompletedOnboarding()) {
     return false;
   }
 
@@ -94,4 +116,16 @@ export function shouldShowPermissionPrompt(
 
   const dismissMs = dismissDays * 24 * 60 * 60 * 1000;
   return Date.now() - dismissedAt > dismissMs;
+}
+
+/** @deprecated Use shouldShowOnboardingPrompt for the dashboard onboarding dialog. */
+export function shouldShowPermissionPrompt(
+  dismissDays: number,
+  settingsEnabled: boolean,
+): boolean {
+  if (!settingsEnabled) {
+    return false;
+  }
+
+  return shouldShowOnboardingPrompt(dismissDays);
 }

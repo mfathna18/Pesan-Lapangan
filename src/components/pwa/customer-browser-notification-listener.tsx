@@ -4,11 +4,6 @@ import { useEffect, useRef } from "react";
 
 import { createPushEmitter } from "@/domains/push/push-emitter";
 import { PUSH_EVENT } from "@/domains/push/push-types";
-import {
-  getBrowserNotificationPermission,
-  requestBrowserNotificationPermission,
-} from "@/domains/push/push-permission";
-import { PUSH_PERMISSION_STATE } from "@/domains/push/push-types";
 import { CUSTOMER_PUSH_ENABLED_KEY } from "@/domains/push/push-types";
 
 type CustomerCheckoutBrowserNotifierProps = {
@@ -35,7 +30,6 @@ export function CustomerCheckoutBrowserNotifier({
   enabled = true,
 }: CustomerCheckoutBrowserNotifierProps) {
   const previousStatusRef = useRef<string | null>(null);
-  const promptedRef = useRef(false);
 
   useEffect(() => {
     if (!enabled || !isCustomerPushEnabled()) {
@@ -47,14 +41,6 @@ export function CustomerCheckoutBrowserNotifier({
     const invoiceUrl = `/gor/${gorSlug}/checkout/${bookingId}/invoice`;
 
     async function maybeNotify() {
-      if (
-        getBrowserNotificationPermission() === PUSH_PERMISSION_STATE.DEFAULT &&
-        !promptedRef.current
-      ) {
-        promptedRef.current = true;
-        await requestBrowserNotificationPermission();
-      }
-
       const emitter = createPushEmitter();
 
       if (!emitter.canNotify()) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,10 @@ import {
   requestBrowserNotificationPermission,
 } from "@/domains/push/push-permission";
 import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
-import { PUSH_PERMISSION_STATE } from "@/domains/push/push-types";
+import {
+  PUSH_PERMISSION_STATE,
+  type PushPermissionState,
+} from "@/domains/push/push-types";
 
 type BrowserNotificationSettingsProps = {
   initialSettings: OwnerBrowserNotificationSettingsData;
@@ -88,8 +91,14 @@ export function BrowserNotificationSettings({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [permission, setPermission] = useState<PushPermissionState>(
+    PUSH_PERMISSION_STATE.DEFAULT,
+  );
 
-  const permission = getBrowserNotificationPermission();
+  useEffect(() => {
+    setPermission(getBrowserNotificationPermission());
+  }, []);
+
   const permissionBlocked = permission === PUSH_PERMISSION_STATE.DENIED;
 
   function updateSetting(key: ToggleKey, value: boolean) {
@@ -100,7 +109,8 @@ export function BrowserNotificationSettings({
   }
 
   async function handleEnablePermission() {
-    await requestBrowserNotificationPermission();
+    const nextPermission = await requestBrowserNotificationPermission();
+    setPermission(nextPermission);
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {

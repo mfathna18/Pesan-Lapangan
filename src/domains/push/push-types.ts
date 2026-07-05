@@ -56,6 +56,9 @@ export type PushNotificationProvider = {
 export const PUSH_PERMISSION_DISMISS_KEY =
   "pesan-lapangan-push-permission-dismissed-at";
 
+export const PUSH_PERMISSION_ONBOARDING_COMPLETED_KEY =
+  "pesan-lapangan-push-onboarding-completed";
+
 export const PUSH_NOTIFIED_IDS_KEY = "pesan-lapangan-browser-notified-ids";
 
 export const CUSTOMER_PUSH_ENABLED_KEY = "pesan-lapangan-customer-push-enabled";

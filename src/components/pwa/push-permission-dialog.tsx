@@ -3,14 +3,17 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { updateBrowserNotificationSettingsAction } from "@/domains/push/push-actions";
 import {
+  markOnboardingCompleted,
   markPermissionDismissedNow,
   requestBrowserNotificationPermission,
-  shouldShowPermissionPrompt,
+  shouldShowOnboardingPrompt,
 } from "@/domains/push/push-permission";
 import {
   PUSH_PERMISSION_DISMISS_DAYS,
   PUSH_PERMISSION_PROMPT_DELAY_MS,
+  PUSH_PERMISSION_STATE,
 } from "@/domains/push/push-types";
 import type { OwnerBrowserNotificationSettingsData } from "@/domains/push/push-types";
 
@@ -20,26 +23,39 @@ type PushPermissionDialogProps = {
 
 export function PushPermissionDialog({ settings }: PushPermissionDialogProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (
-      !shouldShowPermissionPrompt(
-        PUSH_PERMISSION_DISMISS_DAYS,
-        settings.enabled,
-      )
-    ) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) {
       return;
     }
 
     const timeoutId = window.setTimeout(() => {
-      setOpen(true);
+      if (shouldShowOnboardingPrompt(PUSH_PERMISSION_DISMISS_DAYS)) {
+        setOpen(true);
+      }
     }, PUSH_PERMISSION_PROMPT_DELAY_MS);
 
     return () => window.clearTimeout(timeoutId);
-  }, [settings.enabled]);
+  }, [mounted]);
 
   async function handleEnable() {
-    await requestBrowserNotificationPermission();
+    const permission = await requestBrowserNotificationPermission();
+
+    if (permission === PUSH_PERMISSION_STATE.GRANTED) {
+      markOnboardingCompleted();
+      await updateBrowserNotificationSettingsAction({
+        ...settings,
+        enabled: true,
+      });
+    } else if (permission === PUSH_PERMISSION_STATE.DENIED) {
+      markOnboardingCompleted();
+    }
+
     setOpen(false);
   }
 
@@ -81,3 +97,5 @@ export function PushPermissionDialog({ settings }: PushPermissionDialogProps) {
     </div>
   );
 }
+
+export { PushPermissionDialog as NotificationPermissionDialog };
