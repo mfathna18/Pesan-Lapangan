@@ -41,13 +41,12 @@ export class GorProfileService {
     }
 
     const baseSlug = generateSlugFromName(input.name);
-    const existingSlugs =
-      await this.gorRepository.findSlugsMatchingPrefix(baseSlug);
-    const slug = resolveUniqueSlug(
-      baseSlug,
-      new Set(existingSlugs),
-      owner.gor?.slug,
-    );
+    const slug = owner.gor
+      ? owner.gor.slug
+      : resolveUniqueSlug(
+          baseSlug,
+          new Set(await this.gorRepository.findSlugsMatchingPrefix(baseSlug)),
+        );
 
     const profileData = {
       name: input.name.trim(),

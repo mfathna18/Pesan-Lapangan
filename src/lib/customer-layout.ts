@@ -16,5 +16,7 @@ export const customerLayout = {
   checkoutDivider: "border-border border-t pt-5",
   detailGrid: "grid gap-5 sm:grid-cols-2",
   heroHeight: "h-56 sm:h-72 md:h-80 lg:h-[22rem]",
-  heroOverlay: "absolute inset-0 bg-black/45",
+  heroOverlay: "absolute inset-0 bg-black/30",
+  heroGradient:
+    "absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/20",
 } as const;

@@ -16,6 +16,7 @@ import {
   PriceRuleValidationError,
 } from "@/domains/booking/errors";
 import type { OwnerPriceRuleListItem } from "@/domains/booking/types";
+import { revalidatePublicVenueForOwnerId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
@@ -42,6 +43,8 @@ export async function updatePriceRuleAction(
       parsed.data.priceRuleId,
       parsed.data,
     );
+
+    await revalidatePublicVenueForOwnerId(ownerId);
 
     return actionSuccess(rule);
   } catch (error) {

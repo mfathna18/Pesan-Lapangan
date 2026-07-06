@@ -14,6 +14,7 @@ import {
   CourtNotFoundError,
   PriceRuleNotFoundError,
 } from "@/domains/booking/errors";
+import { revalidatePublicVenueForOwnerId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
@@ -39,6 +40,8 @@ export async function deletePriceRuleAction(
       parsed.data.courtId,
       parsed.data.priceRuleId,
     );
+
+    await revalidatePublicVenueForOwnerId(ownerId);
 
     return actionSuccess({ priceRuleId: parsed.data.priceRuleId });
   } catch (error) {

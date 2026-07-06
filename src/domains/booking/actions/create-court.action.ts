@@ -15,6 +15,7 @@ import {
   CourtValidationError,
 } from "@/domains/booking/errors";
 import type { OwnerCourtListItem } from "@/domains/booking/types";
+import { revalidatePublicVenueForOwnerId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
@@ -39,6 +40,8 @@ export async function createCourtAction(
       ownerId,
       parsed.data,
     );
+
+    await revalidatePublicVenueForOwnerId(ownerId);
 
     return actionSuccess(court);
   } catch (error) {

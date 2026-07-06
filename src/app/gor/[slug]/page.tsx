@@ -26,6 +26,8 @@ const getCachedPublicVenue = cache(async (slug: string) => {
   }
 });
 
+export const dynamic = "force-dynamic";
+
 function buildVenueDescription(venue: {
   name: string;
   description: string | null;

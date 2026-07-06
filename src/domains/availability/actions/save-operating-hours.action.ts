@@ -13,6 +13,7 @@ import {
 } from "@/domains/availability/actions/types";
 import type { OwnerOperatingHoursSchedule } from "@/domains/availability/types";
 import { CourtNotFoundError } from "@/domains/booking/errors";
+import { revalidatePublicVenueForOwnerId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
@@ -40,6 +41,8 @@ export async function saveOperatingHoursAction(
         days: parsed.data.days,
       },
     );
+
+    await revalidatePublicVenueForOwnerId(ownerId);
 
     return actionSuccess(schedule);
   } catch (error) {

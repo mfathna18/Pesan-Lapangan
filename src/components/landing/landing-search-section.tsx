@@ -23,9 +23,9 @@ export function LandingSearchSection({
   return (
     <section
       id="cari-lapangan"
-      className={`${landingLayout.sectionDivider} scroll-mt-20 ${layout.sectionCompact} pt-0`}
+      className={`scroll-mt-20 ${layout.sectionCompact} pt-0 pb-0`}
     >
-      <div className={`${layout.container} flex flex-col gap-12`}>
+      <div className={`${layout.container} flex flex-col gap-8`}>
         <SectionHeader
           eyebrow="Cari & Pesan"
           title="Temukan Lapangan Terdekat"

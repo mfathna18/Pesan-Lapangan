@@ -41,39 +41,47 @@ export function VenueHero({ venue }: VenueHeroProps) {
             sizes="100vw"
           />
         ) : (
-          <div className="bg-muted absolute inset-0" />
+          <div className="from-muted to-muted/70 absolute inset-0 bg-gradient-to-br" />
         )}
         <div className={customerLayout.heroOverlay} aria-hidden />
+        <div className={customerLayout.heroGradient} aria-hidden />
+
+        <div
+          className={cn(
+            customerLayout.containerWide,
+            "absolute inset-x-0 bottom-0 px-4 pb-6 sm:px-6 sm:pb-8",
+          )}
+        >
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:gap-8">
+            {venue.logoUrl ? (
+              <div className="border-background/90 bg-background relative size-24 shrink-0 overflow-hidden rounded-2xl border-4 shadow-[var(--shadow-md)] sm:size-28">
+                <Image
+                  src={venue.logoUrl}
+                  alt={`Logo ${venue.name}`}
+                  fill
+                  className="object-cover"
+                  sizes="112px"
+                />
+              </div>
+            ) : (
+              <div className="border-background/90 bg-background text-primary flex size-24 shrink-0 items-center justify-center rounded-2xl border-4 text-3xl font-semibold shadow-[var(--shadow-md)] sm:size-28">
+                {venue.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <div className="min-w-0 space-y-3 pb-1">
+              <Badge className="border-white/20 bg-white/15 text-white backdrop-blur-sm hover:bg-white/15">
+                {CUSTOMER_COPY.venue.badge}
+              </Badge>
+              <h1 className="text-3xl font-bold tracking-tight text-balance text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] sm:text-4xl md:text-5xl">
+                {venue.name}
+              </h1>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className={`${customerLayout.containerWide} relative px-4 sm:px-6`}>
-        <div className="-mt-14 flex flex-col gap-6 sm:-mt-16 sm:flex-row sm:items-end sm:gap-8">
-          {venue.logoUrl ? (
-            <div className="border-background bg-background relative size-24 overflow-hidden rounded-2xl border-4 shadow-[var(--shadow-md)] sm:size-28">
-              <Image
-                src={venue.logoUrl}
-                alt={`Logo ${venue.name}`}
-                fill
-                className="object-cover"
-                sizes="112px"
-              />
-            </div>
-          ) : (
-            <div className="border-background bg-background text-primary flex size-24 items-center justify-center rounded-2xl border-4 text-3xl font-semibold shadow-[var(--shadow-md)] sm:size-28">
-              {venue.name.charAt(0).toUpperCase()}
-            </div>
-          )}
-
-          <div className="space-y-4 pb-2 text-white">
-            <Badge className="bg-background/95 text-foreground hover:bg-background/95">
-              {CUSTOMER_COPY.venue.badge}
-            </Badge>
-            <h1 className="text-3xl font-bold tracking-tight text-balance sm:text-4xl md:text-5xl">
-              {venue.name}
-            </h1>
-          </div>
-        </div>
-
         <div className="space-y-6 py-8 sm:py-10">
           {venue.description ? (
             <p className="text-muted-foreground max-w-3xl text-base leading-relaxed text-pretty sm:text-lg">

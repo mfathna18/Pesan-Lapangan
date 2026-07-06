@@ -16,6 +16,7 @@ import {
   OwnerNotFoundError,
 } from "@/domains/owner/errors";
 import type { GorProfileData } from "@/domains/owner/types";
+import { revalidatePublicVenueForUserId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
   createKnownActionError,
@@ -34,10 +35,17 @@ export async function updateGorProfileAction(
   }
 
   try {
+    const existingProfile = await getGorProfileService().getForUser(
+      session.user.id,
+    );
+    const previousSlug = existingProfile?.slug ?? null;
+
     const profile = await getGorProfileService().updateForUser(
       session.user.id,
       parsed.data,
     );
+
+    await revalidatePublicVenueForUserId(session.user.id, previousSlug);
 
     return actionSuccess(profile);
   } catch (error) {

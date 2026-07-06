@@ -26,16 +26,17 @@ export function LandingPageContent({ venues }: LandingPageContentProps) {
       <LandingHeader />
       <main className="flex flex-col">
         <HeroSection />
-        <LandingSearchSection query={query} onQueryChange={setQuery} />
         <div className={landingLayout.sectionDivider}>
-          <WhyChooseUsSection />
-        </div>
-        <div className={landingLayout.sectionDivider}>
+          <LandingSearchSection query={query} onQueryChange={setQuery} />
           <VenueDiscoverySection
             venues={venues}
             query={query}
             onQueryChange={setQuery}
+            embedded
           />
+        </div>
+        <div className={landingLayout.sectionDivider}>
+          <WhyChooseUsSection />
         </div>
         <div className={landingLayout.sectionDivider}>
           <HowItWorksSection />

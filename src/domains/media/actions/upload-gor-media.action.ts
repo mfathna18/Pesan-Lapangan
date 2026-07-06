@@ -8,6 +8,7 @@ import {
   MediaValidationError,
 } from "@/domains/media/errors";
 import { getUploadFileFromFormData } from "@/domains/media/utils/form-data-file";
+import { revalidatePublicVenueForUserId } from "@/domains/owner/utils/revalidate-owner-venue";
 import {
   actionFailure,
   actionSuccess,
@@ -41,6 +42,8 @@ export async function uploadGorLogoAction(
       file,
     );
 
+    await revalidatePublicVenueForUserId(session.user.id);
+
     return actionSuccess({ logoUrl });
   } catch (error) {
     return handleServerActionError("uploadGorLogoAction", error, {
@@ -66,6 +69,8 @@ export async function uploadGorQrisAction(
       file,
     );
 
+    await revalidatePublicVenueForUserId(session.user.id);
+
     return actionSuccess({ qrisImageUrl });
   } catch (error) {
     return handleServerActionError("uploadGorQrisAction", error, {
@@ -90,6 +95,8 @@ export async function uploadGorCoverAction(
       session.user.id,
       file,
     );
+
+    await revalidatePublicVenueForUserId(session.user.id);
 
     return actionSuccess({ coverImages });
   } catch (error) {
@@ -124,6 +131,8 @@ export async function replaceGorCoverAction(
       index,
     );
 
+    await revalidatePublicVenueForUserId(session.user.id);
+
     return actionSuccess({ coverImages });
   } catch (error) {
     return handleServerActionError("replaceGorCoverAction", error, {
@@ -144,6 +153,8 @@ export async function deleteGorCoverAction(
       publicUrl,
     );
 
+    await revalidatePublicVenueForUserId(session.user.id);
+
     return actionSuccess({ coverImages });
   } catch (error) {
     return handleServerActionError("deleteGorCoverAction", error, {
@@ -163,6 +174,8 @@ export async function reorderGorCoversAction(
       session.user.id,
       coverImages,
     );
+
+    await revalidatePublicVenueForUserId(session.user.id);
 
     return actionSuccess({ coverImages: reordered });
   } catch (error) {

@@ -26,12 +26,14 @@ type VenueDiscoverySectionProps = {
   venues: PublicVenueListItem[];
   query: string;
   onQueryChange: (value: string) => void;
+  embedded?: boolean;
 };
 
 export function VenueDiscoverySection({
   venues,
   query,
   onQueryChange,
+  embedded = false,
 }: VenueDiscoverySectionProps) {
   const { popularVenues } = landingContent;
 
@@ -47,13 +49,36 @@ export function VenueDiscoverySection({
     );
   }, [query, venues]);
 
+  const hasQuery = query.trim().length > 0;
+
   return (
-    <section id="venue-populer" className={`${layout.section} scroll-mt-20`}>
-      <div className={`${layout.container} flex flex-col gap-12`}>
+    <section
+      id="venue-populer"
+      className={cn(
+        "scroll-mt-20",
+        embedded
+          ? "px-4 pb-16 sm:px-6 sm:pb-20"
+          : `${layout.section} scroll-mt-20`,
+      )}
+    >
+      <div
+        className={cn(
+          `${layout.container} flex flex-col`,
+          embedded ? "gap-6" : "gap-12",
+        )}
+      >
         <SectionHeader
-          eyebrow={popularVenues.eyebrow}
-          title={popularVenues.title}
-          description={popularVenues.description}
+          eyebrow={hasQuery ? "Hasil Pencarian" : popularVenues.eyebrow}
+          title={
+            hasQuery
+              ? `Ditemukan ${filteredVenues.length} venue`
+              : popularVenues.title
+          }
+          description={
+            hasQuery
+              ? `Menampilkan venue yang cocok dengan “${query.trim()}”.`
+              : popularVenues.description
+          }
         />
 
         {venues.length === 0 ? (

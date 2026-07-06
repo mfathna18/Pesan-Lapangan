@@ -65,6 +65,15 @@ export class GorRepository {
     return gor?.id ?? null;
   }
 
+  async findSlugByOwnerId(ownerId: string): Promise<string | null> {
+    const gor = await this.prisma.gor.findUnique({
+      where: { ownerId },
+      select: { slug: true },
+    });
+
+    return gor?.slug ?? null;
+  }
+
   async findOwnerWithGorByUserId(
     userId: string,
   ): Promise<OwnerWithGorRecord | null> {

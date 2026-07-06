@@ -11,6 +11,7 @@ import {
   type ActionResponse,
 } from "@/domains/booking/actions/types";
 import { CourtNotFoundError } from "@/domains/booking/errors";
+import { revalidatePublicVenueForOwnerId } from "@/domains/owner/utils/revalidate-owner-venue";
 import { requireOwnerId } from "@/lib/auth/get-owner-id";
 import { requireOwnerSession } from "@/lib/auth/require-owner-session";
 import {
@@ -32,6 +33,8 @@ export async function deleteCourtAction(
   try {
     const ownerId = await requireOwnerId(session.user.id);
     await getCourtService().deleteCourtForOwner(ownerId, parsed.data.courtId);
+
+    await revalidatePublicVenueForOwnerId(ownerId);
 
     return actionSuccess({ courtId: parsed.data.courtId });
   } catch (error) {
