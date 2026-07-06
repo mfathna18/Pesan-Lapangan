@@ -1,4 +1,3 @@
-import { BOOKING_CUTOFF_MINUTES } from "@/domains/booking/constants";
 import { formatVenueDateInput } from "@/domains/booking/utils/venue-date";
 import { GOR_DEFAULT_TIMEZONE } from "@/domains/owner/constants";
 
@@ -55,6 +54,15 @@ function getVenueLocalDateKey(
   return `${parts.year}-${month}-${day}`;
 }
 
+export function getVenueLocalMinuteOfDay(
+  date: Date,
+  timezone: string = GOR_DEFAULT_TIMEZONE,
+): number {
+  const local = getVenueLocalDateTimeParts(date, timezone);
+
+  return local.hour * 60 + local.minute;
+}
+
 export function isVenueBookingDateToday(
   bookingDate: Date,
   now: Date = new Date(),
@@ -65,33 +73,38 @@ export function isVenueBookingDateToday(
   );
 }
 
-export function getMinimumBookableStartMinute(
-  now: Date = new Date(),
-  timezone: string = GOR_DEFAULT_TIMEZONE,
-  cutoffMinutes: number = BOOKING_CUTOFF_MINUTES,
-): number {
-  const local = getVenueLocalDateTimeParts(now, timezone);
-
-  return local.hour * 60 + local.minute + cutoffMinutes;
-}
-
-export function isSlotPastBookingCutoff(input: {
+/**
+ * A same-day slot is bookable until its end time (exclusive of the end minute).
+ * Example: 13:00–14:00 stays available at 13:59 and becomes unavailable at 14:00.
+ */
+export function isBookingSlotExpired(input: {
   bookingDate: Date;
-  startMinute: number;
+  endMinute: number;
   now?: Date;
   timezone?: string;
-  cutoffMinutes?: number;
 }): boolean {
   const timezone = input.timezone ?? GOR_DEFAULT_TIMEZONE;
   const now = input.now ?? new Date();
-  const cutoffMinutes = input.cutoffMinutes ?? BOOKING_CUTOFF_MINUTES;
+  const bookingDateKey = formatVenueDateInput(input.bookingDate);
+  const todayKey = getVenueLocalDateKey(now, timezone);
 
-  if (!isVenueBookingDateToday(input.bookingDate, now, timezone)) {
+  if (bookingDateKey < todayKey) {
+    return true;
+  }
+
+  if (bookingDateKey > todayKey) {
     return false;
   }
 
-  return (
-    input.startMinute <
-    getMinimumBookableStartMinute(now, timezone, cutoffMinutes)
-  );
+  return getVenueLocalMinuteOfDay(now, timezone) >= input.endMinute;
+}
+
+/** @deprecated Use isBookingSlotExpired */
+export function isSlotPastBookingCutoff(input: {
+  bookingDate: Date;
+  endMinute: number;
+  now?: Date;
+  timezone?: string;
+}): boolean {
+  return isBookingSlotExpired(input);
 }

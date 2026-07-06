@@ -37,7 +37,7 @@ import {
 import { resolveBookingPaymentDisplayStatus } from "@/domains/booking/utils/booking-display";
 import { acquireCourtBookingDateLock } from "@/domains/booking/utils/court-booking-lock";
 import { slotConflictsWithBookings } from "@/domains/booking/utils/slot-availability";
-import { isSlotPastBookingCutoff } from "@/domains/booking/utils/booking-cutoff";
+import { isBookingSlotExpired } from "@/domains/booking/utils/booking-cutoff";
 import { validateCreateBookingRequest } from "@/domains/booking/utils/validation";
 import { GOR_DEFAULT_TIMEZONE } from "@/domains/owner/constants";
 import {
@@ -100,9 +100,9 @@ export class BookingService {
     const venueTimezone = court.gor.timezone || GOR_DEFAULT_TIMEZONE;
 
     if (
-      isSlotPastBookingCutoff({
+      isBookingSlotExpired({
         bookingDate: input.bookingDate,
-        startMinute: input.startMinute,
+        endMinute,
         timezone: venueTimezone,
       })
     ) {
