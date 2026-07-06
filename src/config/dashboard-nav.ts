@@ -5,6 +5,7 @@ import {
   Clock,
   FileText,
   LayoutDashboard,
+  ListChecks,
   MapPin,
   Settings,
   Sparkles,
@@ -29,6 +30,11 @@ export const dashboardNavItems: DashboardNavItem[] = [
     title: "Beranda",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Panduan Cepat",
+    href: "/dashboard/quick-start",
+    icon: ListChecks,
   },
   {
     title: "Booking",
@@ -98,6 +104,7 @@ export const dashboardNavGroups: DashboardNavGroup[] = [
     label: "Operasional",
     items: pickNavItems([
       "/dashboard",
+      "/dashboard/quick-start",
       "/dashboard/bookings",
       "/dashboard/analytics",
       "/dashboard/revenue",
