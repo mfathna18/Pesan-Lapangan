@@ -1,6 +1,7 @@
 import type { AnalyticsRepository } from "./analytics-repository";
 import {
   buildBusinessIntelligenceDashboard,
+  buildBusinessIntelligenceKpis,
   buildOwnerAnalyticsDashboard,
 } from "./analytics-mappers";
 import { ANALYTICS_LIMITS } from "./analytics-types";
@@ -65,6 +66,27 @@ export class AnalyticsService {
       referenceDate,
       ANALYTICS_LIMITS,
     );
+  }
+
+  async getBusinessIntelligenceKpis(
+    ownerId: string,
+    referenceDate: Date = new Date(),
+  ): Promise<BusinessIntelligenceDashboardData["kpis"]> {
+    const monthStart = startOfMonth(referenceDate);
+    const monthEnd = endOfMonth(referenceDate);
+    const { start: previousMonthStart, end: previousMonthEnd } =
+      previousMonthRange(referenceDate);
+
+    const snapshot =
+      await this.analyticsRepository.fetchBusinessIntelligenceKpiSnapshot({
+        ownerId,
+        previousMonthStart,
+        previousMonthEnd,
+        currentMonthStart: monthStart,
+        currentMonthEnd: monthEnd,
+      });
+
+    return buildBusinessIntelligenceKpis(snapshot, referenceDate);
   }
 
   async getDashboard(

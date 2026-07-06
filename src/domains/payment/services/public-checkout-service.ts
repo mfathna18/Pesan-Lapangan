@@ -40,19 +40,16 @@ export class PublicCheckoutService {
       );
     }
 
-    const paidPayment = await this.paymentRepository.findPaidDetailsByBookingId(
-      booking.id,
-    );
+    const [paidPayment, activeManualCandidate, latestFallback] =
+      await Promise.all([
+        this.paymentRepository.findPaidDetailsByBookingId(booking.id),
+        this.paymentRepository.findActiveManualPaymentByBookingId(booking.id),
+        this.paymentRepository.findLatestByBookingId(booking.id),
+      ]);
+
     const activeManualPayment =
-      paidPayment == null
-        ? await this.paymentRepository.findActiveManualPaymentByBookingId(
-            booking.id,
-          )
-        : null;
-    const latestPayment =
-      paidPayment ??
-      activeManualPayment ??
-      (await this.paymentRepository.findLatestByBookingId(booking.id));
+      paidPayment == null ? activeManualCandidate : null;
+    const latestPayment = paidPayment ?? activeManualPayment ?? latestFallback;
 
     const isExpired =
       booking.status === "PENDING" &&

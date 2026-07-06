@@ -7,7 +7,7 @@ export async function loadPublicCheckoutData(
 ) {
   const checkoutService = getPublicCheckoutService();
   const manualPaymentService = getManualPaymentService();
-  const checkout = await checkoutService.getCheckoutData(gorSlug, bookingId);
+  let checkout = await checkoutService.getCheckoutData(gorSlug, bookingId);
 
   if (
     checkout.status === "PENDING" &&
@@ -16,7 +16,8 @@ export async function loadPublicCheckoutData(
     checkout.latestPaymentStatus !== "REJECTED"
   ) {
     await manualPaymentService.ensureManualPayment(bookingId);
+    checkout = await checkoutService.getCheckoutData(gorSlug, bookingId);
   }
 
-  return checkoutService.getCheckoutData(gorSlug, bookingId);
+  return checkout;
 }

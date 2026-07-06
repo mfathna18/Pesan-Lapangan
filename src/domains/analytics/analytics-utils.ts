@@ -6,9 +6,12 @@ import {
 
 import type {
   BiBookingRecord,
+  BiKpiBookingRecord,
   BiOperatingHoursRecord,
   OccupancyStatus,
 } from "./analytics-types";
+
+type BiMetricsBookingRecord = BiBookingRecord | BiKpiBookingRecord;
 
 export { endOfMonth, formatDateKey, startOfMonth };
 
@@ -139,7 +142,7 @@ export function calculateAvailableMinutesByCourt(
 }
 
 export function calculateBookedMinutesByCourt(
-  bookings: BiBookingRecord[],
+  bookings: BiMetricsBookingRecord[],
 ): Map<string, number> {
   const bookedByCourt = new Map<string, number>();
 
@@ -225,7 +228,9 @@ export function calculateDayOccupancyPercent(
   return calculateOccupancyPercent(bookedMinutes, availableMinutes);
 }
 
-export function countUniqueCustomers(bookings: BiBookingRecord[]): number {
+export function countUniqueCustomers(
+  bookings: BiMetricsBookingRecord[],
+): number {
   const phones = new Set<string>();
 
   for (const booking of bookings) {
@@ -244,10 +249,10 @@ export function countUniqueCustomers(bookings: BiBookingRecord[]): number {
 }
 
 export function filterBookingsInRange(
-  bookings: BiBookingRecord[],
+  bookings: BiMetricsBookingRecord[],
   rangeStart: Date,
   rangeEnd: Date,
-): BiBookingRecord[] {
+): BiMetricsBookingRecord[] {
   return bookings.filter(
     (booking) =>
       booking.status !== "CANCELLED" &&

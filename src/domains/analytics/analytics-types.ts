@@ -242,6 +242,34 @@ export type BiTrendBookingRecord = {
   status: BookingStatus;
 };
 
+export type BiKpiBookingRecord = {
+  courtId: string;
+  status: BookingStatus;
+  bookingDate: Date;
+  startMinute: number;
+  durationMinute: number;
+  contact: {
+    customerPhone: string;
+    customerName: string;
+  } | null;
+};
+
+export type BiKpiSnapshot = {
+  periodBookings: BiKpiBookingRecord[];
+  currentMonthRevenue: number;
+  previousMonthRevenue: number;
+  courts: BiCourtRecord[];
+  operatingHours: BiOperatingHoursRecord[];
+};
+
+export type BiKpiSnapshotQuery = {
+  ownerId: string;
+  previousMonthStart: Date;
+  previousMonthEnd: Date;
+  currentMonthStart: Date;
+  currentMonthEnd: Date;
+};
+
 export type BiBusinessIntelligenceSnapshot = {
   totalBookingCount: number;
   periodBookings: BiBookingRecord[];

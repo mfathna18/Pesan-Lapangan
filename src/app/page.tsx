@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { unstable_noStore as noStore } from "next/cache";
 
 import { LandingPage } from "@/components/landing/landing-page";
 import { siteConfig } from "@/config/site";
-import { getVenueService } from "@/domains/venue/actions/get-venue-service";
+import { getCachedActivePublicVenues } from "@/lib/cache/public-venue-cache";
 
 export const metadata: Metadata = {
   title: "Pesan Lapangan Olahraga Online",
@@ -31,12 +30,10 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function HomePage() {
-  noStore();
-
-  const venues = await getVenueService().listActivePublicVenues();
+  const venues = await getCachedActivePublicVenues();
 
   return <LandingPage venues={venues} />;
 }

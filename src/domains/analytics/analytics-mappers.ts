@@ -20,6 +20,7 @@ import type {
   BiBusinessIntelligenceSnapshot,
   BiInsightCard,
   BiKpiCard,
+  BiKpiSnapshot,
   BiOccupancyKpi,
   BiQuickAction,
   BiTrendSeries,
@@ -399,15 +400,12 @@ function buildInsightCards(
   ];
 }
 
-export function buildBusinessIntelligenceDashboard(
-  snapshot: BiBusinessIntelligenceSnapshot,
+export function buildBusinessIntelligenceKpis(
+  snapshot: BiKpiSnapshot | BiBusinessIntelligenceSnapshot,
   referenceDate: Date = new Date(),
-  limits: typeof ANALYTICS_LIMITS,
-): BusinessIntelligenceDashboardData {
+): BusinessIntelligenceDashboardData["kpis"] {
   const monthStart = startOfMonth(referenceDate);
   const monthEnd = endOfMonth(referenceDate);
-  const weekStart = startOfWeek(referenceDate);
-  const weekEnd = endOfWeek(referenceDate);
   const previousMonth = new Date(
     referenceDate.getFullYear(),
     referenceDate.getMonth() - 1,
@@ -473,46 +471,6 @@ export function buildBusinessIntelligenceDashboard(
     previousAvailableMinutes,
   );
 
-  let lowestCourtName = "-";
-  let lowestCourtUtilization = 100;
-
-  for (const court of snapshot.courts) {
-    const utilization = calculateOccupancyPercent(
-      bookedByCourt.get(court.id) ?? 0,
-      availableByCourt.get(court.id) ?? 0,
-    );
-
-    if (utilization < lowestCourtUtilization) {
-      lowestCourtUtilization = utilization;
-      lowestCourtName = court.name;
-    }
-  }
-
-  const saturdayOccupancyPercent = calculateDayOccupancyPercent(
-    snapshot.periodBookings,
-    snapshot.operatingHours,
-    snapshot.courts,
-    6,
-    weekStart,
-    weekEnd,
-  );
-
-  const revenueChangePercent = calculatePercentChange(
-    snapshot.currentMonthRevenue,
-    snapshot.previousMonthRevenue,
-  );
-
-  const recommendations = buildRecommendations({
-    occupancyPercent,
-    saturdayOccupancyPercent,
-    lowestCourtUtilization,
-    lowestCourtName,
-    pendingBookings: snapshot.pendingBookings,
-    pendingPayments: snapshot.pendingPayments,
-    revenueChangePercent,
-    revenueIncreased: revenueChangePercent !== null && revenueChangePercent > 0,
-  });
-
   const revenueKpi = buildKpiCard({
     id: "revenue",
     title: "Pendapatan Bulan Ini",
@@ -563,6 +521,87 @@ export function buildBusinessIntelligenceDashboard(
     occupancyKpi.comparison.changePercent,
   )} · Status: ${occupancyKpi.statusLabel}`;
 
+  return {
+    revenue: revenueKpi,
+    bookings: bookingsKpi,
+    activeCustomers: customersKpi,
+    occupancy: occupancyKpi,
+  };
+}
+
+export function buildBusinessIntelligenceDashboard(
+  snapshot: BiBusinessIntelligenceSnapshot,
+  referenceDate: Date = new Date(),
+  limits: typeof ANALYTICS_LIMITS,
+): BusinessIntelligenceDashboardData {
+  const monthStart = startOfMonth(referenceDate);
+  const monthEnd = endOfMonth(referenceDate);
+  const weekStart = startOfWeek(referenceDate);
+  const weekEnd = endOfWeek(referenceDate);
+  const previousMonth = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth() - 1,
+    1,
+  );
+  const previousMonthStart = startOfMonth(previousMonth);
+  const previousMonthEnd = endOfMonth(previousMonth);
+
+  const currentMonthBookings = filterBookingsInRange(
+    snapshot.periodBookings,
+    monthStart,
+    monthEnd,
+  );
+
+  const kpis = buildBusinessIntelligenceKpis(snapshot, referenceDate);
+  const occupancyPercent = kpis.occupancy.percent;
+
+  const availableByCourt = calculateAvailableMinutesByCourt(
+    monthStart,
+    monthEnd,
+    snapshot.operatingHours,
+  );
+  const bookedByCourt = calculateBookedMinutesByCourt(currentMonthBookings);
+
+  let lowestCourtName = "-";
+  let lowestCourtUtilization = 100;
+
+  for (const court of snapshot.courts) {
+    const utilization = calculateOccupancyPercent(
+      bookedByCourt.get(court.id) ?? 0,
+      availableByCourt.get(court.id) ?? 0,
+    );
+
+    if (utilization < lowestCourtUtilization) {
+      lowestCourtUtilization = utilization;
+      lowestCourtName = court.name;
+    }
+  }
+
+  const saturdayOccupancyPercent = calculateDayOccupancyPercent(
+    snapshot.periodBookings,
+    snapshot.operatingHours,
+    snapshot.courts,
+    6,
+    weekStart,
+    weekEnd,
+  );
+
+  const revenueChangePercent = calculatePercentChange(
+    snapshot.currentMonthRevenue,
+    snapshot.previousMonthRevenue,
+  );
+
+  const recommendations = buildRecommendations({
+    occupancyPercent,
+    saturdayOccupancyPercent,
+    lowestCourtUtilization,
+    lowestCourtName,
+    pendingBookings: snapshot.pendingBookings,
+    pendingPayments: snapshot.pendingPayments,
+    revenueChangePercent,
+    revenueIncreased: revenueChangePercent !== null && revenueChangePercent > 0,
+  });
+
   const trendStart = new Date(referenceDate);
   trendStart.setDate(trendStart.getDate() - (limits.TREND_DAYS - 1));
 
@@ -574,12 +613,7 @@ export function buildBusinessIntelligenceDashboard(
       comparisonFrom: previousMonthStart.toISOString(),
       comparisonTo: previousMonthEnd.toISOString(),
     },
-    kpis: {
-      revenue: revenueKpi,
-      bookings: bookingsKpi,
-      activeCustomers: customersKpi,
-      occupancy: occupancyKpi,
-    },
+    kpis,
     insights: buildInsightCards(
       currentMonthBookings,
       snapshot,

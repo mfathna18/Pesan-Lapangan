@@ -8,14 +8,16 @@ import {
   actionSuccess,
   type ActionResponse,
 } from "@/domains/booking/actions/types";
-import { requireOwnerId } from "@/lib/auth/get-owner-id";
-import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  getCachedOwnerId,
+  getCachedOwnerSession,
+} from "@/lib/auth/cached-owner-request";
 
 export async function listNotificationsAction(input?: {
   filter?: NotificationFilter;
 }): Promise<ActionResponse<OwnerNotificationListResult>> {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     const data = await getNotificationService().listForOwner({
@@ -32,8 +34,8 @@ export async function listNotificationsAction(input?: {
 export async function listRecentNotificationsAction(): Promise<
   ActionResponse<OwnerNotificationListResult>
 > {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     const data = await getNotificationService().listRecentForOwner(ownerId);
@@ -45,8 +47,8 @@ export async function listRecentNotificationsAction(): Promise<
 }
 
 export async function markNotificationReadAction(notificationId: string) {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     await getNotificationService().markAsRead(ownerId, notificationId);
@@ -58,8 +60,8 @@ export async function markNotificationReadAction(notificationId: string) {
 }
 
 export async function markAllNotificationsReadAction() {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     await getNotificationService().markAllAsRead(ownerId);

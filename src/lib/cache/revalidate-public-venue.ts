@@ -1,4 +1,10 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+export const PUBLIC_VENUES_LIST_TAG = "public-venues-list";
+
+export function publicVenueDetailTag(slug: string): string {
+  return `public-venue:${slug}`;
+}
 
 export function revalidatePublicVenuePages(
   slug: string,
@@ -6,9 +12,12 @@ export function revalidatePublicVenuePages(
 ): void {
   revalidatePath("/");
   revalidatePath(`/gor/${slug}`);
+  revalidateTag(PUBLIC_VENUES_LIST_TAG);
+  revalidateTag(publicVenueDetailTag(slug));
 
   if (previousSlug && previousSlug !== slug) {
     revalidatePath(`/gor/${previousSlug}`);
+    revalidateTag(publicVenueDetailTag(previousSlug));
   }
 
   revalidatePath("/gor", "layout");

@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Search } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,16 +27,13 @@ import { cn } from "@/lib/utils";
 
 type LandingVenueSearchSectionProps = {
   venues: PublicVenueListItem[];
-  query: string;
-  onQueryChange: (value: string) => void;
 };
 
 export function LandingVenueSearchSection({
   venues,
-  query,
-  onQueryChange,
 }: LandingVenueSearchSectionProps) {
   const { hero } = landingContent;
+  const [query, setQuery] = useState("");
 
   const filteredVenues = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -82,7 +80,7 @@ export function LandingVenueSearchSection({
                 placeholder={hero.searchPlaceholder}
                 aria-label="Cari lapangan olahraga"
                 value={query}
-                onChange={(event) => onQueryChange(event.target.value)}
+                onChange={(event) => setQuery(event.target.value)}
                 className="h-12 border-0 bg-transparent pl-11 shadow-none focus-visible:ring-0"
               />
             </div>
@@ -118,7 +116,7 @@ export function LandingVenueSearchSection({
                 <Button
                   type="button"
                   variant="default"
-                  onClick={() => onQueryChange("")}
+                  onClick={() => setQuery("")}
                 >
                   {CUSTOMER_COPY.discovery.clearSearch}
                 </Button>
@@ -126,7 +124,7 @@ export function LandingVenueSearchSection({
             />
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredVenues.map((venue) => {
+              {filteredVenues.map((venue, index) => {
                 const coverImage = getPrimaryCoverImage(venue.coverImages);
 
                 return (
@@ -136,11 +134,13 @@ export function LandingVenueSearchSection({
                   >
                     <div className="bg-muted relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden">
                       {coverImage ? (
-                        <div
-                          className="size-full bg-cover bg-center transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
-                          style={{ backgroundImage: `url(${coverImage})` }}
-                          role="img"
-                          aria-label={venue.name}
+                        <Image
+                          src={coverImage}
+                          alt={venue.name}
+                          fill
+                          priority={index < 3}
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
                         />
                       ) : (
                         <span className="text-muted-foreground px-4 text-center text-sm">

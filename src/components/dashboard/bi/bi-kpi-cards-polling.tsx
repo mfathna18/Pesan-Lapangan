@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { BiKpiCards } from "@/components/dashboard/bi/bi-kpi-cards";
 import { POLL_INTERVALS } from "@/config/polling-intervals";
-import { getBusinessIntelligenceDashboardAction } from "@/domains/analytics/actions/get-bi-dashboard.action";
+import { getBusinessIntelligenceKpisAction } from "@/domains/analytics/actions/get-bi-kpis.action";
 import type { BusinessIntelligenceDashboardData } from "@/domains/analytics/analytics-types";
 import { usePolling } from "@/hooks/use-polling";
 
@@ -20,10 +20,10 @@ export function BiKpiCardsPolling({ initialKpis }: BiKpiCardsPollingProps) {
   }, [initialKpis]);
 
   const refreshKpis = useCallback(async () => {
-    const response = await getBusinessIntelligenceDashboardAction();
+    const response = await getBusinessIntelligenceKpisAction();
 
     if (response.success) {
-      setKpis(response.data.kpis);
+      setKpis(response.data);
     }
   }, []);
 

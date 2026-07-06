@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ImageIcon } from "lucide-react";
 
 import { customerLayout } from "@/lib/customer-layout";
@@ -33,29 +34,40 @@ export function CourtImagesSection({
     );
   }
 
-  const [heroImage, ...galleryImages] = imageUrls;
+  const heroImage = imageUrls[0]!;
+  const galleryImages = imageUrls.slice(1);
 
   return (
     <section className="px-4 pt-6 sm:px-6">
       <div className={customerLayout.containerWide}>
         <div className="space-y-3">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={heroImage}
-            alt={courtName}
-            className="border-border aspect-[16/9] w-full rounded-[var(--radius-card-lg)] border object-cover lg:aspect-[21/9]"
-          />
+          <div className="border-border relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-card-lg)] border lg:aspect-[21/9]">
+            <Image
+              src={heroImage}
+              alt={courtName}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 1152px"
+              className="object-cover"
+            />
+          </div>
 
           {galleryImages.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-3">
               {galleryImages.map((url, index) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <div
                   key={`${url}-${index}`}
-                  src={url}
-                  alt={`${courtName} ${index + 2}`}
-                  className="border-border aspect-[4/3] w-full rounded-[var(--radius-card)] border object-cover"
-                />
+                  className="border-border relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-card)] border"
+                >
+                  <Image
+                    src={url}
+                    alt={`${courtName} ${index + 2}`}
+                    fill
+                    loading="lazy"
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover"
+                  />
+                </div>
               ))}
             </div>
           ) : null}

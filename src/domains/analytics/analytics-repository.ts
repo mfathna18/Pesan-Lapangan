@@ -3,6 +3,8 @@ import { PAYMENT_STATUS } from "@/domains/payment/constants";
 
 import type {
   BiBusinessIntelligenceSnapshot,
+  BiKpiSnapshot,
+  BiKpiSnapshotQuery,
   BiSnapshotQuery,
   OwnerAnalyticsSnapshotQuery,
   OwnerAnalyticsSnapshotRecord,
@@ -247,6 +249,97 @@ export class AnalyticsRepository {
       activityInvoices,
       trendPayments,
       trendBookings,
+    };
+  }
+
+  async fetchBusinessIntelligenceKpiSnapshot(
+    input: BiKpiSnapshotQuery,
+  ): Promise<BiKpiSnapshot> {
+    const ownerBookingFilter = buildOwnerBookingFilter(input.ownerId);
+    const ownerPaymentFilter = buildOwnerPaymentFilter(input.ownerId);
+
+    const [
+      periodBookings,
+      currentMonthRevenueAggregate,
+      previousMonthRevenueAggregate,
+      courts,
+      operatingHours,
+    ] = await Promise.all([
+      this.prisma.booking.findMany({
+        where: {
+          ...ownerBookingFilter,
+          bookingDate: {
+            gte: startOfDay(input.previousMonthStart),
+            lte: startOfDay(input.currentMonthEnd),
+          },
+        },
+        select: {
+          courtId: true,
+          status: true,
+          bookingDate: true,
+          startMinute: true,
+          durationMinute: true,
+          contact: {
+            select: {
+              customerPhone: true,
+              customerName: true,
+            },
+          },
+        },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          status: PAYMENT_STATUS.PAID,
+          ...ownerPaymentFilter,
+          paidAt: {
+            gte: input.currentMonthStart,
+            lte: input.currentMonthEnd,
+          },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          status: PAYMENT_STATUS.PAID,
+          ...ownerPaymentFilter,
+          paidAt: {
+            gte: input.previousMonthStart,
+            lte: input.previousMonthEnd,
+          },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.court.findMany({
+        where: {
+          isActive: true,
+          ...buildOwnerCourtFilter(input.ownerId),
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+        orderBy: [{ displayOrder: "asc" }, { name: "asc" }],
+      }),
+      this.prisma.operatingHours.findMany({
+        where: {
+          isActive: true,
+          court: buildOwnerCourtFilter(input.ownerId),
+        },
+        select: {
+          courtId: true,
+          dayOfWeek: true,
+          startMinute: true,
+          endMinute: true,
+        },
+      }),
+    ]);
+
+    return {
+      periodBookings,
+      currentMonthRevenue: currentMonthRevenueAggregate._sum.amount ?? 0,
+      previousMonthRevenue: previousMonthRevenueAggregate._sum.amount ?? 0,
+      courts,
+      operatingHours,
     };
   }
 

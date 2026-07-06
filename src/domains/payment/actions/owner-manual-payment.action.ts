@@ -9,8 +9,10 @@ import {
   ManualPaymentNotFoundError,
   PaymentValidationError,
 } from "@/domains/payment/errors";
-import { requireOwnerId } from "@/lib/auth/get-owner-id";
-import { requireOwnerSession } from "@/lib/auth/require-owner-session";
+import {
+  getCachedOwnerId,
+  getCachedOwnerSession,
+} from "@/lib/auth/cached-owner-request";
 import { prisma } from "@/lib/db/prisma";
 import { getNotificationEmitter } from "@/domains/notification/actions/get-notification-service";
 import {
@@ -38,8 +40,8 @@ async function revalidatePublicCheckout(bookingId: string) {
 }
 
 export async function approveManualPaymentAction(bookingId: string) {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     await getManualPaymentService().approvePayment({
@@ -77,8 +79,8 @@ export async function rejectManualPaymentAction(input: {
   bookingId: string;
   reason: string;
 }) {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
     await getManualPaymentService().rejectPayment({
@@ -114,8 +116,8 @@ export async function rejectManualPaymentAction(input: {
 }
 
 export async function listAwaitingManualPaymentsAction() {
-  const session = await requireOwnerSession();
-  const ownerId = await requireOwnerId(session.user.id);
+  const session = await getCachedOwnerSession();
+  const ownerId = await getCachedOwnerId(session.user.id);
 
   return getManualPaymentService().listAwaitingConfirmation(ownerId);
 }

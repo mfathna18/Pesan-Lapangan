@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { cache } from "react";
-import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 
 import { VenuePage } from "@/components/venue/venue-page";
 import { siteConfig } from "@/config/site";
-import { getVenueService } from "@/domains/venue/actions/get-venue-service";
-import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
 import { VenueNotFoundError } from "@/domains/venue/errors";
+import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
+import { getCachedPublicVenueDetail } from "@/lib/cache/public-venue-cache";
 
 type VenueRoutePageProps = {
   params: Promise<{
@@ -17,7 +16,7 @@ type VenueRoutePageProps = {
 
 const getCachedPublicVenue = cache(async (slug: string) => {
   try {
-    return await getVenueService().getPublicVenueBySlug(slug);
+    return await getCachedPublicVenueDetail(slug);
   } catch (error) {
     if (error instanceof VenueNotFoundError) {
       notFound();
@@ -27,7 +26,7 @@ const getCachedPublicVenue = cache(async (slug: string) => {
   }
 });
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 function buildVenueDescription(venue: {
   name: string;
@@ -89,8 +88,6 @@ export async function generateMetadata({
 }
 
 export default async function GorVenuePage({ params }: VenueRoutePageProps) {
-  noStore();
-
   const { slug } = await params;
   const venue = await getCachedPublicVenue(slug);
 

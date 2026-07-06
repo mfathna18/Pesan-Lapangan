@@ -12,24 +12,20 @@ import {
 } from "@/lib/auth/cached-owner-request";
 import { handleServerActionError } from "@/lib/server/actions";
 
-export async function getBusinessIntelligenceDashboardAction(): Promise<
-  ActionResponse<BusinessIntelligenceDashboardData>
+export async function getBusinessIntelligenceKpisAction(): Promise<
+  ActionResponse<BusinessIntelligenceDashboardData["kpis"]>
 > {
   const session = await getCachedOwnerSession();
   const ownerId = await getCachedOwnerId(session.user.id);
 
   try {
-    const data =
-      await getAnalyticsService().getBusinessIntelligenceDashboard(ownerId);
+    const kpis =
+      await getAnalyticsService().getBusinessIntelligenceKpis(ownerId);
 
-    return actionSuccess(data);
+    return actionSuccess(kpis);
   } catch (error) {
-    return handleServerActionError(
-      "getBusinessIntelligenceDashboardAction",
-      error,
-      {
-        fallbackMessage: "Gagal memuat dasbor bisnis.",
-      },
-    );
+    return handleServerActionError("getBusinessIntelligenceKpisAction", error, {
+      fallbackMessage: "Gagal memuat KPI dasbor bisnis.",
+    });
   }
 }

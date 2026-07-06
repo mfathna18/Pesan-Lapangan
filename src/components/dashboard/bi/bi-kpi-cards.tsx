@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import type { BusinessIntelligenceDashboardData } from "@/domains/analytics/analytics-types";
 import { BiTrendIcon } from "@/components/dashboard/bi/bi-quick-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -74,7 +76,7 @@ function KpiCard({
   );
 }
 
-export function BiKpiCards({ kpis }: BiKpiCardsProps) {
+export const BiKpiCards = memo(function BiKpiCards({ kpis }: BiKpiCardsProps) {
   return (
     <div className={pageLayout.statGrid}>
       <KpiCard
@@ -110,4 +112,4 @@ export function BiKpiCards({ kpis }: BiKpiCardsProps) {
       />
     </div>
   );
-}
+});
