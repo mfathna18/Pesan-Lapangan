@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cache } from "react";
+import { unstable_noStore as noStore } from "next/cache";
 import { notFound } from "next/navigation";
 
 import { VenuePage } from "@/components/venue/venue-page";
@@ -88,6 +89,8 @@ export async function generateMetadata({
 }
 
 export default async function GorVenuePage({ params }: VenueRoutePageProps) {
+  noStore();
+
   const { slug } = await params;
   const venue = await getCachedPublicVenue(slug);
 

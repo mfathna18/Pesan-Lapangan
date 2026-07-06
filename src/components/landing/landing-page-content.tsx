@@ -7,9 +7,8 @@ import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingSearchSection } from "@/components/landing/landing-search-section";
+import { LandingVenueSearchSection } from "@/components/landing/landing-venue-search-section";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
-import { VenueDiscoverySection } from "@/components/landing/venue-discovery-section";
 import { WhyChooseUsSection } from "@/components/landing/why-choose-us-section";
 import { landingLayout } from "@/lib/layout-system";
 import type { PublicVenueListItem } from "@/domains/venue/types";
@@ -27,12 +26,10 @@ export function LandingPageContent({ venues }: LandingPageContentProps) {
       <main className="flex flex-col">
         <HeroSection />
         <div className={landingLayout.sectionDivider}>
-          <LandingSearchSection query={query} onQueryChange={setQuery} />
-          <VenueDiscoverySection
+          <LandingVenueSearchSection
             venues={venues}
             query={query}
             onQueryChange={setQuery}
-            embedded
           />
         </div>
         <div className={landingLayout.sectionDivider}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import { GorMediaSettings } from "@/components/settings/gor-media-settings";
@@ -60,6 +61,7 @@ function createFormState(profile: GorProfileData | null): GorProfileFormState {
 }
 
 export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
+  const router = useRouter();
   const [form, setForm] = useState(() => createFormState(initialProfile));
   const [savedProfile, setSavedProfile] = useState(initialProfile);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +106,7 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
       setSavedProfile(response.data);
       setForm(createFormState(response.data));
       setSuccess("Profil GOR berhasil disimpan.");
+      router.refresh();
     });
   }
 
@@ -155,7 +158,7 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
 
           {savedProfile ? (
             <>
-              <div className="space-y-2">
+              <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="gor-slug">Slug Publik</Label>
                 <Input
                   id="gor-slug"
@@ -163,6 +166,17 @@ export function GorProfileForm({ initialProfile }: GorProfileFormProps) {
                   readOnly
                   className="bg-muted/40"
                 />
+                <p className="text-muted-foreground text-sm">
+                  Halaman publik:{" "}
+                  <a
+                    href={`/gor/${savedProfile.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary font-medium hover:underline"
+                  >
+                    /gor/{savedProfile.slug}
+                  </a>
+                </p>
               </div>
 
               <div className="space-y-2">

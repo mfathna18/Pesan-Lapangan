@@ -1,8 +1,7 @@
-const SW_VERSION = "v2";
+const SW_VERSION = "v3";
 const STATIC_CACHE = `pesan-lapangan-static-${SW_VERSION}`;
 
 const STATIC_ASSETS = [
-  "/",
   "/manifest.webmanifest",
   "/icon.png",
   "/apple-icon.png",
@@ -39,6 +38,7 @@ self.addEventListener("activate", (event) => {
 
 function shouldBypassCache(url) {
   return (
+    url.pathname === "/" ||
     url.pathname.startsWith("/api/") ||
     url.pathname.startsWith("/dashboard") ||
     url.pathname.startsWith("/gor/") ||
@@ -46,6 +46,10 @@ function shouldBypassCache(url) {
     url.pathname.startsWith("/login") ||
     url.pathname.startsWith("/register")
   );
+}
+
+function isStaticAsset(pathname) {
+  return STATIC_ASSETS.includes(pathname);
 }
 
 self.addEventListener("fetch", (event) => {
@@ -56,6 +60,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   if (url.origin !== self.location.origin || shouldBypassCache(url)) {
+    return;
+  }
+
+  if (!isStaticAsset(url.pathname)) {
     return;
   }
 

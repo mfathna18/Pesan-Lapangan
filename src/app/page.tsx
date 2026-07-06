@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { LandingPage } from "@/components/landing/landing-page";
 import { siteConfig } from "@/config/site";
@@ -33,6 +34,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  noStore();
+
   const venues = await getVenueService().listActivePublicVenues();
 
   return <LandingPage venues={venues} />;
