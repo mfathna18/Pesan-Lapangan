@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { getAuthTrustedOrigins } from "@/config/auth-urls";
 import { env } from "@/config/env";
+import { ensureSuperAdminRole } from "@/domains/admin/services/super-admin-provisioning";
 import { OWNER_ROLE } from "@/domains/owner/constants";
 import { provisionOwnerAfterUserSignUp } from "@/domains/owner/services/owner-provisioning-service";
 import { prisma } from "@/lib/db/prisma";
@@ -18,7 +19,22 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          await provisionOwnerAfterUserSignUp(user);
+          const role = await ensureSuperAdminRole(user.id, user.email);
+          await provisionOwnerAfterUserSignUp({ ...user, role });
+        },
+      },
+    },
+    session: {
+      create: {
+        after: async (session) => {
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { id: true, email: true },
+          });
+
+          if (user) {
+            await ensureSuperAdminRole(user.id, user.email);
+          }
         },
       },
     },

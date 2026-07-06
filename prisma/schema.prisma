@@ -10,7 +10,12 @@ datasource db {
   provider = "postgresql"
 }
 
-// Better Auth core models + owner role field.
+// Better Auth core models + user role field.
+
+enum UserRole {
+  OWNER
+  SUPER_ADMIN
+}
 
 model User {
   id            String    @id
@@ -24,7 +29,7 @@ model User {
   accounts      Account[]
   owner         Owner?
 
-  role String @default("OWNER")
+  role UserRole @default(OWNER)
 
   @@unique([email])
   @@map("user")

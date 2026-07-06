@@ -3,10 +3,9 @@ import { redirect } from "next/navigation";
 
 import { USER_ROLE } from "@/domains/auth/constants";
 import { ensureSuperAdminRole } from "@/domains/admin/services/super-admin-provisioning";
-import { OWNER_ROLE } from "@/domains/owner/constants";
 import { auth } from "@/lib/auth";
 
-export async function requireOwnerSession() {
+export async function requireSuperAdminSession() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -17,12 +16,8 @@ export async function requireOwnerSession() {
 
   const role = await ensureSuperAdminRole(session.user.id, session.user.email);
 
-  if (role === USER_ROLE.SUPER_ADMIN) {
-    redirect("/admin");
-  }
-
-  if (role !== OWNER_ROLE) {
-    redirect("/login");
+  if (role !== USER_ROLE.SUPER_ADMIN) {
+    redirect("/dashboard");
   }
 
   return session;

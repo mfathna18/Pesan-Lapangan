@@ -1,4 +1,7 @@
 import { env } from "@/config/env";
+import packageJson from "../../package.json";
+
+export const appVersion = packageJson.version;
 
 export const siteConfig = {
   name: "PesanLapangan",

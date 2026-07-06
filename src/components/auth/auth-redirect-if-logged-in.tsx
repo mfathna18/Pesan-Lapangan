@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+import { resolveLoginRedirectAction } from "@/domains/admin/actions/resolve-login-redirect.action";
 import { authClient } from "@/lib/auth-client";
 
 type AuthRedirectIfLoggedInProps = {
@@ -17,7 +18,9 @@ export function AuthRedirectIfLoggedIn({
 
   useEffect(() => {
     if (!isPending && session) {
-      router.replace("/dashboard");
+      void resolveLoginRedirectAction().then((path) => {
+        router.replace(path);
+      });
     }
   }, [isPending, router, session]);
 

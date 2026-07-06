@@ -1,4 +1,6 @@
-export const OWNER_ROLE = "OWNER" as const;
+import { USER_ROLE } from "@/domains/auth/constants";
+
+export const OWNER_ROLE = USER_ROLE.OWNER;
 
 export const GOR_DEFAULT_TIMEZONE = "Asia/Jakarta" as const;
 export const GOR_DEFAULT_CURRENCY = "IDR" as const;

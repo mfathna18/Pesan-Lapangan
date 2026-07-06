@@ -8,6 +8,7 @@ import { AuthRedirectIfLoggedIn } from "@/components/auth/auth-redirect-if-logge
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { resolveLoginRedirectAction } from "@/domains/admin/actions/resolve-login-redirect.action";
 import { authClient } from "@/lib/auth-client";
 
 export function LoginForm() {
@@ -32,7 +33,8 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      const redirectPath = await resolveLoginRedirectAction();
+      router.push(redirectPath);
       router.refresh();
     });
   };
