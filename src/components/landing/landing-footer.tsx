@@ -59,6 +59,8 @@ export function LandingFooter() {
             </p>
             <a
               href={footer.support.emailHref}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-primary text-sm font-medium hover:underline"
             >
               {footer.support.emailLabel}

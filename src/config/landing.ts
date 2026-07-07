@@ -143,8 +143,8 @@ export const landingContent = {
     support: {
       title: "Dukungan",
       description: "Butuh bantuan mengelola venue atau booking?",
-      emailLabel: "support@pesanlapangan.online",
-      emailHref: "mailto:support@pesanlapangan.online",
+      emailLabel: "0821-2727-7641",
+      emailHref: "https://wa.me/6282127277641",
     },
     copyright: "Semua hak dilindungi.",
   },
