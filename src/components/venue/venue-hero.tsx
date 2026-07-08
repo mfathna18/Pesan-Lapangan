@@ -82,15 +82,15 @@ export function VenueHero({ venue }: VenueHeroProps) {
       </div>
 
       <div className={`${customerLayout.containerWide} relative px-4 sm:px-6`}>
-        <div className="space-y-6 py-8 sm:py-10">
+        <div className="space-y-7 py-8 sm:py-10">
           {venue.description ? (
-            <p className="text-muted-foreground max-w-3xl text-base leading-relaxed text-pretty sm:text-lg">
+            <p className="text-muted-foreground max-w-3xl text-lg leading-relaxed text-pretty sm:text-xl">
               {venue.description}
             </p>
           ) : null}
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6">
-            <p className="text-muted-foreground inline-flex items-start gap-2 text-base">
+          <div className="space-y-3">
+            <p className="text-muted-foreground inline-flex items-start gap-2.5 text-base sm:text-lg">
               <MapPin
                 className="text-primary mt-0.5 size-4 shrink-0"
                 aria-hidden
@@ -99,7 +99,7 @@ export function VenueHero({ venue }: VenueHeroProps) {
             </p>
 
             {todayHours ? (
-              <p className="text-muted-foreground inline-flex items-center gap-2 text-base">
+              <p className="text-muted-foreground inline-flex items-center gap-2.5 text-base sm:text-lg">
                 <Clock className="text-primary size-4 shrink-0" aria-hidden />
                 <span>Hari ini: {todayHours}</span>
               </p>
@@ -107,9 +107,13 @@ export function VenueHero({ venue }: VenueHeroProps) {
           </div>
 
           {venue.sports.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {venue.sports.map((sport) => (
-                <Badge key={sport.type} variant="outline">
+                <Badge
+                  key={sport.type}
+                  variant="outline"
+                  className="px-3 py-1 text-sm"
+                >
                   {sport.label}
                 </Badge>
               ))}
