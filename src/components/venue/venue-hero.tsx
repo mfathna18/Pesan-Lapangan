@@ -89,17 +89,14 @@ export function VenueHero({ venue }: VenueHeroProps) {
             </p>
           ) : null}
 
-          <div className="space-y-3">
-            <p className="text-muted-foreground inline-flex items-start gap-2.5 text-base sm:text-lg">
-              <MapPin
-                className="text-primary mt-0.5 size-4 shrink-0"
-                aria-hidden
-              />
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-8">
+            <p className="text-muted-foreground inline-flex items-center gap-2.5 text-base leading-snug sm:text-lg">
+              <MapPin className="text-primary size-4 shrink-0" aria-hidden />
               <span>{locationLine || CUSTOMER_COPY.venue.addressFallback}</span>
             </p>
 
             {todayHours ? (
-              <p className="text-muted-foreground inline-flex items-center gap-2.5 text-base sm:text-lg">
+              <p className="text-muted-foreground inline-flex items-center gap-2.5 text-base leading-snug sm:text-lg">
                 <Clock className="text-primary size-4 shrink-0" aria-hidden />
                 <span>Hari ini: {todayHours}</span>
               </p>
