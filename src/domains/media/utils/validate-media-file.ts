@@ -73,4 +73,5 @@ export const MEDIA_KIND_LABEL = {
   [MEDIA_KIND.LOGO]: "logo",
   [MEDIA_KIND.COVER]: "foto sampul",
   [MEDIA_KIND.QRIS]: "QRIS",
+  [MEDIA_KIND.COURT]: "foto lapangan",
 } as const;

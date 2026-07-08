@@ -5,7 +5,7 @@ import { CalendarDays, Clock, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { CUSTOMER_COPY } from "@/config/customer-copy";
-import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
+import { getVenueCoverImage } from "@/domains/media/utils/cover-images";
 import type { PublicVenueData } from "@/domains/venue/types";
 import { customerLayout } from "@/lib/customer-layout";
 import { cn } from "@/lib/utils";
@@ -26,7 +26,7 @@ function getTodayHoursLabel(
 export function VenueHero({ venue }: VenueHeroProps) {
   const locationLine = [venue.address, venue.city].filter(Boolean).join(", ");
   const todayHours = getTodayHoursLabel(venue.openHours);
-  const primaryCover = getPrimaryCoverImage(venue.coverImages);
+  const primaryCover = getVenueCoverImage(venue.coverImageUrl);
 
   return (
     <section className="relative overflow-hidden">

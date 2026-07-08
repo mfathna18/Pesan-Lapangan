@@ -82,7 +82,7 @@ export class GorProfileService {
       return await this.gorRepository.createGorProfile(owner.id, {
         ...profileData,
         logoUrl: null,
-        coverImages: [],
+        coverImageUrl: null,
         qrisImageUrl: null,
         currency: GOR_DEFAULT_CURRENCY,
         isActive: true,

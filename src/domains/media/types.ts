@@ -7,7 +7,7 @@ export type MediaUploadResult = {
 
 export type GorMediaState = {
   logoUrl: string | null;
-  coverImages: string[];
+  coverImageUrl: string | null;
   qrisImageUrl: string | null;
 };
 
@@ -16,5 +16,4 @@ export type UploadGorMediaInput = {
   gorId: string;
   kind: MediaKind;
   file: File;
-  replaceCoverIndex?: number;
 };

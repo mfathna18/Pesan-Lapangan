@@ -28,6 +28,12 @@ const BUCKETS = [
     fileSizeLimit: 2 * 1024 * 1024,
     allowedMimeTypes: ["image/png", "image/jpeg", "image/webp"],
   },
+  {
+    id: "court-images",
+    public: true,
+    fileSizeLimit: 5 * 1024 * 1024,
+    allowedMimeTypes: ["image/png", "image/jpeg", "image/webp"],
+  },
 ];
 
 const supabaseUrl = process.env.SUPABASE_URL?.trim();

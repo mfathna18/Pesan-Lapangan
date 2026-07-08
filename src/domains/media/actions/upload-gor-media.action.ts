@@ -82,7 +82,7 @@ export async function uploadGorQrisAction(
 
 export async function uploadGorCoverAction(
   formData: FormData,
-): Promise<ActionResponse<{ coverImages: string[] }>> {
+): Promise<ActionResponse<{ coverImageUrl: string }>> {
   const session = await requireOwnerSession();
   const file = getUploadFileFromFormData(formData);
 
@@ -91,14 +91,14 @@ export async function uploadGorCoverAction(
   }
 
   try {
-    const coverImages = await getGorMediaService().addCover(
+    const coverImageUrl = await getGorMediaService().uploadCover(
       session.user.id,
       file,
     );
 
     await revalidatePublicVenueForUserId(session.user.id);
 
-    return actionSuccess({ coverImages });
+    return actionSuccess({ coverImageUrl });
   } catch (error) {
     return handleServerActionError("uploadGorCoverAction", error, {
       fallbackMessage: "Gagal mengunggah foto sampul.",
@@ -107,80 +107,20 @@ export async function uploadGorCoverAction(
   }
 }
 
-export async function replaceGorCoverAction(
-  formData: FormData,
-): Promise<ActionResponse<{ coverImages: string[] }>> {
-  const session = await requireOwnerSession();
-  const file = getUploadFileFromFormData(formData);
-  const indexValue = formData.get("index");
-
-  if (!file) {
-    return actionFailure("Pilih foto sampul terlebih dahulu.");
-  }
-
-  const index = Number(indexValue);
-
-  if (!Number.isInteger(index) || index < 0) {
-    return actionFailure("Foto sampul tidak valid.");
-  }
-
-  try {
-    const coverImages = await getGorMediaService().replaceCover(
-      session.user.id,
-      file,
-      index,
-    );
-
-    await revalidatePublicVenueForUserId(session.user.id);
-
-    return actionSuccess({ coverImages });
-  } catch (error) {
-    return handleServerActionError("replaceGorCoverAction", error, {
-      fallbackMessage: "Gagal mengganti foto sampul.",
-      knownErrors: knownMediaErrors,
-    });
-  }
-}
-
-export async function deleteGorCoverAction(
-  publicUrl: string,
-): Promise<ActionResponse<{ coverImages: string[] }>> {
+export async function deleteGorCoverAction(): Promise<
+  ActionResponse<{ coverImageUrl: null }>
+> {
   const session = await requireOwnerSession();
 
   try {
-    const coverImages = await getGorMediaService().deleteCover(
-      session.user.id,
-      publicUrl,
-    );
+    await getGorMediaService().deleteCover(session.user.id);
 
     await revalidatePublicVenueForUserId(session.user.id);
 
-    return actionSuccess({ coverImages });
+    return actionSuccess({ coverImageUrl: null });
   } catch (error) {
     return handleServerActionError("deleteGorCoverAction", error, {
       fallbackMessage: "Gagal menghapus foto sampul.",
-      knownErrors: knownMediaErrors,
-    });
-  }
-}
-
-export async function reorderGorCoversAction(
-  coverImages: string[],
-): Promise<ActionResponse<{ coverImages: string[] }>> {
-  const session = await requireOwnerSession();
-
-  try {
-    const reordered = await getGorMediaService().reorderCovers(
-      session.user.id,
-      coverImages,
-    );
-
-    await revalidatePublicVenueForUserId(session.user.id);
-
-    return actionSuccess({ coverImages: reordered });
-  } catch (error) {
-    return handleServerActionError("reorderGorCoversAction", error, {
-      fallbackMessage: "Gagal mengatur ulang foto sampul.",
       knownErrors: knownMediaErrors,
     });
   }
@@ -192,7 +132,7 @@ export async function uploadGorMediaAction(
   ActionResponse<
     | { kind: typeof MEDIA_KIND.LOGO; logoUrl: string }
     | { kind: typeof MEDIA_KIND.QRIS; qrisImageUrl: string }
-    | { kind: typeof MEDIA_KIND.COVER; coverImages: string[] }
+    | { kind: typeof MEDIA_KIND.COVER; coverImageUrl: string }
   >
 > {
   const kind = formData.get("kind");
@@ -224,11 +164,7 @@ export async function uploadGorMediaAction(
   }
 
   if (kind === MEDIA_KIND.COVER) {
-    const replaceIndex = formData.get("replaceIndex");
-    const result =
-      replaceIndex != null && replaceIndex !== ""
-        ? await replaceGorCoverAction(formData)
-        : await uploadGorCoverAction(formData);
+    const result = await uploadGorCoverAction(formData);
 
     if (!result.success) {
       return result;
@@ -236,7 +172,7 @@ export async function uploadGorMediaAction(
 
     return actionSuccess({
       kind: MEDIA_KIND.COVER,
-      coverImages: result.data.coverImages,
+      coverImageUrl: result.data.coverImageUrl,
     });
   }
 

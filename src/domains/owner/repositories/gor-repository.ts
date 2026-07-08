@@ -16,7 +16,7 @@ const gorProfileSelect = {
   province: true,
   description: true,
   logoUrl: true,
-  coverImages: true,
+  coverImageUrl: true,
   timezone: true,
   currency: true,
   isActive: true,
@@ -34,7 +34,7 @@ const publicGorSelect = {
   city: true,
   description: true,
   logoUrl: true,
-  coverImages: true,
+  coverImageUrl: true,
   isActive: true,
 } as const;
 
@@ -133,7 +133,7 @@ export class GorRepository {
         province: data.province,
         description: data.description,
         logoUrl: data.logoUrl,
-        coverImages: data.coverImages,
+        coverImageUrl: data.coverImageUrl,
         timezone: data.timezone,
         currency: data.currency ?? "IDR",
         isActive: data.isActive ?? true,
@@ -200,13 +200,13 @@ export class GorRepository {
     });
   }
 
-  async updateGorCoverImages(
+  async updateGorCoverImage(
     gorId: string,
-    coverImages: string[],
+    coverImageUrl: string | null,
   ): Promise<void> {
     await this.prisma.gor.update({
       where: { id: gorId },
-      data: { coverImages },
+      data: { coverImageUrl },
     });
   }
 }

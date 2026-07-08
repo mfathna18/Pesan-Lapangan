@@ -39,7 +39,8 @@ function isMediaComplete(profile: GorProfileData | null): boolean {
   }
 
   return (
-    (profile.logoUrl?.trim().length ?? 0) > 0 && profile.coverImages.length > 0
+    (profile.logoUrl?.trim().length ?? 0) > 0 &&
+    (profile.coverImageUrl?.trim().length ?? 0) > 0
   );
 }
 

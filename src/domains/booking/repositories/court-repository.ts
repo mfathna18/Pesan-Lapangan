@@ -38,6 +38,7 @@ export type OwnerCourtRecord = {
   sportType: SportType;
   isActive: boolean;
   displayOrder: number;
+  imageUrls: string[];
 };
 
 const ownerCourtSelect = {
@@ -46,6 +47,7 @@ const ownerCourtSelect = {
   sportType: true,
   isActive: true,
   displayOrder: true,
+  imageUrls: true,
 } as const;
 
 export class CourtRepository {
@@ -210,6 +212,27 @@ export class CourtRepository {
     });
 
     return true;
+  }
+
+  async updateImageUrlsForOwner(
+    courtId: string,
+    ownerId: string,
+    imageUrls: string[],
+  ): Promise<{ id: string; imageUrls: string[] } | null> {
+    const owned = await this.isCourtOwnedByOwner(courtId, ownerId);
+
+    if (!owned) {
+      return null;
+    }
+
+    return this.prisma.court.update({
+      where: { id: courtId },
+      data: { imageUrls },
+      select: {
+        id: true,
+        imageUrls: true,
+      },
+    });
   }
 
   async findPublicCourtsByGorId(gorId: string): Promise<PublicCourtRecord[]> {

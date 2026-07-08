@@ -198,6 +198,7 @@ export class CourtService {
     sportType: string;
     isActive: boolean;
     displayOrder: number;
+    imageUrls: string[];
   }): OwnerCourtListItem {
     return {
       id: court.id,
@@ -206,6 +207,7 @@ export class CourtService {
       sportLabel: formatSportTypeLabel(court.sportType),
       isActive: court.isActive,
       displayOrder: court.displayOrder,
+      imageUrls: court.imageUrls,
     };
   }
 }

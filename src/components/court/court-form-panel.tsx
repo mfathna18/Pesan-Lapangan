@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { CourtGallerySettings } from "@/components/court/court-gallery-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +34,7 @@ type CourtFormPanelProps = {
   error: string | null;
   onClose: () => void;
   onSubmit: (values: CourtFormValues) => void;
+  onCourtImagesChange?: (courtId: string, imageUrls: string[]) => void;
 };
 
 function createFormValues(court: OwnerCourtListItem | null): CourtFormValues {
@@ -51,6 +53,7 @@ export function CourtFormPanel({
   error,
   onClose,
   onSubmit,
+  onCourtImagesChange,
 }: CourtFormPanelProps) {
   const [form, setForm] = useState<CourtFormValues>(() =>
     createFormValues(court),
@@ -178,6 +181,24 @@ export function CourtFormPanel({
                 </SelectContent>
               </Select>
             </div>
+
+            {mode === "edit" && court ? (
+              <div className="border-border space-y-3 border-t pt-4">
+                <CourtGallerySettings
+                  courtId={court.id}
+                  initialImages={court.imageUrls}
+                  disabled={loading}
+                  onImagesChange={(imageUrls) =>
+                    onCourtImagesChange?.(court.id, imageUrls)
+                  }
+                />
+              </div>
+            ) : mode === "create" ? (
+              <p className="text-muted-foreground text-sm">
+                Setelah lapangan dibuat, Anda dapat menambahkan hingga 5 foto
+                galeri di menu ubah lapangan.
+              </p>
+            ) : null}
           </div>
 
           <div className="border-border flex gap-2 border-t p-4">

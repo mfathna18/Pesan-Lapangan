@@ -124,6 +124,17 @@ export function CourtManagement({ courtCapacity }: CourtManagementProps) {
     });
   }
 
+  function handleCourtImagesChange(courtId: string, imageUrls: string[]) {
+    setCourts((current) =>
+      current.map((court) =>
+        court.id === courtId ? { ...court, imageUrls } : court,
+      ),
+    );
+    setSelectedCourt((current) =>
+      current?.id === courtId ? { ...current, imageUrls } : current,
+    );
+  }
+
   function handleToggleActive(court: OwnerCourtListItem) {
     setActionError(null);
 
@@ -322,6 +333,7 @@ export function CourtManagement({ courtCapacity }: CourtManagementProps) {
         error={formError}
         onClose={closeForm}
         onSubmit={handleFormSubmit}
+        onCourtImagesChange={handleCourtImagesChange}
       />
 
       <CourtUpgradeDialog

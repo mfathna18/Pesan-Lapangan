@@ -56,7 +56,7 @@ export class VenueService {
       address: gor.address,
       description: gor.description,
       logoUrl: gor.logoUrl,
-      coverImages: gor.coverImages,
+      coverImageUrl: gor.coverImageUrl,
     }));
   }
 }

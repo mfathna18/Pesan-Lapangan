@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { VenuePage } from "@/components/venue/venue-page";
 import { siteConfig } from "@/config/site";
 import { VenueNotFoundError } from "@/domains/venue/errors";
-import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
+import { getVenueCoverImage } from "@/domains/media/utils/cover-images";
 import { getCachedPublicVenueDetail } from "@/lib/cache/public-venue-cache";
 
 type VenueRoutePageProps = {
@@ -47,7 +47,7 @@ export async function generateMetadata({
     const venue = await getCachedPublicVenue(slug);
     const description = buildVenueDescription(venue);
     const pageUrl = `${siteConfig.url}/gor/${venue.slug}`;
-    const primaryCover = getPrimaryCoverImage(venue.coverImages);
+    const primaryCover = getVenueCoverImage(venue.coverImageUrl);
 
     return {
       title: venue.name,

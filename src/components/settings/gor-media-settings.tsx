@@ -2,15 +2,10 @@
 
 import { useState } from "react";
 
-import {
-  CoverGalleryManager,
-  ImageUploadField,
-} from "@/components/media/image-upload-field";
+import { ImageUploadField } from "@/components/media/image-upload-field";
 import { MEDIA_KIND } from "@/domains/media/constants";
 import {
   deleteGorCoverAction,
-  reorderGorCoversAction,
-  replaceGorCoverAction,
   uploadGorCoverAction,
   uploadGorLogoAction,
   uploadGorQrisAction,
@@ -48,7 +43,7 @@ async function uploadQris(file: File) {
   return result.data.qrisImageUrl;
 }
 
-async function addCover(file: File) {
+async function uploadCover(file: File) {
   const formData = new FormData();
   formData.set("file", file);
 
@@ -58,41 +53,15 @@ async function addCover(file: File) {
     throw new Error(result.error);
   }
 
-  return result.data.coverImages;
+  return result.data.coverImageUrl;
 }
 
-async function replaceCover(file: File, index: number) {
-  const formData = new FormData();
-  formData.set("file", file);
-  formData.set("index", String(index));
-
-  const result = await replaceGorCoverAction(formData);
+async function deleteCover() {
+  const result = await deleteGorCoverAction();
 
   if (!result.success) {
     throw new Error(result.error);
   }
-
-  return result.data.coverImages;
-}
-
-async function deleteCover(url: string) {
-  const result = await deleteGorCoverAction(url);
-
-  if (!result.success) {
-    throw new Error(result.error);
-  }
-
-  return result.data.coverImages;
-}
-
-async function reorderCovers(coverImages: string[]) {
-  const result = await reorderGorCoversAction(coverImages);
-
-  if (!result.success) {
-    throw new Error(result.error);
-  }
-
-  return result.data.coverImages;
 }
 
 export function GorMediaSettings({
@@ -103,7 +72,9 @@ export function GorMediaSettings({
   const [qrisImageUrl, setQrisImageUrl] = useState(
     profile?.qrisImageUrl ?? null,
   );
-  const [coverImages, setCoverImages] = useState(profile?.coverImages ?? []);
+  const [coverImageUrl, setCoverImageUrl] = useState(
+    profile?.coverImageUrl ?? null,
+  );
 
   if (!profile) {
     return (
@@ -125,14 +96,16 @@ export function GorMediaSettings({
         onUploaded={setLogoUrl}
       />
 
-      <CoverGalleryManager
-        images={coverImages}
+      <ImageUploadField
+        label="Foto Sampul"
+        description="Satu foto sampul untuk homepage, halaman venue, dan hasil pencarian."
+        kind={MEDIA_KIND.COVER}
+        imageUrl={coverImageUrl}
         disabled={disabled}
-        onAdd={addCover}
-        onReplace={replaceCover}
+        previewClassName="aspect-[16/10] w-56"
+        onUploadFile={uploadCover}
+        onUploaded={setCoverImageUrl}
         onDelete={deleteCover}
-        onReorder={reorderCovers}
-        onChange={setCoverImages}
       />
 
       <ImageUploadField

@@ -257,6 +257,7 @@ export type OwnerCourtListItem = {
   sportLabel: string;
   isActive: boolean;
   displayOrder: number;
+  imageUrls: string[];
 };
 
 export type CreateOwnerCourtInput = {

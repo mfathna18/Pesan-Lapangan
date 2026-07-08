@@ -20,7 +20,7 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { CUSTOMER_COPY } from "@/config/customer-copy";
 import { landingContent } from "@/config/landing";
 import type { PublicVenueListItem } from "@/domains/venue/types";
-import { getPrimaryCoverImage } from "@/domains/media/utils/cover-images";
+import { getVenueCoverImage } from "@/domains/media/utils/cover-images";
 import { layout } from "@/lib/design-system";
 import { landingLayout } from "@/lib/layout-system";
 import { cn } from "@/lib/utils";
@@ -125,7 +125,7 @@ export function LandingVenueSearchSection({
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredVenues.map((venue, index) => {
-                const coverImage = getPrimaryCoverImage(venue.coverImages);
+                const coverImage = getVenueCoverImage(venue.coverImageUrl);
 
                 return (
                   <Card

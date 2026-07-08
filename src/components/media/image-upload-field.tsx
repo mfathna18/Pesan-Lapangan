@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  GOR_COVER_MAX_IMAGES,
+  COURT_GALLERY_MAX_IMAGES,
   MEDIA_ALLOWED_MIME_TYPES,
   MEDIA_ERROR_MESSAGE,
   MEDIA_KIND,
@@ -43,18 +43,22 @@ function mapOptimizeError(error: unknown): string {
   return MEDIA_ERROR_MESSAGE.UPLOAD_FAILED;
 }
 
+type SingleImageKind =
+  typeof MEDIA_KIND.LOGO | typeof MEDIA_KIND.COVER | typeof MEDIA_KIND.QRIS;
+
 type ImageUploadFieldProps = {
   label: string;
   description?: string;
-  kind: Exclude<MediaKind, typeof MEDIA_KIND.COVER>;
+  kind: SingleImageKind;
   imageUrl: string | null;
   disabled?: boolean;
   previewClassName?: string;
   onUploadFile: (file: File) => Promise<string>;
-  onUploaded: (url: string) => void;
+  onUploaded: (url: string | null) => void;
+  onDelete?: () => Promise<void>;
 };
 
-function validateClientFile(file: File, kind: ImageUploadFieldProps["kind"]) {
+function validateClientFile(file: File, kind: MediaKind) {
   const mimeType = file.type || getMimeTypeFromFileName(file.name);
 
   if (
@@ -82,6 +86,7 @@ export function ImageUploadField({
   previewClassName,
   onUploadFile,
   onUploaded,
+  onDelete,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +124,27 @@ export function ImageUploadField({
     });
   }
 
+  function handleDelete() {
+    if (!onDelete) {
+      return;
+    }
+
+    setError(null);
+
+    startTransition(async () => {
+      try {
+        await onDelete();
+        onUploaded(null);
+      } catch (deleteError) {
+        setError(
+          deleteError instanceof Error
+            ? deleteError.message
+            : MEDIA_ERROR_MESSAGE.DELETE_FAILED,
+        );
+      }
+    });
+  }
+
   return (
     <div className="space-y-2">
       <div>
@@ -141,7 +167,7 @@ export function ImageUploadField({
               alt={`Pratinjau ${label}`}
               fill
               className="object-cover"
-              sizes="160px"
+              sizes="320px"
             />
           </div>
         ) : (
@@ -164,19 +190,32 @@ export function ImageUploadField({
             disabled={disabled || isPending}
             onChange={handleSelectFile}
           />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled || isPending}
-            onClick={() => inputRef.current?.click()}
-          >
-            {isPending ? (
-              <Loader2 className="mr-2 size-4 animate-spin" />
-            ) : (
-              <ImagePlus className="mr-2 size-4" />
-            )}
-            {imageUrl ? "Ganti Gambar" : "Unggah"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={disabled || isPending}
+              onClick={() => inputRef.current?.click()}
+            >
+              {isPending ? (
+                <Loader2 className="mr-2 size-4 animate-spin" />
+              ) : (
+                <ImagePlus className="mr-2 size-4" />
+              )}
+              {imageUrl ? "Ganti Gambar" : "Unggah"}
+            </Button>
+            {imageUrl && onDelete ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={disabled || isPending}
+                onClick={handleDelete}
+              >
+                <Trash2 className="mr-2 size-4" />
+                Hapus
+              </Button>
+            ) : null}
+          </div>
           <p className="text-muted-foreground text-xs">
             PNG, JPG, atau WEBP · maks. {getMaxFileMegabytes(kind)} MB
           </p>
@@ -192,8 +231,12 @@ export function ImageUploadField({
   );
 }
 
-type CoverGalleryManagerProps = {
+type ImageGalleryManagerProps = {
+  label?: string;
+  description?: string;
   images: string[];
+  maxImages?: number;
+  kind?: typeof MEDIA_KIND.COURT;
   disabled?: boolean;
   onAdd: (file: File) => Promise<string[]>;
   onReplace: (file: File, index: number) => Promise<string[]>;
@@ -202,36 +245,19 @@ type CoverGalleryManagerProps = {
   onChange: (images: string[]) => void;
 };
 
-function validateCoverFile(file: File) {
-  const mimeType = file.type || getMimeTypeFromFileName(file.name);
-
-  if (
-    !mimeType ||
-    !MEDIA_ALLOWED_MIME_TYPES.includes(
-      mimeType as (typeof MEDIA_ALLOWED_MIME_TYPES)[number],
-    )
-  ) {
-    return MEDIA_ERROR_MESSAGE.INVALID_FORMAT;
-  }
-
-  if (file.size > getMaxFileBytes(MEDIA_KIND.COVER)) {
-    return MEDIA_ERROR_MESSAGE.FILE_TOO_LARGE(
-      getMaxFileMegabytes(MEDIA_KIND.COVER),
-    );
-  }
-
-  return null;
-}
-
-export function CoverGalleryManager({
+export function ImageGalleryManager({
+  label = "Galeri Lapangan",
+  description = `Unggah hingga ${COURT_GALLERY_MAX_IMAGES} foto lapangan untuk ditampilkan ke pelanggan.`,
   images,
+  maxImages = COURT_GALLERY_MAX_IMAGES,
+  kind = MEDIA_KIND.COURT,
   disabled = false,
   onAdd,
   onReplace,
   onDelete,
   onReorder,
   onChange,
-}: CoverGalleryManagerProps) {
+}: ImageGalleryManagerProps) {
   const addInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceIndex, setReplaceIndex] = useState<number | null>(null);
@@ -239,7 +265,7 @@ export function CoverGalleryManager({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const canAddMore = images.length < GOR_COVER_MAX_IMAGES;
+  const canAddMore = images.length < maxImages;
 
   function runAction(key: string, action: () => Promise<string[]>) {
     setError(null);
@@ -270,7 +296,7 @@ export function CoverGalleryManager({
       return;
     }
 
-    const validationError = validateCoverFile(file);
+    const validationError = validateClientFile(file, kind);
 
     if (validationError) {
       setError(validationError);
@@ -278,10 +304,7 @@ export function CoverGalleryManager({
     }
 
     runAction("add", async () => {
-      const optimizedFile = await optimizeImageFile({
-        file,
-        kind: MEDIA_KIND.COVER,
-      });
+      const optimizedFile = await optimizeImageFile({ file, kind });
       return onAdd(optimizedFile);
     });
   }
@@ -294,7 +317,7 @@ export function CoverGalleryManager({
       return;
     }
 
-    const validationError = validateCoverFile(file);
+    const validationError = validateClientFile(file, kind);
 
     if (validationError) {
       setError(validationError);
@@ -303,10 +326,7 @@ export function CoverGalleryManager({
 
     const index = replaceIndex;
     runAction(`replace-${index}`, async () => {
-      const optimizedFile = await optimizeImageFile({
-        file,
-        kind: MEDIA_KIND.COVER,
-      });
+      const optimizedFile = await optimizeImageFile({ file, kind });
       return onReplace(optimizedFile, index);
     });
   }
@@ -333,14 +353,11 @@ export function CoverGalleryManager({
   return (
     <div className="space-y-3">
       <div>
-        <Label>Foto Sampul</Label>
-        <p className="text-muted-foreground text-sm">
-          Unggah hingga {GOR_COVER_MAX_IMAGES} foto untuk ditampilkan di halaman
-          venue.
-        </p>
+        <Label>{label}</Label>
+        <p className="text-muted-foreground text-sm">{description}</p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         {images.map((imageUrl, index) => (
           <div
             key={imageUrl}
@@ -349,12 +366,24 @@ export function CoverGalleryManager({
             <div className="bg-muted/30 relative aspect-[16/10] overflow-hidden rounded-md">
               <Image
                 src={imageUrl}
-                alt={`Foto sampul ${index + 1}`}
+                alt={`Foto ${index + 1}`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 640px) 100vw, 240px"
                 loading="lazy"
               />
+              {pendingKey?.startsWith("replace-") ||
+              pendingKey?.startsWith("delete-") ||
+              pendingKey?.startsWith("move-") ||
+              pendingKey === "add" ? (
+                pendingKey === `replace-${index}` ||
+                pendingKey === `delete-${index}` ||
+                pendingKey === `move-${index}` ? (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/35">
+                    <Loader2 className="size-5 animate-spin text-white" />
+                  </div>
+                ) : null
+              ) : null}
             </div>
 
             <div className="flex flex-wrap gap-1">
@@ -443,13 +472,12 @@ export function CoverGalleryManager({
           ) : (
             <ImagePlus className="mr-2 size-4" />
           )}
-          Tambah Foto ({images.length}/{GOR_COVER_MAX_IMAGES})
+          Tambah Foto ({images.length}/{maxImages})
         </Button>
       ) : null}
 
       <p className="text-muted-foreground text-xs">
-        PNG, JPG, atau WEBP · maks. {getMaxFileMegabytes(MEDIA_KIND.COVER)} MB
-        per foto
+        PNG, JPG, atau WEBP · maks. {getMaxFileMegabytes(kind)} MB per foto
       </p>
 
       {error ? (

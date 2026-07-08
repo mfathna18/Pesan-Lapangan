@@ -32,7 +32,7 @@ export function mapGorAndCourtsToPublicVenue(
     city: gor.city,
     description: gor.description,
     logoUrl: gor.logoUrl,
-    coverImages: gor.coverImages,
+    coverImageUrl: gor.coverImageUrl,
     sports: sportTypes.map((type) => ({
       type,
       label: formatSportTypeLabel(type),

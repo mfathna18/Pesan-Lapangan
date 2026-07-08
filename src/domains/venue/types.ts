@@ -6,7 +6,7 @@ export type PublicVenueListItem = {
   address: string;
   description: string | null;
   logoUrl: string | null;
-  coverImages: string[];
+  coverImageUrl: string | null;
 };
 
 export type PublicVenueCourt = {
@@ -31,7 +31,7 @@ export type PublicVenueData = {
   city: string;
   description: string | null;
   logoUrl: string | null;
-  coverImages: string[];
+  coverImageUrl: string | null;
   sports: {
     type: string;
     label: string;

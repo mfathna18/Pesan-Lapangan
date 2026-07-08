@@ -1,5 +1,4 @@
 import {
-  GOR_COVER_MAX_IMAGES,
   MEDIA_ERROR_MESSAGE,
   MEDIA_KIND,
   getMediaBucket,
@@ -30,6 +29,7 @@ export class MediaStorageService {
     ownerId: string,
     kind: MediaKind,
     file: File,
+    courtId?: string,
   ): Promise<MediaUploadResult> {
     validateMediaFile(file, kind);
 
@@ -41,7 +41,7 @@ export class MediaStorageService {
     const optimizedBuffer = await prepareUploadBuffer(inputBuffer, kind);
     const bucket = getMediaBucket(kind);
     const fileId = crypto.randomUUID();
-    const storagePath = buildMediaStoragePath(ownerId, kind, fileId);
+    const storagePath = buildMediaStoragePath(ownerId, kind, fileId, courtId);
     const supabase = createSupabaseAdminClient();
 
     const { error } = await supabase.storage
@@ -89,7 +89,7 @@ export class MediaStorageService {
 
   async replaceImage(
     ownerId: string,
-    kind: Exclude<MediaKind, typeof MEDIA_KIND.COVER>,
+    kind: Exclude<MediaKind, typeof MEDIA_KIND.COURT>,
     file: File,
     previousUrl: string | null,
   ): Promise<MediaUploadResult> {
@@ -116,7 +116,7 @@ export class GorMediaService {
         gor: {
           id: string;
           logoUrl: string | null;
-          coverImages: string[];
+          coverImageUrl: string | null;
           qrisImageUrl: string | null;
         } | null;
       } | null>;
@@ -125,9 +125,9 @@ export class GorMediaService {
         gorId: string,
         qrisImageUrl: string | null,
       ) => Promise<void>;
-      updateGorCoverImages: (
+      updateGorCoverImage: (
         gorId: string,
-        coverImages: string[],
+        coverImageUrl: string | null,
       ) => Promise<void>;
     },
   ) {}
@@ -173,83 +173,33 @@ export class GorMediaService {
     return uploaded.publicUrl;
   }
 
-  async addCover(userId: string, file: File) {
+  async uploadCover(userId: string, file: File) {
     const { ownerId, gor } = await this.requireOwnedGor(userId);
-
-    if (gor.coverImages.length >= GOR_COVER_MAX_IMAGES) {
-      throw new MediaValidationError(MEDIA_ERROR_MESSAGE.COVER_LIMIT);
-    }
-
-    const uploaded = await this.mediaStorageService.uploadImage(
+    const uploaded = await this.mediaStorageService.replaceImage(
       ownerId,
       MEDIA_KIND.COVER,
       file,
+      gor.coverImageUrl,
     );
-    const coverImages = [...gor.coverImages, uploaded.publicUrl];
 
-    await this.gorRepository.updateGorCoverImages(gor.id, coverImages);
+    await this.gorRepository.updateGorCoverImage(gor.id, uploaded.publicUrl);
 
-    return coverImages;
+    return uploaded.publicUrl;
   }
 
-  async replaceCover(userId: string, file: File, index: number) {
-    const { ownerId, gor } = await this.requireOwnedGor(userId);
-    const previousUrl = gor.coverImages[index];
-
-    if (!previousUrl) {
-      throw new MediaValidationError(MEDIA_ERROR_MESSAGE.INVALID_COVER_URL);
-    }
-
-    const uploaded = await this.mediaStorageService.uploadImage(
-      ownerId,
-      MEDIA_KIND.COVER,
-      file,
-    );
-    const coverImages = [...gor.coverImages];
-    coverImages[index] = uploaded.publicUrl;
-
-    await this.gorRepository.updateGorCoverImages(gor.id, coverImages);
-
-    try {
-      await this.mediaStorageService.deleteByPublicUrl(previousUrl, ownerId);
-    } catch {
-      // Keep DB update even if old file cleanup fails.
-    }
-
-    return coverImages;
-  }
-
-  async deleteCover(userId: string, publicUrl: string) {
+  async deleteCover(userId: string) {
     const { ownerId, gor } = await this.requireOwnedGor(userId);
 
-    if (!gor.coverImages.includes(publicUrl)) {
+    if (!gor.coverImageUrl) {
       throw new MediaValidationError(MEDIA_ERROR_MESSAGE.INVALID_COVER_URL);
     }
 
-    const coverImages = gor.coverImages.filter((url) => url !== publicUrl);
+    const previousUrl = gor.coverImageUrl;
 
-    await this.gorRepository.updateGorCoverImages(gor.id, coverImages);
-    await this.mediaStorageService.deleteByPublicUrl(publicUrl, ownerId);
+    await this.gorRepository.updateGorCoverImage(gor.id, null);
+    await this.mediaStorageService.deleteByPublicUrl(previousUrl, ownerId);
 
-    return coverImages;
-  }
-
-  async reorderCovers(userId: string, coverImages: string[]) {
-    const { gor } = await this.requireOwnedGor(userId);
-
-    if (coverImages.length !== gor.coverImages.length) {
-      throw new MediaValidationError(MEDIA_ERROR_MESSAGE.INVALID_COVER_URL);
-    }
-
-    const currentSet = new Set(gor.coverImages);
-
-    if (!coverImages.every((url) => currentSet.has(url))) {
-      throw new MediaValidationError(MEDIA_ERROR_MESSAGE.INVALID_COVER_URL);
-    }
-
-    await this.gorRepository.updateGorCoverImages(gor.id, coverImages);
-
-    return coverImages;
+    return null;
   }
 }
 

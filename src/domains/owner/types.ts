@@ -10,7 +10,7 @@ export type PublicGorRecord = {
   city: string;
   description: string | null;
   logoUrl: string | null;
-  coverImages: string[];
+  coverImageUrl: string | null;
   isActive: boolean;
 };
 
@@ -25,7 +25,7 @@ export type GorProfileRecord = {
   province: string;
   description: string | null;
   logoUrl: string | null;
-  coverImages: string[];
+  coverImageUrl: string | null;
   timezone: string;
   currency: string;
   isActive: boolean;
